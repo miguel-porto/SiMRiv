@@ -5,12 +5,13 @@
 \alias{state.CRW}
 \title{Define a movement state}
 \description{
-  Defines a movement state to be used when creating \code{\link{species}}.
+  Defines a behavioral state to be used when creating \code{\link{species}}.
 }
 \usage{
   state(correlation, pwind = perceptionWindow("circular", 0), steplen = 1, name = "")
-  state.Resting()         # stopped state
-  state.RW()              # uniformly random walk, independent of resistance
+  state.Resting()         # still state
+  state.RW()              # uniform random walk (brownian motion),
+                          # independent of resistance
   state.CRW(correlation)  # correlated random walk, independent of resistance
 }
 \arguments{

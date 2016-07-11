@@ -12,9 +12,11 @@ perceptionWindow(type = "circular", radius)
   \item{radius}{the radius of the circular perception window, or the sigma of the gaussian perception window, in map units.}
 }
 \details{
-  The perception window is defined as the distance radius at which the species perceives the environment
-  , based e.g. on sense of smell, vision, audition, etc.
+  The perception window is defined as the distance radius at which the species perceives the environment,
+  based e.g. on sense of smell, vision, audition, etc.
+  
   A \code{circular} window gives equal weight to all pixels, which form a circle centered on current individual's position.
+  
   A \code{gaussian} window gives weights corresponding to a gaussian kernel centered on current individual's position.
 }
 \seealso{

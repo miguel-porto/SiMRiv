@@ -75,7 +75,7 @@ library(SiMRiv)
 ## i.e. single-state uncorrelated movement in an homogeneous landscape
 ######################################################################
 
-rand.walker <- species(state.randomWalk())   # a single state, other parameters
+rand.walker <- species(state.RW())   # a single state, other parameters
                                              # set to defaults
 sim <- simulate(rand.walker, 10000)
 plot(sim, type="l", asp=1)
@@ -93,7 +93,7 @@ lines(sim[,4:5], col=3)
 ###################################################################
 
 LevyWalker <- species(
-    list(state.randomWalk(),
+    list(state.RW(),
     state.CRW(0.99)),
     transitionMatrix(0.005, 0.02))
     

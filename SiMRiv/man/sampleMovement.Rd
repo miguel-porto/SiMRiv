@@ -1,9 +1,10 @@
 \name{sampleMovement}
 \alias{sampleMovement}
-\title{Resample a simulated movement and compute step-wise stats}
+\title{Resample a simulated movement and compute step-wise statistics}
 \description{
-  Resamples a simulated movement with function \code{\link{simulate}} to a lower temporal resolution.
-  Simultaneously, computes statistics for each resampled step, assuming that a straight line connects each vertex.
+  Resamples a movement simulated with the function \code{\link{simulate}} to a lower temporal resolution.
+  Simultaneously, computes statistics, e.g. step length, turning angles (\cite{Turchin 1998}) for each resampled step,
+  assuming that a straight line connects each re-sampled vertex.
 }
 \usage{
   sampleMovement(relocs, resolution = 1, resist = NULL)
@@ -22,8 +23,9 @@
   \item{the turning angle}
   \item{the accumulated resistance along the step, assuming a straight line is taken from start to end}
   }
-  
-  Note that these statistics are only meaningful for \code{resolution} >> 1, otherwise they are just a consequence of the simulation input parameters.
+}
+\note{
+  These statistics are only meaningful for \code{resolution} >> 1, otherwise they are just a consequence of the simulation input parameters.
 }
 \value{
   A list with the components \code{relocs} and \code{stats}.
@@ -36,7 +38,7 @@
 \examples{
 library(SiMRiv)
 LevyWalker <- species(
-  list(state.randomWalk(),
+  list(state.RW(),
   state.CRW(0.99)),
   transitionMatrix(0.005, 0.02))
 

@@ -2,13 +2,13 @@
 \alias{species}
 \title{Create a species}
 \description{
-  Creates a species to be simulated with function \code{\link{simulate}}.
+  Creates a species, characterized by one or more behavioural states, to be simulated with function \code{\link{simulate}}.
 }
 \usage{
   species(states, trans = transitionMatrix(), name = "<unnamed>")
 }
 \arguments{
-  \item{states}{a list of \code{state}s characterizing the behavior of this species, or a single \code{state}, for simple movements}
+  \item{states}{a list of \code{state}s characterizing the behavior of the species, or a single \code{state}, for simple movements}
   \item{trans}{a square state transition matrix, defining the probability of changing between states. For convenience, use the function \code{\link{transitionMatrix}}. Can be omitted if this species has a single-state movement.}
   \item{name}{the name of the species}
 }
