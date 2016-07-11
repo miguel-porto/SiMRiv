@@ -2,7 +2,7 @@
 \alias{simulate}
 \title{Simulate movements in river networks or heterogeneous landscapes}
 \description{
-  Fast and spatially-explicit simulation of multi-state movements of individuals created with the function \code{\link{species}} in an optional landscape resistance raster.
+  Performs fast and spatially-explicit simulation of multi-state (\cite{Morales et al. 2004}) random movements of individuals created with the function \code{\link{species}} in an optional landscape resistance raster.
 }
 \usage{
 simulate(individuals, time, coords = NULL
@@ -17,28 +17,30 @@ simulate(individuals, time, coords = NULL
   \item{states}{Not implemented yet. An optional numeric vector of length N giving the initial state of each individual.}
 }
 \details{
-  Performs a mechanistic simulation of the movement of the given individual(s) simultaneously, in the given landscape raster defining physical resistance values.
+  Performs a mechanistic simulation of the movement of the given individual/s (when more than one individual is given,
+  their movements are simulated simultaneously) in the given landscape raster defining physical resistance values.
   At present, multiple individuals do not interact, but in the upcoming version it will be possible to
   define positive and negative interactions between simulated individuals, thus accounting for spatial bias.
 
   The simulation runs in a series of micro-steps, and is intended to be a high-resolution simulation
   (which can be later sampled with \code{\link{sampleMovement}} to emulate real field data, e.g. telemetry data).
   
-  In summary, in each micro-step the individual chooses a random direction which is based on the previous step heading and
+  In summary, at each micro-step the individual chooses a random direction which is based on the previous step heading and
   in the resistance context at the current position, such that it will avoid heading to areas with high resistance.
   This evaluation depends on the individual's perception window in the current movement state.
   At each step, a test to see if the individual changes its state is also performed, based on the provided \code{\link{transitionMatrix}}.
-  Each state has its own perception window, step length and angular correlation (with previous step heading).
+  Each state may have its own perception window, step length and angular correlation (with previous step heading). It's up to the user the
+  definition of these values (e.g., expert- or literature-based).
 
   In more detail, in each of the \code{time} steps, the procedure is as follows:
   \enumerate{
-    \item{Draw state for this step according to state transition matrix and previous state}
-    \item{Compute empirical probability density from the landscape raster values around current position (resistance component). See below.}
-    \item{Compute probability density given the previous step heading and correlation defined in the current state (correlated walk component)}
-    \item{Intersect the resistance component with the correlated walk component to make a compound probability density}
+    \item{Draw state for the current step according to state transition matrix and previous state}
+    \item{Compute empirical probability density for changing heading, from the landscape raster values around current position (resistance component). See details below.}
+    \item{Compute probability density for changing heading, given the previous step heading and correlation defined in the current state (correlated walk component)}
+    \item{Intersect the resistance component with the correlated walk component to make a compound probability density for changing heading}
     \item{Draw the new heading from the probability density distribution computed above}
     \item{Compute the length of the step that will be taken as a fraction of current step's defined length proportional to mean resistance of the starting and ending points in the chosen heading}
-    \item{Move to the new position}
+    \item{Move to the new position, defined by the drawn heading and length of step.}
   }
   \subsection{Details of the simulation algorithm}{
     \subsection{The landscape resistance raster}{
@@ -47,8 +49,8 @@ simulate(individuals, time, coords = NULL
       availability, habitat suitability and points of attraction/repulsion, allowing to conduct simulations
       with various types of spatial bias.
 
-      A careful choice of pixel size must be taken for the resistance raster. If rasterizing from vector lines (e.g. river network)
-      , be sure to adjust the pixel size so that there are no gaps between river pixels and all pixels of the river are connected
+      A careful choice of pixel size must be taken for the resistance raster. If rasterizing from vector lines (e.g. river network),
+      please be sure to adjust the pixel size so that there are no gaps between river pixels and all pixels of the river are connected
       orthogonally.
     }
     \subsection{The empirical probability density}{
@@ -62,14 +64,14 @@ simulate(individuals, time, coords = NULL
 \value{
 	A matrix with 3 columns for each simulated individual, in the order x1, y1, state1, x2, y2, state2, ...; and the same number of rows as the simulation length (given by \code{time}).
 }
-\note{The returned object will change in the future.}
+\note{The structure of the returned object will change in the upcoming version.}
 \seealso{
   \code{\link{species}}, \code{\link{sampleMovement}}.
 }
 \examples{
 library(SiMRiv)
 
-## A classic: simple random walk
+## A classic: simple random walk (Brownian motion)
 ## i.e. single-state uncorrelated movement in an homogeneous landscape
 ######################################################################
 
@@ -86,9 +88,9 @@ plot(sim[,1:2], type="l", asp=1, xlim=range(sim), ylim=range(sim), col=2)
 lines(sim[,4:5], col=3)
 
 ## Another classic: Levy walk-like movement
-## i.e. two-state movement: random walk
-## with bursts of correlated random walk
-###########################################
+## i.e. two-state movement: composition of small-scale random walks
+## with bursts of longer, correlated random walks
+###################################################################
 
 LevyWalker <- species(
     list(state.randomWalk(),
@@ -98,8 +100,8 @@ LevyWalker <- species(
 sim <- simulate(LevyWalker, 10000)
 plot(sim, type="l", asp=1)
 
-## Heterogeneous landscapes: fish in a river network
-####################################################
+## Linear habitats, e.g. fish in a river network
+################################################
 
 data(river)   # sample river raster in a fish's perspective, i.e.
               # resistance is 0 within the river, 1 otherwise.
@@ -128,6 +130,9 @@ dev.off()
 # library(ks)
 # d <- kde(sim[,1:2])
 # plot(d, disp = "image", add=TRUE, col = rgb(1, 0, 0, seq(0, 1, len = 15)))
+}
+\references{
+Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., & Fryxell, J. M. 2004. Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.
 }
 \keyword{simulation}
 

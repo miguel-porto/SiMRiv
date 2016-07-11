@@ -45,4 +45,6 @@ resamp <- sampleMovement(sim,50)
 plot(sim, type="l", asp=1, col = "#777777")
 lines(resamp$relocs, col = "red")
 }
-\keyword{file}
+\references{
+  Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.
+}

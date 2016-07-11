@@ -45,11 +45,11 @@ setValidity("state",function(object) {
 })
 
 
-state.resting<-function() {
+state.Resting<-function() {
 	return(state(0,steplen=0,name="Resting"))
 }
 
-state.randomWalk<-function() {
+state.RW<-function() {
 	return(state(0,steplen=1,name="Random Walk"))
 }
 

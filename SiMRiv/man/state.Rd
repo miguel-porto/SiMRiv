@@ -1,7 +1,7 @@
 \name{state}
 \alias{state}
-\alias{state.resting}
-\alias{state.randomWalk}
+\alias{state.Resting}
+\alias{state.RW}
 \alias{state.CRW}
 \title{Define a movement state}
 \description{
@@ -9,8 +9,8 @@
 }
 \usage{
   state(correlation, pwind = perceptionWindow("circular", 0), steplen = 1, name = "")
-  state.resting()         # stopped state
-  state.randomWalk()      # uniformly random walk, independent of resistance
+  state.Resting()         # stopped state
+  state.RW()              # uniformly random walk, independent of resistance
   state.CRW(correlation)  # correlated random walk, independent of resistance
 }
 \arguments{
