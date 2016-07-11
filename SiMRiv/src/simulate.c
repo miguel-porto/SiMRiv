@@ -1,4 +1,4 @@
-//#define USEOPENMP
+//#define USEOPENMP		FIXME: some bug with OMP in i386 architecture...
 #ifdef USEOPENMP
 #include <omp.h>
 #endif
@@ -7,8 +7,8 @@ SEXP rho;
 
 SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _timespan,SEXP _resist,SEXP envir) {
 	#ifdef USEOPENMP
-	omp_set_num_threads(omp_get_num_procs ( )));
-	Rprintf("Using OpenMP with %d threads.\n",omp_get_num_procs ( ));
+	omp_set_num_threads(omp_get_num_procs ( ));
+	Rprintf("Using multicore processing with %d threads.\n",omp_get_num_procs ( ));
 	#endif
 	rho=envir;
 	RASTER *resist=NULL;
@@ -289,7 +289,6 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 		step=percwind->radius/ACCUMULATORRESOLUTION;
 		#pragma omp parallel
 		{
-//			Rprintf("num threads: %d\n",omp_get_num_threads());
 			int i,j;
 			float tcos,tsin,ang,sum;
 			POINT tmppos;
