@@ -1,5 +1,6 @@
-# SiMRiv
-Simulation and analysis of multi-state Movements in River networks and heterogeneous landscapes in R
+# SiMRiv (R package)
+Simulation and analysis of multi-state Movements in River networks and heterogeneous landscapes in R.
+
 This package provides functions to generate spatially-explicit simulations of multi-state movements
 in heterogeneous landscapes, based on "resistance" rasters. Although originally conceived and designed to fill
 the gap of softwares simulating trajectories of species constrained to linear, dendritic habitats
