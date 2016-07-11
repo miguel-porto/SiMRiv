@@ -70,7 +70,7 @@ simulate(individuals, time, coords = NULL
 \examples{
 library(SiMRiv)
 
-## A classic: simple random walk (Brownian motion)
+## A classic: simple random walk (Brownian motion) (Turchin 1998)
 ## i.e. single-state uncorrelated movement in an homogeneous landscape
 ######################################################################
 
@@ -87,7 +87,7 @@ sim <- simulate(list(rand.walker, rand.walker), 10000)
 plot(sim[,1:2], type="l", asp=1, xlim=range(sim), ylim=range(sim), col=2)
 lines(sim[,4:5], col=3)
 
-## Another classic: Levy walk-like movement (Sims et al. 2008)
+## Another classic: Levy walk-like movement (e.g. Sims et al. 2008)
 ## i.e. two-state movement: composition of small-scale random walks
 ## with bursts of longer, correlated random walks
 ###################################################################
@@ -142,6 +142,7 @@ dev.off()
     \item{McClintock, B. T., King, R., Thomas, L., Matthiopoulos, J., McConnell, B. J., & Morales, J. M. 2012. A general discrete-time modeling framework for animal movement using multistate random walks. Ecological Monographs, 82(3), 335-349.}
     \item{Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., & Fryxell, J. M. 2004. Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.}
     \item{Sims, D. W., Southall, E. J., Humphries, N. E., Hays, G. C., Bradshaw, C. J., Pitchford, J. W., ... & Morritt, D. 2008. Scaling laws of marine predator search behaviour. Nature, 451(7182), 1098-1102.}
+    \item{Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.}
   }
 }
 \keyword{simulation}

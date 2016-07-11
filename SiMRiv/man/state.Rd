@@ -15,7 +15,6 @@
                      # independent of resistance
   state.CRW(correlation)  # correlated random walk,
                           # independent of resistance
-                          # see Codling et al. (2008)
 }
 \arguments{
   \item{correlation}{turning angle concentration, a value between 0 (uniform distribution resulting in random walk) and 1 (only one value possible resulting in a straight line path)}
@@ -29,12 +28,14 @@
 \note{
   The perception window radius and step length must be adequate to the resolution of the resistance raster (if provided in simulations).
   If no raster will be provided, then the perception window is irrelevant, and the step length has solely a relative meaning (in relation to other states or other species).
+  
+  For a review of different random walks, see Codling et al. (2008)
 }
 \seealso{
   \code{\link{species}}, \code{\link{perceptionWindow}}.
 }
 \examples{
-## a correlated random walk affected by landscape
+## a correlated random walk influenced by landscape
 
 state(0.97, perceptionWindow("cir", 500), 10, "CorrelatedRW")
 }

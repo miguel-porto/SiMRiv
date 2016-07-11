@@ -8,10 +8,6 @@
 #define ANGLECENTER			25			// MUST be = (ANGLERES-1)/2
 #define ANGLESTEP			0.1231997f	// MUST be = 2*PI/(ANGLERES)
 #define ACCUMULATORRESOLUTION	10		// resolution of the raster accumulator function. Each step is divided into this many microsteps.
-/*#define EMPIRICALPDFRES		20			/* spatial resolution used to compute the discrete angular PDF, in coordinate units.
-										This is the distance step (from the current position of an individual) at which
-										raster values are extracted and used in the computations of the empirical PDFs.
-										*/
 #define TOLERANCECIRCNORM	0.00001		// circular normal is the sum of an infinite series. this is the tolerance to say when to stop summing.
 
 typedef enum {false=0, true=1} bool;
@@ -22,11 +18,6 @@ typedef enum {CIRCULAR,GAUSSIAN} PERCEPTIONWINDOWTYPE;
 typedef struct {
 	double x,y;		// this has to be double. if float, not enough precision for very small steps.
 } POINT;
-
-
-/*typedef struct {
-	float concentration;			// concentration parameter of the circular gaussian (von mises). zero means an uncorrelated random walk
-} TURNINGANGLEDISTRIBUTION;*/
 
 typedef struct {
 	float radius;			// radius or sigma, depending on the type NOTE: if gaussian, the computations should be done at least until 4*sigma

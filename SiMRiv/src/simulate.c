@@ -20,7 +20,7 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 	int timespan=INTEGER_POINTER(_timespan)[0],*start=INTEGER_POINTER(_starting_positions);
 	double *prelocs;
 	unsigned int ninds=LENGTH(_individuals),i,j,k,time,tmp1,tmp2;
-	SEXP relocs,tmp,tmp3,tmp4;
+	SEXP relocs,tmp3,tmp4;
 	const char *tmp5;
 	float curangtrans;
 // pointers to individual data
@@ -79,12 +79,11 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 	
 // START SIMULATION
 	{
-		PDF tmpPDF,tmpintermPDF,tmprotPDF,dummyPDF;
-		CDF tmpCDF,tmpMultCDF;
+		PDF tmpPDF,tmprotPDF;
+		CDF tmpMultCDF;
 		double **curtrans=malloc(sizeof(double*)*ninds);
-		unsigned int c;
 		unsigned long r,s,k;
-		float lengthmove,tmpang;//,ecdfstep=getEmpiricalCDFStep();
+		float lengthmove;//,ecdfstep=getEmpiricalCDFStep();
 		STATE *tmpstate;
 // assign initial states and angles and starting positions
 		for(i=0;i<ninds;i++) {
@@ -292,7 +291,7 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 		{
 //			Rprintf("num threads: %d\n",omp_get_num_threads());
 			int i,j;
-			float tcos,tsin,wei,ang,sum;
+			float tcos,tsin,ang,sum;
 			POINT tmppos;
 			double tmp;
 			
@@ -330,7 +329,7 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 		{
 //			Rprintf("num threads: %d\n",omp_get_num_threads());
 			int i,j;
-			float tcos,tsin,wei,ang,sum;
+			float tcos,tsin,ang,sum;
 			POINT tmppos;
 			double tmp;
 			
@@ -392,10 +391,9 @@ SEXP stepRasterAccumulator(SEXP relocs,SEXP _resist,SEXP envir) {
 	SEXP out;
 	double *prelocs=NUMERIC_POINTER(relocs),tmp,*pout;
 	//float microstep=getEmpiricalCDFStep();
-	double tcos,tsin;
 	int nrelocs=(int)INTEGER_POINTER(GET_DIM(relocs))[0]-1;		// -1 cause the loop excludes the last one
 	double vx,vy;
-	float hyp,sum;
+	float sum;
 	POINT tmppos,endpoint;
 	int i,j,nsteps;
 	
