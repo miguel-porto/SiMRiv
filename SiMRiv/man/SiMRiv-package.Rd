@@ -5,8 +5,8 @@
   This package provides functions to generate and analyze spatially-explicit simulations of multi-state movements
   in heterogeneous landscapes, based on "resistance" rasters. Although originally conceived and designed to fill
   the gap of softwares simulating trajectories of species constrained to linear, dendritic habitats
-  (e.g., river networks), the simulation algorithm is built to be highly flexible. Thus, the user will be able to
-  use the package to simulate movements either in homogeneous landscapes, heterogeneous landscapes (e.g. semi-aquatic
+  (e.g., river networks), the simulation algorithm is built to be highly flexible and can be applied to any (aquatic, semi-aquatic or terrestrial) organism.
+  Thus, the user will be able to use the package to simulate movements either in homogeneous landscapes, heterogeneous landscapes (e.g. semi-aquatic
   animal in a riverscape), or even in highly contrasted landscapes (e.g. fish in a river network). The algorithm
   and its input parameters are the same for all cases, so that results are comparable.
   Simulated trajectories can then be used as null models to test e.g. for species site fidelity (\cite{Powell 2000}) and
