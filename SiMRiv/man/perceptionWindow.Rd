@@ -23,5 +23,7 @@ perceptionWindow(type = "circular", radius)
   \code{\link{state}}.
 }
 \references{
-  Powell, R.A. (2000). Animal home ranges and territories and home range estimators. In: Research techniques in animal ecology: controversies and consequences, 442. Boitani, L., & Fuller, T. (Eds.). Columbia university press, New York: pp.65-110.
+  \itemize{
+    \item{Powell, R. A. 2000. Animal home ranges and territories and home range estimators. In: Research techniques in animal ecology: controversies and consequences, 442. Boitani, L., & Fuller, T. (Eds.). Columbia university press, New York: pp.65-110.}
+  }
 }

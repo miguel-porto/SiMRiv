@@ -37,6 +37,7 @@
 }
 \examples{
 library(SiMRiv)
+
 LevyWalker <- species(
   list(state.RW(),
   state.CRW(0.99)),
@@ -48,5 +49,7 @@ plot(sim, type="l", asp=1, col = "#777777")
 lines(resamp$relocs, col = "red")
 }
 \references{
-  Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.
+  \itemize{
+    \item{Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.}
+  }
 }

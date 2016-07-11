@@ -74,8 +74,9 @@ library(SiMRiv)
 ## i.e. single-state uncorrelated movement in an homogeneous landscape
 ######################################################################
 
-rand.walker <- species(state.RW())   # a single state, other parameters
-                                             # set to defaults
+## a single state, other parameters set to defaults
+
+rand.walker <- species(state.RW())
 sim <- simulate(rand.walker, 10000)
 plot(sim, type="l", asp=1)
 
@@ -104,11 +105,13 @@ plot(sim, type="l", asp=1)
 
 ## sample river raster in a fish's perspective,
 ## i.e. resistance is 0 within the river, 1 otherwise.
+
 data(river)
 
 ## let's try a Levy-like movement in a river network
 ## note: perception window radii and step lengths must be
 ## adequate to the raster resolution!
+
 LevyWalker <- species(list(
     state(0, perceptionWindow("cir", 100), 10, "RandomWalk")
     ,state(0.97, perceptionWindow("cir", 500), 20, "CorrelatedRW")
@@ -135,7 +138,9 @@ dev.off()
 #    , col = rgb(1, 0, 0, seq(0, 1, len = 15)))
 }
 \references{
-Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., & Fryxell, J. M. 2004. Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.
+  \itemize{
+    \item{Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., & Fryxell, J. M. 2004. Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.}
+  }
 }
 \keyword{simulation}
 
