@@ -12,7 +12,7 @@
 }
 \details{
   The transition matrix (Markov matrix) is a square, non-symmetric matrix with all elements between 0 and 1, and whose rows must sum to 1 (but not columns).
-  It defines the probability of the individual changing from each state to another, and this
+  It defines the probability of the individual changing from each behavioral state to another, and this
   is tested in each time step of the simulation, hence probabilities should be small.
   
   This function is just a helper to create such matrix.

@@ -12,8 +12,7 @@ simulate(individuals, time, coords = NULL
   \item{individuals}{a \code{species} or a list of N \code{species} whose movements are to be simulated}
   \item{time}{the number of time steps to be simulated}
   \item{coords}{a N x 2 matrix giving the initial coordinates of the simulation, for each individual. Can be a vector of the form c(x, y) if only one individual is provided.}
-  \item{resist}{an optional landscape resistance raster of class
-  \code{RasterLayer} (package \code{raster}). If not provided, movements are simulated in an homogeneous environment.}
+  \item{resist}{an optional landscape resistance raster of class \code{RasterLayer}. If not provided, movements are simulated in an homogeneous environment.}
   \item{states}{Not implemented yet. An optional numeric vector of length N giving the initial state of each individual.}
 }
 \details{
@@ -103,33 +102,37 @@ plot(sim, type="l", asp=1)
 ## Linear habitats, e.g. fish in a river network
 ################################################
 
-data(river)   # sample river raster in a fish's perspective, i.e.
-              # resistance is 0 within the river, 1 otherwise.
+## sample river raster in a fish's perspective,
+## i.e. resistance is 0 within the river, 1 otherwise.
+data(river)
 
 ## let's try a Levy-like movement in a river network
-
+## note: perception window radii and step lengths must be
+## adequate to the raster resolution!
 LevyWalker <- species(list(
-  state(0, perceptionWindow("cir", 100), 10, "RandomWalk")
-    # perception window radius (100) and step length (20) must be
-    # adequate to the raster resolution!
-  ,state(0.97, perceptionWindow("cir", 500), 20, "CorrelatedRW")  # idem
+    state(0, perceptionWindow("cir", 100), 10, "RandomWalk")
+    ,state(0.97, perceptionWindow("cir", 500), 20, "CorrelatedRW")
 ), transitionMatrix(0.005, 0.001))
 
-sim <- simulate(LevyWalker, 100000, resist = river, coords = c(280635, 505236))
+sim <- simulate(LevyWalker, 100000, resist = river
+    , coords = c(280635, 505236))
 
-## plot movement; we use a high-res TIFF so that it can be viewed in detail
+## plot movement; we use a high-res TIFF so that it
+## can be viewed in detail
 
 tiff("movement.tif", wid=10000, hei=10000, comp="lzw")
 par(mar = c(0, 0, 0, 0))
 plot(river, asp = 1, col = gray(seq(1, 0.5, len = 2))
-  , ylim = range(sim[,2]), xlim = range(sim[,1]), axes = FALSE)
+    , ylim = range(sim[,2]), xlim = range(sim[,1]), axes = FALSE)
 lines(sim, lwd = 1.5, col = "#0000ffcc")
 dev.off()
 
-## if we want the kernel density overlaid, uncomment these and put before dev.off()
+## if we want the kernel density overlaid,
+## uncomment these and put before dev.off()
 # library(ks)
 # d <- kde(sim[,1:2])
-# plot(d, disp = "image", add=TRUE, col = rgb(1, 0, 0, seq(0, 1, len = 15)))
+# plot(d, disp = "image", add=TRUE
+#    , col = rgb(1, 0, 0, seq(0, 1, len = 15)))
 }
 \references{
 Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., & Fryxell, J. M. 2004. Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.

@@ -8,11 +8,13 @@
   Defines a behavioral state to be used when creating \code{\link{species}}.
 }
 \usage{
-  state(correlation, pwind = perceptionWindow("circular", 0), steplen = 1, name = "")
-  state.Resting()         # still state
-  state.RW()              # uniform random walk (brownian motion),
+  state(correlation, pwind = perceptionWindow("circular", 0)
+    , steplen = 1, name = "")
+  state.Resting()    # still state
+  state.RW()         # uniform random walk (brownian motion),
+                     # independent of resistance
+  state.CRW(correlation)  # correlated random walk,
                           # independent of resistance
-  state.CRW(correlation)  # correlated random walk, independent of resistance
 }
 \arguments{
   \item{correlation}{turning angle concentration, a value between 0 (uniform distribution resulting in random walk) and 1 (only one value possible resulting in a straight line path)}
@@ -31,9 +33,13 @@
 
 state(0.97, perceptionWindow("cir", 500), 10, "CorrelatedRW")
 
-## note that perception window radius (500) and step length (10) must be adequate
-## to the resolution of the resistance raster (if provided in simulations).
-## If no raster will be provided, then the perception window is irrelevant, and
-## the step length has solely a relative meaning (in relation to other states or other
+## note that perception window radius (500) and
+## step length (10) must be adequate to the
+## resolution of the resistance raster (if
+## provided in simulations).
+## If no raster will be provided, then the
+## perception window is irrelevant, and the
+## step length has solely a relative meaning
+## (in relation to other states or other
 ## species).
 }

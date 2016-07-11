@@ -2,7 +2,7 @@
 \alias{species}
 \title{Create a species}
 \description{
-  Creates a species, characterized by one or more behavioural states, to be simulated with function \code{\link{simulate}}.
+  Creates a species, characterized by one or more behavioral states, to be simulated with function \code{\link{simulate}}.
 }
 \usage{
   species(states, trans = transitionMatrix(), name = "<unnamed>")
@@ -26,10 +26,10 @@
 \examples{
 ## example from 'simulate'
 
+## note: perception window radii and step lengths must be
+## adequate to the raster resolution!
 LevyWalker <- species(list(
-  state(0, perceptionWindow("cir", 100), 10, "RandomWalk")   # perception window radius (100)
-                                                             # and step length (10) must be
-                                                             # adequate to the raster resolution!
-  ,state(0.97, perceptionWindow("cir", 500), 20, "CorrelatedRW")  # idem
+    state(0, perceptionWindow("cir", 100), 10, "RandomWalk")
+    ,state(0.97, perceptionWindow("cir", 500), 20, "CorrelatedRW")
 ), transitionMatrix(0.005, 0.001))
 }
