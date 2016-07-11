@@ -2,7 +2,7 @@
 \alias{simulate}
 \title{Simulate movements in river networks or heterogeneous landscapes}
 \description{
-  Performs fast and spatially-explicit simulation of multi-state (\cite{Morales et al. 2004}) random movements of individuals created with the function \code{\link{species}} in an optional landscape resistance raster.
+  Performs fast and spatially-explicit simulation of multi-state random movements (\cite{Morales et al. 2004, McClintock et al. 2012}) of individuals created with the function \code{\link{species}} in an optional landscape resistance raster.
 }
 \usage{
 simulate(individuals, time, coords = NULL
@@ -87,7 +87,7 @@ sim <- simulate(list(rand.walker, rand.walker), 10000)
 plot(sim[,1:2], type="l", asp=1, xlim=range(sim), ylim=range(sim), col=2)
 lines(sim[,4:5], col=3)
 
-## Another classic: Levy walk-like movement
+## Another classic: Levy walk-like movement (Sims et al. 2008)
 ## i.e. two-state movement: composition of small-scale random walks
 ## with bursts of longer, correlated random walks
 ###################################################################
@@ -139,7 +139,9 @@ dev.off()
 }
 \references{
   \itemize{
+    \item{McClintock, B. T., King, R., Thomas, L., Matthiopoulos, J., McConnell, B. J., & Morales, J. M. 2012. A general discrete-time modeling framework for animal movement using multistate random walks. Ecological Monographs, 82(3), 335-349.}
     \item{Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., & Fryxell, J. M. 2004. Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.}
+    \item{Sims, D. W., Southall, E. J., Humphries, N. E., Hays, G. C., Bradshaw, C. J., Pitchford, J. W., ... & Morritt, D. 2008. Scaling laws of marine predator search behaviour. Nature, 451(7182), 1098-1102.}
   }
 }
 \keyword{simulation}
