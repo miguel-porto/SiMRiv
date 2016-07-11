@@ -1,0 +1,15 @@
+useDynLib(SiMRiv)
+importFrom("methods", "new", "show")
+importFrom("stats", "runif")
+importFrom("raster", "extent")
+
+export(perceptionWindow)
+export(state)
+export(transitionMatrix)
+export(state.resting)
+export(state.randomWalk)
+export(state.CRW)
+export(species)
+export(sampleMovement)
+export(simulate)
+
