@@ -1,5 +1,5 @@
 # SiMRiv (R package)
-Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks and Heterogeneous Landscapes in R.
+**Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks and Heterogeneous Landscapes in R.**
 
 Provides functions to generate and analyze spatially-explicit simulations of multi-state movements in heterogeneous landscapes, based on "resistance" rasters.
 Although originally conceived and designed to fill the gap of softwares simulating spatially-explicit trajectories of species constrained to linear,
