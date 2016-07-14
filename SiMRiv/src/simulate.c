@@ -13,6 +13,8 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 	rho=envir;
 	RASTER *resist=NULL;
 	double rasterRes;
+	GetRNGstate();
+	
 	if(_resist!=R_NilValue) {
 		resist=openRaster(_resist,rho);
 		rasterRes=NUMERIC_POINTER(getRasterRes(_resist,rho))[0];	// TODO handle cases when there is more than one raster (minimum resolution!)
@@ -89,7 +91,7 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 		for(i=0;i<ninds;i++) {
 			ind[i].curpos.x=start[i];
 			ind[i].curpos.y=start[i + ninds];
-			ind[i].curstate=urand32(0,ind[i].nstates-1);		//rand() % ind[i].nstates;
+			ind[i].curstate=runif(0,ind[i].nstates-1);		//rand() % ind[i].nstates;
 			
 			ind[i].curang=drawRandomAngle(NULL);	// uniform random angle
 			for(j=0;j<ind[i].nstates;j++) {
@@ -113,7 +115,7 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 // LOOP FOR EACH INDIVIDUAL			
 			for(i=0,tmp2=0;i<ninds;i++,tmp2+=timespan) {	// tmp2 is just a relative pointer to output matrix
 // draw new state according to transition matrix
-				r=urand32(0,MULTIPLIER-1);
+				r=runif(0,MULTIPLIER-1);
 				for(k=0,s=(unsigned long)(curtrans[i][ind[i].curstate]*MULTIPLIER);k<=ind[i].nstates && r>=s;k++,s+=(unsigned long)(curtrans[i][ind[i].curstate + k*ind[i].nstates]*MULTIPLIER)) {}
 				ind[i].curstate=k;
 // Rprintf("curstate %d random %d newstate %d\n",ind[i].curstate,r,k);
@@ -129,8 +131,10 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 				computeEmpiricalResistancePDF(ind[i].curpos, resist, &tmpstate->pwind, tmpPDF);
 				if(tmpPDF[0]!=-1) {		// resistance is heterogeneous
 // multiply rotated base PDF by empirical PDF and compute cumulative PDF directly
-					for(j=1,tmpMultCDF[0]=(unsigned long)(tmprotPDF[0]*tmpPDF[0]*MULTIPLIER); j<ANGLERES; j++)
-						tmpMultCDF[j]=tmpMultCDF[j-1] + (long)(tmprotPDF[j]*tmpPDF[j]*MULTIPLIER);
+/*					for(j=1,tmpMultCDF[0]=1;j<ANGLERES;j++)
+						tmpMultCDF[j]=tmpMultCDF[j-1] + 1;*/
+					for(j=1, tmpMultCDF[0] = (unsigned long)(tmprotPDF[0] * tmpPDF[0] * MULTIPLIER); j<ANGLERES; j++)
+						tmpMultCDF[j] = tmpMultCDF[j-1] + (long)(tmprotPDF[j] * tmpPDF[j] * MULTIPLIER);
 //Rprintf("New\n");
 /*for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmpPDF[j]);
 Rprintf("\n");*/
@@ -144,6 +148,7 @@ Rprintf("\n");*/
 						ind[i].curang=drawRandomAngle(NULL);	// here we just draw a uniform random angle
 					else
 						ind[i].curang=drawRandomAngle(tmpMultCDF);
+
 				} else {	// ignore resistance when resistance is equal in all directions
 					for(j=1,tmpMultCDF[0]=(unsigned long)(tmprotPDF[0]*MULTIPLIER);j<ANGLERES;j++)
 						tmpMultCDF[j]=tmpMultCDF[j-1] + (unsigned long)(tmprotPDF[j]*MULTIPLIER);
@@ -175,6 +180,7 @@ Rprintf("\n");*/
 		free(curtrans);
 	}
 	
+	PutRNGstate();
 	
 	UNPROTECT(1);
 	for(i=0;i<ninds;i++) {
@@ -245,16 +251,30 @@ float drawRandomAngle(CDF cdf) {
 //return 0;
 //return (ANGLERES-1);
 	if(cdf==NULL) {
-		return urand32(0,ANGLERES-1);
+		return runif(0, ANGLERES-1);
 	} else {
-		if(cdf[ANGLERES-1]==0) return urand32(0,ANGLERES-1);
-		return drand32(ANGLERES,cdf);
-/*		
-		int i;
-		int r=rand32() % cdf[ANGLERES-1];	// FIXME this may be biased for large cdf values
+		if(cdf[ANGLERES-1]==0) return runif(0, ANGLERES-1);
+		return densityRand(ANGLERES, cdf);
+/*		int i;
+		int r = unif_rand() * cdf[ANGLERES-1];
+		//int r=rand32() % cdf[ANGLERES-1];	// FIXME this may be biased for large cdf values
 		for(i=0;i<ANGLERES && r>cdf[i];i++) {}
-		return i*ANGLESTEP-PI;*/
+		return i;*/
 	}
+}
+
+int densityRand(int nValues, unsigned long *cdf) {
+	long lo, hi, mid;
+	float r;
+	lo = 0;
+	hi = nValues - 1;
+	r = cdf[hi] * unif_rand();
+
+	while(lo < hi) {
+		mid = (lo + hi) / 2;
+		if (r < cdf[mid]) hi = mid; else lo = mid + 1;
+	}
+	return lo;
 }
 
 /**
@@ -295,16 +315,15 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 			double tmp;
 			
 			#pragma omp for
-			for(i=0;i<ANGLERES;i++) {	// make a whole circle
+			for(i=0; i<ANGLERES; i++) {	// make a whole circle
 				ang=-PI+i*ANGLESTEP;
 				tmppos=curpos;
 		// for each angle, sum the resistance values along the radial line centered on curpos
 				tcos=cos(ang)*step;	// TODO create a look-up table to speed up things here? or maybe not?
 				tsin=sin(ang)*step;
 
-				for(j=0,sum=0;j<percwind->radius;j+=step) {
+				for(j=0, sum=0; j<percwind->radius; j += step) {
 					tmp=extractRasterValue(resist,tmppos.x,tmppos.y);
-
 					if(isnan(tmp) || tmp==NA_REAL || tmp==1)
 						sum+=0;
 					else {
@@ -314,8 +333,7 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 					tmppos.x+=tcos;
 					tmppos.y+=tsin;
 				}
-				
-				pdf[i]=sum;
+				pdf[i] = sum;
 	//			cdf[i]=(unsigned long)(sum*MULTIPLIER);
 //				ang+=ANGLESTEP;
 			}
@@ -360,6 +378,7 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 		break;
 		
 	default:
+		Rprintf("PW: %d\n", (int)percwind->type);
 		error("Perception window type not implemented yet");
 		break;
 	}

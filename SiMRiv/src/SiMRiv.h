@@ -1,7 +1,8 @@
 #include <R.h>
 #include <Rdefines.h>
 #include <Rinternals.h>
-#include "rand32.h"
+#include <Rmath.h>
+//#include "rand32.h"
 #define SCALARCHAR(x)		Rf_ScalarString(mkChar(x))
 #define MULTIPLIER			1000000		// multiplier for bounded values (probabilites)
 #define ANGLERES			51			// PDFs are discrete here. this is the angular resolution used for discrete circular PDFs. MUST be odd.
@@ -68,6 +69,7 @@ double extractRasterValueNoNaN(RASTER *raster,float x,float y);
 void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW *percwind,PDF pdf);
 float computeLengthMove(double baseStepLength,POINT curpos,RASTER *resist,float angle);
 void rotatePDF(PDF pdf,PDF out,float ang);
+int densityRand(int nValues, unsigned long *cdf);
 
 // Kernel density
 
