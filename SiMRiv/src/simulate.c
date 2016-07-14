@@ -131,8 +131,6 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 				computeEmpiricalResistancePDF(ind[i].curpos, resist, &tmpstate->pwind, tmpPDF);
 				if(tmpPDF[0]!=-1) {		// resistance is heterogeneous
 // multiply rotated base PDF by empirical PDF and compute cumulative PDF directly
-/*					for(j=1,tmpMultCDF[0]=1;j<ANGLERES;j++)
-						tmpMultCDF[j]=tmpMultCDF[j-1] + 1;*/
 					for(j=1, tmpMultCDF[0] = (unsigned long)(tmprotPDF[0] * tmpPDF[0] * MULTIPLIER); j<ANGLERES; j++)
 						tmpMultCDF[j] = tmpMultCDF[j-1] + (long)(tmprotPDF[j] * tmpPDF[j] * MULTIPLIER);
 //Rprintf("New\n");
