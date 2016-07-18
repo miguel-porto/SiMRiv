@@ -77,8 +77,6 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 //Rprintf("sp: %s\n",STRING_VALUE(GET_SLOT(ind[i].pspecies,SCALARCHAR("name"))));
 	}
 
-//	unitStep=(float)minimumRes * UNITSTEPRATIO;
-	
 // START SIMULATION
 	{
 		PDF tmpPDF,tmprotPDF;
