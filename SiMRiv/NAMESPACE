@@ -1,7 +1,7 @@
 useDynLib(SiMRiv)
 importFrom("methods", "new", "show")
 importFrom("stats", "runif")
-importFrom("raster", "extent")
+importFrom("sp", "proj4string")
 
 export(perceptionWindow)
 export(state)
@@ -12,4 +12,4 @@ export(state.CRW)
 export(species)
 export(sampleMovement)
 export(simulate)
-
+export(resistanceFromLineShape)

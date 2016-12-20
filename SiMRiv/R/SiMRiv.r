@@ -43,13 +43,26 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 	.Call("_simulate_individuals",individuals,coords,as.integer(time),resist,new.env())
 }
 
-
-#resistanceFromSHP<-function(shp,res,value=1) {
-#	s=readShapeSpatial(shp)
-#	a=raster(ext=extent(s),crs=proj4string(s),resolution=res)
-#	b=rasterize(s,a,value)
-#	return(b)
-#}
+resistanceFromLineShape <- function(shp, res, binary = is.na(field), field = NA, buffer = NA, margin = 0, ...) {
+	if(missing(res)) stop("Raster resolution must be given")
+	l <- rgdal::readOGR(shp, sub(".shp$", "", shp, ignore.case = TRUE))
+	if(!is.na(buffer)) {
+		b <- rgeos::gBuffer(l, width = buffer, byid = (!binary))
+	} else {
+		b <- l
+	}
+	er <- raster(ext = extent(b) + margin, crs = proj4string(l), resolution = res)
+	if(binary) {
+		r <- rasterize(b, er, background = 1, field = 0)
+	} else {
+		r <- rasterize(b, er, field, ...)
+	}
+	
+	
+	if(cellStats(r, min) < 0 || cellStats(r, max) > 1)
+		warning("Resistance values must be in the interval [0, 1]. Use reclassify to fix this.")
+	return(r)
+}
 
 sampleMovement<-function(relocs, resolution = 1, resist = NULL) {
 	if(resolution<1) stop("Resolution must be at least 1 time tick.")
