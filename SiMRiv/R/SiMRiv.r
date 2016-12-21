@@ -1,4 +1,5 @@
 simulate <- function(individuals, time, coords = NULL, states = NULL, resist = NULL) {
+	# TODO: different resistance raster for each individual, using the species' resistanceMap
 	if(mode(time)!="numeric") stop("time must be numeric")
 	if(!is.null(coords)) {
 		if(!inherits(coords,"matrix") || dim(coords)[2]!=2) {
@@ -43,21 +44,58 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 	.Call("_simulate_individuals",individuals,coords,as.integer(time),resist,new.env())
 }
 
-resistanceFromLineShape <- function(shp, res, binary = is.na(field), field = NA, buffer = NA, margin = 0, ...) {
+resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
+	, field = NA, background = 1, buffer = NA, margin = 0, mapvalues = NA, ...) {
 	if(missing(res)) stop("Raster resolution must be given")
-	l <- rgdal::readOGR(shp, sub(".shp$", "", shp, ignore.case = TRUE))
-	if(!is.na(buffer)) {
-		b <- rgeos::gBuffer(l, width = buffer, byid = (!binary))
+	if(inherits(shp, "character")) {
+		l <- shapefile(shp)
+	} else {
+		l <- shp
+	}
+
+	if(!all(is.na(buffer))) {
+		b <- rgeos::gBuffer(l, width = buffer, byid = TRUE)	#(!binary)
 	} else {
 		b <- l
 	}
-	er <- raster(ext = extent(b) + margin, crs = proj4string(l), resolution = res)
-	if(binary) {
-		r <- rasterize(b, er, background = 1, field = 0)
+
+	if(missing(baseRaster)) {
+		er <- raster(ext = extent(b) + margin, crs = proj4string(l), resolution = res)
 	} else {
-		r <- rasterize(b, er, field, ...)
+		er <- extend(baseRaster, extent(b) + margin, value = background)
 	}
 	
+	if(binary) {
+		r <- rasterize(b, er, background = 1, field = 0, update = !missing(baseRaster))
+	} else {
+		if(inherits(field, "numeric")) {
+			r <- rasterize(b, er, field = field, background = background, update = !missing(baseRaster), ...)
+		} else {
+			if(all(is.na(mapvalues))) {
+				if(!inherits(b@data[, field], "numeric")) stop("field must be a numeric field in the interval [0, 1], otherwise you have to specify mapvalues for translating field values")
+				tmp <- b@data[, field]
+				tmp[is.na(tmp)] <- background
+				b@data[, field] <- tmp
+				r <- rasterize(b, er, field = field, background = background, update = !missing(baseRaster), ...)
+			} else {
+				if(!inherits(mapvalues, "numeric")) stop("mapvalues must be a named numeric vector in the interval [0, 1]")
+				empty <- names(mapvalues) == ""
+				if(any(empty)) {
+					emptyvalue <- mapvalues[empty]
+					mapvalues <- mapvalues[!empty]
+				}
+				tmp <- mapvalues[as.character(b@data[, field])]
+				names(tmp) <- NULL
+				if(exists("emptyvalue")) {
+					tmp[is.na(tmp)] <- emptyvalue
+				} else {
+					tmp[is.na(tmp)] <- background
+				}
+				b@data[, field] <- tmp
+				r <- rasterize(b, er, field = field, background = background, update = !missing(baseRaster), ...)
+			}
+		}
+	}
 	
 	if(cellStats(r, min) < 0 || cellStats(r, max) > 1)
 		warning("Resistance values must be in the interval [0, 1]. Use reclassify to fix this.")

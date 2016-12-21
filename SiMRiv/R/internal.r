@@ -1,6 +1,6 @@
 setClass("perceptionWindow",slots=c("type"="character","parameters"="numeric"))
 setClass("state",slots=c("turningAngleConcentration"="numeric","perceptionWindow"="perceptionWindow","stepLength"="numeric","name"="character"))
-setClass("species",slots=c("name"="character","transitionMatrix"="matrix","states"="list"))
+setClass("species",slots=c("name"="character","transitionMatrix"="matrix","states"="list", "resistanceMap" = "numeric"))
 #setClass("individual",slots=c("species"="species"))
 
 MULTIPLIER=1000000L
@@ -69,12 +69,13 @@ state.CRW<-function(correlation) {
 
 setMethod("show", signature(object="state"),.printState)
 
-species<-function(states, trans = transitionMatrix(), name = "<unnamed>") {
+species<-function(states, trans = transitionMatrix(), name = "<unnamed>", resistanceMap = numeric(0)) {
 	if(!(inherits(states,"list"))) states=list(states)
 
-	out=new("species", states=states
-		, transitionMatrix=trans
-		, name=name
+	out=new("species", states = states
+		, transitionMatrix = trans
+		, name = name
+		, resistanceMap = resistanceMap
 	)
 	
 	names=character(length(states))
@@ -99,6 +100,8 @@ species<-function(states, trans = transitionMatrix(), name = "<unnamed>") {
 	}
 	cat("\nState transition matrix\n")
 	print(object@transitionMatrix)
+	cat("\nResistance map\n")
+	print(object@resistanceMap)
 }
 
 setMethod("show", signature(object="species"), .printSpecies)
