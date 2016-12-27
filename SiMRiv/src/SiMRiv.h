@@ -45,7 +45,7 @@ typedef struct {
 
 typedef struct {
 	unsigned int ncols,nrows;
-	long xmin,ymin,xmax,ymax,width,height;
+	long xmin,ymin,xmax,ymax,width,height,ncells;
 	float xscale,yscale;
 	double *values;
 	SEXP pvalues;

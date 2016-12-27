@@ -109,7 +109,6 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 //			for(k=0;k<4;k++) Rprintf("%f ",ind[i].transitionmatrix[k]);
 				curtrans[i]=ind[i].transitionmatrix;	// for now, constant transition matrix
 			}
-
 // LOOP FOR EACH INDIVIDUAL			
 			for(i=0,tmp2=0;i<ninds;i++,tmp2+=timespan) {	// tmp2 is just a relative pointer to output matrix
 // draw new state according to transition matrix
@@ -139,7 +138,6 @@ Rprintf("\n");
 //for(j=0;j<ANGLERES;j+=2) Rprintf("%.01f ",(float)tmpMultCDF[j]/(float)tmpMultCDF[ANGLERES-1]);
 for(j=0;j<ANGLERES;j+=1) Rprintf("%d ",tmpMultCDF[j]);
 Rprintf("\n");*/
-
 					if(tmpMultCDF[ANGLERES-1]==0)	// TODO what to do when the desired direction is facing towards an infinite resistance area and there is no overlap of PDFs? keep trying, or abort step?
 						ind[i].curang=drawRandomAngle(NULL);	// here we just draw a uniform random angle
 					else
@@ -303,14 +301,18 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 	switch(percwind->type) {
 	case CIRCULAR:
 		step=percwind->radius/ACCUMULATORRESOLUTION;
+		#ifdef USEOPENMP
 		#pragma omp parallel
+		#endif
 		{
 			int i,j;
 			float tcos,tsin,ang,sum;
 			POINT tmppos;
 			double tmp;
 			
+			#ifdef USEOPENMP
 			#pragma omp for
+			#endif
 			for(i=0; i<ANGLERES; i++) {	// make a whole circle
 				ang=-PI+i*ANGLESTEP;
 				tmppos=curpos;
@@ -338,7 +340,9 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 		
 	case GAUSSIAN:
 		step=percwind->radius/ACCUMULATORRESOLUTION;	// TODO is this adequate in the gaussian?
+		#ifdef USEOPENMP
 		#pragma omp parallel
+		#endif
 		{
 //			Rprintf("num threads: %d\n",omp_get_num_threads());
 			int i,j;
@@ -346,7 +350,9 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 			POINT tmppos;
 			double tmp;
 			
+			#ifdef USEOPENMP
 			#pragma omp for
+			#endif
 			for(i=0;i<ANGLERES;i++) {	// make a whole circle
 				ang=-PI+i*ANGLESTEP;
 				tmppos=curpos;

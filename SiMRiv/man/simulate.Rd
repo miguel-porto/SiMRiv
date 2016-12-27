@@ -117,17 +117,17 @@ LevyWalker <- species(list(
     ,state(0.97, perceptionWindow("cir", 500), 20, "CorrelatedRW")
 ), transitionMatrix(0.005, 0.001))
 
-sim <- simulate(LevyWalker, 100000, resist = river
+sim <- simulate(LevyWalker, 20000, resist = river
     , coords = c(280635, 505236))
 
 ## plot movement; we use a high-res TIFF so that it
 ## can be viewed in detail
 
-tiff("movement.tif", wid=10000, hei=10000, comp="lzw")
+tiff("movement.tif", wid=5000, hei=5000, comp="lzw")
 par(mar = c(0, 0, 0, 0))
 plot(river, asp = 1, col = gray(seq(1, 0.5, len = 2))
     , ylim = range(sim[,2]), xlim = range(sim[,1]), axes = FALSE)
-lines(sim, lwd = 1.5, col = "#0000ffcc")
+lines(sim, lwd = 2, col = "#0000ffcc")
 dev.off()
 
 ## if we want the kernel density overlaid,

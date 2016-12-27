@@ -78,6 +78,7 @@ RASTER *openRaster(SEXP raster,SEXP rho) {
 	out->height=out->ymax-out->ymin;
 	out->xscale=(float)out->ncols/out->width;
 	out->yscale=(float)out->nrows/out->height;
+	out->ncells=LENGTH(out->pvalues);
 	
 	UNPROTECT(2);
 	return out;
@@ -93,7 +94,9 @@ void closeRaster(RASTER *raster) {
 */
 inline double extractRasterValue(RASTER *raster,float x,float y) {
 	if(x<raster->xmin || y<raster->ymin || x>=raster->xmax || y>=raster->ymax) return NA_REAL;
-	return raster->values[(int)((raster->ymax-y)*raster->yscale) * raster->ncols + (int)((x-raster->xmin)*raster->xscale) ];
+	int index = (int)((raster->ymax-y)*raster->yscale) * raster->ncols + (int)((x-raster->xmin)*raster->xscale);
+	if(index >= raster->ncells) return NA_REAL;
+	return raster->values[index];
 }
 
 /*
@@ -101,6 +104,8 @@ inline double extractRasterValue(RASTER *raster,float x,float y) {
 */
 inline double extractRasterValueNoNaN(RASTER *raster,float x,float y) {
 	if(x<raster->xmin || y<raster->ymin || x>=raster->xmax || y>=raster->ymax) return 1;
-	double tmp=raster->values[(int)((raster->ymax-y)*raster->yscale) * raster->ncols + (int)((x-raster->xmin)*raster->xscale) ];
+	int index = (int)((raster->ymax-y)*raster->yscale) * raster->ncols + (int)((x-raster->xmin)*raster->xscale);
+	if(index >= raster->ncells) return 1;
+	double tmp=raster->values[index];
 	return isnan(tmp) ? 1 : tmp;
 }
