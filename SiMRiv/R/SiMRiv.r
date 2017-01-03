@@ -1,6 +1,14 @@
 simulate <- function(individuals, time, coords = NULL, states = NULL, resist = NULL) {
 	# TODO: different resistance raster for each individual, using the species' resistanceMap
 	if(mode(time)!="numeric") stop("time must be numeric")
+
+	if(!(inherits(individuals,"list"))) {
+		if(!(inherits(individuals,"species")))
+			stop("individuals must be a list of species class")
+		else
+			individuals=list(individuals)
+	}
+
 	if(!is.null(coords)) {
 		if(!inherits(coords,"matrix") || dim(coords)[2]!=2) {
 			if(!inherits(coords, "numeric") || length(coords) != 2) {stop("coords must be a 2-column matrix with initial coordinates or a vector of length 2")}
@@ -28,13 +36,6 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 		# TODO: initial states not implmented
 	}
 	
-	if(!(inherits(individuals,"list"))) {
-		if(!(inherits(individuals,"species")))
-			stop("individuals must be a list of species class")
-		else
-			individuals=list(individuals)
-	}
-
 	if(dim(coords)[1] != length(individuals)) stop("The number of rows in the 'coords' matrix must be the same as the number of individuals")
 		
 	for(i in 1:length(individuals)) {
@@ -46,7 +47,7 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 
 resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 	, field = NA, background = 1, buffer = NA, margin = 0, mapvalues = NA, ...) {
-	if(missing(res)) stop("Raster resolution must be given")
+	if(missing(baseRaster) && missing(res)) stop("Either raster resolution or a base raster must be given")
 	if(inherits(shp, "character")) {
 		l <- shapefile(shp)
 	} else {
