@@ -1,0 +1,41 @@
+\documentclass{article}
+
+%\VignetteIndexEntry{Usage of the SiMRiv package}
+
+\newcommand{\R}{{\normalfont\textsf{R }}{}}
+
+\SweaveOpts{keep.source=TRUE}
+
+\begin{document}
+
+<<version, include=FALSE, echo=FALSE>>=
+#options(width = 60)
+version <- packageDescription("SiMRiv")
+@
+
+\title{Using the 'SiMRiv' package\\(version \Sexpr{version$Version})}
+\author{Miguel Porto, Lorenzo Quaglietta}
+\maketitle
+
+
+\section{Data import}
+blah blah
+
+\subsection{Importing polygon shapefiles to use as resistance raster}
+<<simriv-1, fig=TRUE , echo=TRUE>>=
+library(SiMRiv)
+landcover = shapefile("../inst/doc/landcover.shp")
+resistance = resistanceFromShape(landcover, res = 100
+	, field = "resist", mapvalues = c("for" = 0.5, "urb" = 1, "dam" = 0)
+	, background = 0.9)
+#par(mar = rep(0, 4), mfrow = c(1, 2))
+#plot(landcover)
+plot(resistance, axes = F, mar = c(0, 0, 0, 2))
+
+rand.walker <- species(state.RW())
+sim <- simulate(rand.walker, 10000)
+plot(sim, type="l", asp=1)
+@
+
+\end{document}
+

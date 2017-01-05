@@ -306,7 +306,9 @@ void computeEmpiricalResistancePDF(POINT curpos,const RASTER *resist,PERCEPTIONW
 		POINT tmppos;
 		double tmp;
 		
+		#ifdef USEOPENMP
 		#pragma omp parallel for firstprivate(step,resist,curpos,percwind) private(i,j,tcos,tsin,ang,sum,tmppos,tmp,index) shared(allinf,pdf)
+		#endif
 		for(i=0; i<ANGLERES; i++) {	// make a whole circle
 			ang=-PI+i*ANGLESTEP;
 			tmppos=curpos;
