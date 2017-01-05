@@ -2,6 +2,7 @@ useDynLib(SiMRiv)
 importFrom("methods", "new", "show")
 importFrom("stats", "runif")
 importFrom("sp", "proj4string")
+import(raster)
 
 export(perceptionWindow)
 export(state)

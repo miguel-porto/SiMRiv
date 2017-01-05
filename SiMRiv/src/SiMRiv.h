@@ -5,10 +5,10 @@
 //#include "rand32.h"
 #define SCALARCHAR(x)		Rf_ScalarString(mkChar(x))
 #define MULTIPLIER			1000000		// multiplier for bounded values (probabilites)
-#define ANGLERES			51			// PDFs are discrete here. this is the angular resolution used for discrete circular PDFs. MUST be odd.
-#define ANGLECENTER			25			// MUST be = (ANGLERES-1)/2
-#define ANGLESTEP			0.1231997f	// MUST be = 2*PI/(ANGLERES)
-#define ACCUMULATORRESOLUTION	10		// resolution of the raster accumulator function. Each step is divided into this many microsteps.
+#define ANGLERES			31			// PDFs are discrete here. this is the angular resolution used for discrete circular PDFs. MUST be odd.
+#define ANGLECENTER			15			// MUST be = (ANGLERES-1)/2
+#define ANGLESTEP			0.2026834f	// MUST be = 2*PI/(ANGLERES)
+#define ACCUMULATORRESOLUTION	20		// resolution of the raster accumulator function. Each step is divided into this many microsteps.
 #define TOLERANCECIRCNORM	0.00001		// circular normal is the sum of an infinite series. this is the tolerance to say when to stop summing.
 
 typedef enum {false=0, true=1} bool;
@@ -47,7 +47,7 @@ typedef struct {
 	unsigned int ncols,nrows;
 	long xmin,ymin,xmax,ymax,width,height,ncells;
 	float xscale,yscale;
-	double *values;
+	const double *values;
 	SEXP pvalues;
 } RASTER;
 
@@ -64,9 +64,9 @@ SEXP getListElement(SEXP list, const char *str);
 SEXP getRasterRes(SEXP raster,SEXP rho);
 RASTER *openRaster(SEXP raster,SEXP rho);
 void closeRaster(RASTER *raster);
-double extractRasterValue(RASTER *raster,float x,float y);
-double extractRasterValueNoNaN(RASTER *raster,float x,float y);
-void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW *percwind,PDF pdf);
+double extractRasterValue(const RASTER *raster,float x,float y);
+double extractRasterValueNoNaN(const RASTER *raster,float x,float y);
+void computeEmpiricalResistancePDF(POINT curpos, const RASTER *resist,PERCEPTIONWINDOW *percwind,PDF pdf);
 float computeLengthMove(double baseStepLength,POINT curpos,RASTER *resist,float angle);
 void rotatePDF(PDF pdf,PDF out,float ang);
 int densityRand(int nValues, unsigned long *cdf);

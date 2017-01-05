@@ -92,7 +92,7 @@ void closeRaster(RASTER *raster) {
 /*
 * Fast extraction of raster values at a given coordinate
 */
-inline double extractRasterValue(RASTER *raster,float x,float y) {
+inline double extractRasterValue(const RASTER *raster,float x,float y) {
 	if(x<raster->xmin || y<raster->ymin || x>=raster->xmax || y>=raster->ymax) return NA_REAL;
 	int index = (int)((raster->ymax-y)*raster->yscale) * raster->ncols + (int)((x-raster->xmin)*raster->xscale);
 	if(index >= raster->ncells) return NA_REAL;
@@ -102,7 +102,7 @@ inline double extractRasterValue(RASTER *raster,float x,float y) {
 /*
 * Fast extraction of raster values at a given coordinate, guaranteed not to return NaN
 */
-inline double extractRasterValueNoNaN(RASTER *raster,float x,float y) {
+inline double extractRasterValueNoNaN(const RASTER *raster,float x,float y) {
 	if(x<raster->xmin || y<raster->ymin || x>=raster->xmax || y>=raster->ymax) return 1;
 	int index = (int)((raster->ymax-y)*raster->yscale) * raster->ncols + (int)((x-raster->xmin)*raster->xscale);
 	if(index >= raster->ncells) return 1;

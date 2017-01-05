@@ -1,4 +1,4 @@
-//#define USEOPENMP		FIXME: some bug with OMP in i386 architecture...
+#define USEOPENMP		FIXME: some bug with OMP in i386 architecture...
 #ifdef USEOPENMP
 #include <omp.h>
 #endif
@@ -8,7 +8,7 @@ SEXP rho;
 SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _timespan,SEXP _resist,SEXP envir) {
 	#ifdef USEOPENMP
 	omp_set_num_threads(omp_get_num_procs ( ));
-	Rprintf("Using multicore processing with %d threads.\n",omp_get_num_procs ( ));
+//	Rprintf("Using multicore processing with %d threads.\n",omp_get_num_procs ( ));
 	#endif
 	rho=envir;
 	RASTER *resist=NULL;
@@ -289,7 +289,7 @@ inline float computeLengthMove(double baseStepLength,POINT curpos,RASTER *resist
 * and angular bias
 * Returns the PDF in the provided pointer NOTE: the PDF has an arbitrary scale, the integral is not constant!!
 */
-void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW *percwind,PDF pdf) {
+void computeEmpiricalResistancePDF(POINT curpos,const RASTER *resist,PERCEPTIONWINDOW *percwind,PDF pdf) {
 	bool allinf=true;
 	float step;
 	
@@ -301,40 +301,34 @@ void computeEmpiricalResistancePDF(POINT curpos,RASTER *resist,PERCEPTIONWINDOW 
 	switch(percwind->type) {
 	case CIRCULAR:
 		step=percwind->radius/ACCUMULATORRESOLUTION;
-		#ifdef USEOPENMP
-		#pragma omp parallel
-		#endif
-		{
-			int i,j;
-			float tcos,tsin,ang,sum;
-			POINT tmppos;
-			double tmp;
-			
-			#ifdef USEOPENMP
-			#pragma omp for
-			#endif
-			for(i=0; i<ANGLERES; i++) {	// make a whole circle
-				ang=-PI+i*ANGLESTEP;
-				tmppos=curpos;
-		// for each angle, sum the resistance values along the radial line centered on curpos
-				tcos=cos(ang)*step;	// TODO create a look-up table to speed up things here? or maybe not?
-				tsin=sin(ang)*step;
+		int i,j,index;
+		float tcos,tsin,ang,sum;
+		POINT tmppos;
+		double tmp;
+		
+		#pragma omp parallel for firstprivate(step,resist,curpos,percwind) private(i,j,tcos,tsin,ang,sum,tmppos,tmp,index) shared(allinf,pdf)
+		for(i=0; i<ANGLERES; i++) {	// make a whole circle
+			ang=-PI+i*ANGLESTEP;
+			tmppos=curpos;
+	// for each angle, sum the resistance values along the radial line centered on curpos
+			tcos=cos(ang)*step;	// TODO create a look-up table to speed up things here? or maybe not?
+			tsin=sin(ang)*step;
 
-				for(j=0, sum=0; j<percwind->radius; j += step) {
-					tmp=extractRasterValue(resist,tmppos.x,tmppos.y);
-					if(isnan(tmp) || tmp==NA_REAL || tmp==1)
-						sum+=0;
-					else {
-						sum+=1-tmp;
-						allinf=false;
-					}
-					tmppos.x+=tcos;
-					tmppos.y+=tsin;
+			for(j=0, sum=0; j<percwind->radius; j += step) {
+				tmp=extractRasterValue(resist,tmppos.x,tmppos.y);
+
+				if(isnan(tmp) || tmp==NA_REAL || tmp==1)
+					sum+=0;
+				else {
+					sum+=1-tmp;
+					if(allinf) allinf=false;
 				}
-				pdf[i] = sum;
-	//			cdf[i]=(unsigned long)(sum*MULTIPLIER);
-//				ang+=ANGLESTEP;
+				tmppos.x+=tcos;
+				tmppos.y+=tsin;
 			}
+			pdf[i] = sum;
+//			cdf[i]=(unsigned long)(sum*MULTIPLIER);
+//				ang+=ANGLESTEP;
 		}
 		break;
 		
