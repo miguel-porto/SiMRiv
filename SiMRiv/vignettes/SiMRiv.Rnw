@@ -1,5 +1,5 @@
-\documentclass{article}
-
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
 %\VignetteIndexEntry{Usage of the SiMRiv package}
 
 \newcommand{\R}{{\normalfont\textsf{R }}{}}
@@ -11,6 +11,26 @@
 <<version, include=FALSE, echo=FALSE>>=
 #options(width = 60)
 version <- packageDescription("SiMRiv")
+#colorramp <- rgb(c(seq(4, 9, len = 5), rep(9, 5)), c(rep(9, 5), seq(9, 4, len = 5)), 0, max = 9)
+#colorramp <- rgb(9, 9:0, 9:0, max = 9)
+@
+
+<<results=hide, include=FALSE, echo=FALSE>>=
+my.Swd <- function(name, width, height, ...) {
+  grDevices::png(filename = paste(name, "png", sep = "."),
+                 width = 8, height = 8, res = 100, units = "in")
+}
+my.Swd.off <- function() {
+    grDevices::dev.off()
+}
+
+my.Swd2 <- function(name, width, height, ...) {
+  grDevices::png(filename = paste(name, "png", sep = "."),
+                 width = 8, height = 8 * 2, res = 100, units = "in")
+}
+my.Swd2.off <- function() {
+    grDevices::dev.off()
+}
 @
 
 \title{Using the 'SiMRiv' package\\(version \Sexpr{version$Version})}
@@ -18,23 +38,139 @@ version <- packageDescription("SiMRiv")
 \maketitle
 
 
-\section{Data import}
-blah blah
+\section{Data import}{
+\verb@SiMRiv@ can be used to simulate movements in an homogeneous environment, in which case you don't need to import data.
+However, if you want to conduct simulations in heterogeneous environments (which includes riverscapes), a resistance raster must be given as input to the simulation procedure.
+Any object of class \verb@RasterLayer@ (from the \verb@raster@ package) with values in the range [0, 1] can be used, where 0 means a pixel with no resistance and 1 a pixel with 'infinite' resistance (i.e. where the individual cannot move).
 
-\subsection{Importing polygon shapefiles to use as resistance raster}
-<<simriv-1, fig=TRUE , echo=TRUE>>=
+\verb@SiMRiv@ provides a helper function to aid the conversion from vector data (line and polygon shapefiles) to a resistance raster, optionally combining multiple rasters into one.
+It basically uses the functionality provided by the \verb@raster@ package, combining multiple features in one function:
+
+\enumerate{
+\item{Rasterize polygon or line shapefiles with a user-given pixel resolution}
+\item{Assign resistance values to a categorical field in the shapefile or directly read values from a numerical field}
+\item{Assign a background value for areas not covered by the polygons or lines}
+\item{Create a buffer around lines (or polygons), optionally variable in size}
+\item{Stack multiple shapefiles into one combined raster}
+}
+
+Its use is exemplified below.
+}
+
+\subsection{Importing shapefiles to use as resistance raster}
+The following example is the simplest case, it creates a binary resistance raster with 100m resolution, assigning resistance 0 to areas
+covered by polygons in the given shapefile and resistance 1 to areas not covered. You can change these values with the parameters \verb@field@ (defaults to 0)
+and \verb@background@ (defaults to 1). The same works for line shapefiles.
+
+
+<<simriv-1, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 library(SiMRiv)
-landcover = shapefile("../inst/doc/landcover.shp")
-resistance = resistanceFromShape(landcover, res = 100
-	, field = "resist", mapvalues = c("for" = 0.5, "urb" = 1, "dam" = 0)
-	, background = 0.9)
-#par(mar = rep(0, 4), mfrow = c(1, 2))
-#plot(landcover)
+resistance <- resistanceFromShape("../inst/doc/landcover.shp"
+  , res = 100)
 plot(resistance, axes = F, mar = c(0, 0, 0, 2))
+@
 
+The following example creates a resistance raster with 100m resolution by importing a polygon shapefile,
+while assigning different resistance values to each land cover class (given by the \verb@mapvalues@ parameter)
+which is in the shapefile field \verb@coverclass@. All pixels not covered by a polygon are assigned a resistance of 0.9.
+Note that you can add a margin around the extent of the shapes.
+
+<<simriv-2, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+resistance <- resistanceFromShape("../inst/doc/landcover.shp"
+  , res = 100, field = "coverclass", mapvalues = c(
+    "forest" = 0.5, "urban" = 1, "dam" = 0
+    , "shrubland" = 0.75), background = 0.9, margin = 3000)
+
+plot(resistance, axes = F, mar = c(0, 0, 0, 2))
+@
+
+The same applies for line shapefiles. In this case, it is usually useful to make a buffer around lines, otherwise the rasterized
+version may be too thin for the simulation to adequately proceed. In this example with a river,
+resistance is assigned according to the river order field of the shapefile:
+
+<<simriv-3, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+resistance <- resistanceFromShape("../inst/doc/river-sample.shp"
+  , res = 100, field = "Order", mapvalues = c("2" = 0
+    , "3" = 0.2, "4" = 0.4, "5" = 0.6, "6" = 0.8)
+  , buffer = 150, background = 0.95, margin = 3000)
+
+plot(resistance, axes = F, mar = c(0, 0, 0, 2))
+@
+
+A better, possibly more realistic option, in the case of a river, may be to use a buffer proportional
+to the river order, instead of varying the resistance (but you can do both, obviously). In that case, we're better off loading the shape separately:
+
+<<simriv-4, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+# load shapefile
+river.shape <- shapefile("../inst/doc/river-sample.shp")
+
+# you can provide the shapefile filename, or the R shapefile
+# object itself
+resistance <- resistanceFromShape(river.shape, res = 100
+  , buffer = (9 - river.shape@data$Order) ^ 3
+  , background = 0.95, margin = 3000)
+
+plot(resistance, axes = F, mar = c(0, 0, 0, 2))
+@
+
+\subsection{Combining multiple shapefiles or rasters in one resistance raster}
+Often one needs to combine data from different shapefiles into a combined resistance raster. The following example places the river
+on top of the land cover shape, using the parameter \verb@baseRaster@.
+The extent is automatically adjusted to fit all provided shapefiles' extents (plus the optional margin). Note also that, if
+we want a constant resistance value for all lines/polygons in a shape, we may specify it with the parameter \verb@field@.
+
+<<simriv-5, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+landcover <- resistanceFromShape("../inst/doc/landcover.shp"
+  , res = 50, field = "coverclass", mapvalues = c(
+    "forest" = 0.5, "urban" = 1, "dam" = 0
+    , "shrubland" = 0.75), background = 0.95)
+
+river.landcover <- resistanceFromShape("../inst/doc/river-sample.shp"
+  , baseRaster = landcover, buffer = 100, field = 0
+  , background = 0.95, margin = 3000)
+
+plot(river.landcover, axes = F, mar = c(0, 0, 0, 2))
+@
+
+\section{Conducting simulations}
+\subsection{Basic simulations}
+In the simplest form, conducting simulations is straightforward. Without any other parameters, individuals will be simulated
+in an homogeneous environment, start at (0, 0), and have a unit step length for all states.
+
+<<simriv-6, fig=TRUE , echo=TRUE, grdevice=my.Swd2>>=
 rand.walker <- species(state.RW())
-sim <- simulate(rand.walker, 10000)
-plot(sim, type="l", asp=1)
+sim.rw <- simulate(rand.walker, 10000)
+
+# a Lévy walker is a two-state walker, composed of a random walk state
+# and a correlated random walk state.
+levy.walker <- species(list(state.RW(), state.CRW(0.98))
+  , trans = transitionMatrix(0.01, 0.01))
+sim.lw <- simulate(levy.walker, 10000)
+
+par(mfcol=c(2, 1))
+plot(sim.rw, type = "l", asp = 1, main = "Random walk")
+plot(sim.lw, type = "l", asp = 1, main = "Lévy-like walker")
+@
+
+\subsection{Simulating in heterogeneous environments}
+
+This example also demonstrates how to set the starting coordinates to a random pixel with given resistance value(s).
+
+<<simriv-7, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+
+# set starting coordinates anywhere within the river
+init = xyFromCell(river.landcover, sample(which(values(river.landcover) == 0), 1))
+
+# multiplying a species by a number is a shortcut for changing accordingly the step lengths of all states
+levy.walker <- extend(levy.walker * 10, 1000)
+sim.lw.river <- simulate(levy.walker, 10000, resist = river.landcover, coords = init)
+
+plot(river.landcover, axes = F, mar = c(0, 0, 0, 2), ylim = range(sim.lw.river[, 2]), xlim = range(sim.lw.river[, 1]))
+
+#image(river.landcover, maxpixels=Inf, asp=1, zlim=c(0,1)#, col=c(gray(seq(1, 0.6, len=20)), "#990000")
+#	, ylim = range(sim.lw.river[, 2]), xlim = range(sim.lw.river[, 1]), axes = F, xlab = NA, ylab = NA)
+
+lines(sim.lw.river)
 @
 
 \end{document}

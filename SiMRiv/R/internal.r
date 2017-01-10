@@ -44,17 +44,52 @@ setValidity("state",function(object) {
 	return(TRUE)
 })
 
+setMethod("extend", signature(x = "state", y = "numeric"), function(x, y) {
+	x@perceptionWindow@parameters = y
+	return(x)
+})
 
+setMethod("extend", signature(x = "species", y = "numeric"), function(x, y) {
+	for(i in 1:length(x@states)) {
+		x@states[[i]] <- extend(x@states[[i]], y)
+	}
+	return(x)
+})
+
+setMethod("Ops", signature(e1 = "species"), function(e1, e2) {
+	for(i in 1:length(e1@states)) {
+		e1@states[[i]] <- callGeneric(e1@states[[i]], e2)
+	}
+	return(e1)
+})
+
+setMethod("Ops", signature(e2 = "species"), function(e1, e2) {
+	for(i in 1:length(e2@states)) {
+		e2@states[[i]] <- callGeneric(e1, e2@states[[i]])
+	}
+	return(e2)
+})
+
+setMethod("Ops", signature(e1 = "state"), function(e1, e2) {
+	e1@stepLength <- callGeneric(e1@stepLength, e2)
+	return(e1)
+})
+
+setMethod("Ops", signature(e2 = "state"), function(e1, e2) {
+	e2@stepLength <- callGeneric(e1, e2@stepLength)
+	return(e2)
+})
+ 
 state.Resting<-function() {
-	return(state(0,steplen=0,name="Resting"))
+	return(state(0, steplen = 0, name = "Resting"))
 }
 
-state.RW<-function() {
-	return(state(0,steplen=1,name="Random Walk"))
+state.RW<-function(steplen = 1) {
+	return(state(0, steplen = steplen, name = "Random Walk"))
 }
 
-state.CRW<-function(correlation) {
-	return(state(correlation,steplen = 1,name = "Correlated Random Walk"))
+state.CRW<-function(correlation, steplen = 1) {
+	return(state(correlation, steplen = steplen, name = "Correlated Random Walk"))
 }
 
 .printState<-function(object) {
