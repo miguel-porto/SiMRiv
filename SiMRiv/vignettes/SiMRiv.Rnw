@@ -41,9 +41,15 @@ my.Swd2.off <- function() {
 \section{Data import}{
 \verb@SiMRiv@ can be used to simulate movements in an homogeneous environment, in which case you don't need to import data.
 However, if you want to conduct simulations in heterogeneous environments (which includes riverscapes), a resistance raster must be given as input to the simulation procedure.
-Any object of class \verb@RasterLayer@ (from the \verb@raster@ package) with values in the range [0, 1] can be used, where 0 means a pixel with no resistance and 1 a pixel with 'infinite' resistance (i.e. where the individual cannot move).
+Any object of class \verb@RasterLayer@ (from the \verb@raster@ package - @Manual{,
+     title = {raster: Geographic analysis and modeling with raster data},
+     author = {Robert J. Hijmans & Jacob van Etten},
+     year = {2012},
+     note = {R package version 2.0-12},
+     url = {http://CRAN.R-project.org/package=raster},
+   }) with values in the range [0, 1] can be used, where 0 means a pixel with no resistance and 1 a pixel with 'infinite' resistance (i.e. where the individual cannot move).
 
-\verb@SiMRiv@ provides a helper function to aid the conversion from vector data (line and polygon shapefiles) to a resistance raster, optionally combining multiple rasters into one.
+\verb@SiMRiv@ provides a helper function to aid the conversion from vector data (line and polygon shapefiles) to a resistance raster, optionally combining multiple rasters into one (e.g., a physical resistance raster and a resource distribution raster).
 It basically uses the functionality provided by the \verb@raster@ package, combining multiple features in one function:
 
 \enumerate{
@@ -70,10 +76,9 @@ resistance <- resistanceFromShape("../inst/doc/landcover.shp"
 plot(resistance, axes = F, mar = c(0, 0, 0, 2))
 @
 
-The following example creates a resistance raster with 100m resolution by importing a polygon shapefile,
-while assigning different resistance values to each land cover class (given by the \verb@mapvalues@ parameter)
-which is in the shapefile field \verb@coverclass@. All pixels not covered by a polygon are assigned a resistance of 0.9.
-Note that you can add a margin around the extent of the shapes.
+The following example creates a resistance raster with 100m resolution by importing a polygon shapefile while assigning different resistance values to each land cover class (given by the \verb@mapvalues@ parameter)
+provided in the shapefile field \verb@coverclass@. All pixels not covered by a polygon are assigned a resistance of 0.9.
+Note that you can add a margin around the extent of the shapes (here, we used a 3000m margin).
 
 <<simriv-2, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 resistance <- resistanceFromShape("../inst/doc/landcover.shp"
@@ -85,8 +90,8 @@ plot(resistance, axes = F, mar = c(0, 0, 0, 2))
 @
 
 The same applies for line shapefiles. In this case, it is usually useful to make a buffer around lines, otherwise the rasterized
-version may be too thin for the simulation to adequately proceed. In this example with a river,
-resistance is assigned according to the river order field of the shapefile:
+version may be too thin for the simulation to adequately proceed. In this example with a river (using a buffer of 150m),
+resistance is assigned according to the river order field of the shapefile (higher resistance values for lower stream order sectors - i.e., the species is thought to use  main river sectors more than tributaries):
 
 <<simriv-3, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 resistance <- resistanceFromShape("../inst/doc/river-sample.shp"
@@ -97,8 +102,8 @@ resistance <- resistanceFromShape("../inst/doc/river-sample.shp"
 plot(resistance, axes = F, mar = c(0, 0, 0, 2))
 @
 
-A better, possibly more realistic option, in the case of a river, may be to use a buffer proportional
-to the river order, instead of varying the resistance (but you can do both, obviously). In that case, we're better off loading the shape separately:
+A better, and possibly more realistic, option for rivers, instead of varying the resistance,
+ would be to use a buffer proportional to the river order (alternatively, both solutions may be applied). In that case, we're better off loading the shape separately:
 
 <<simriv-4, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 # load shapefile
@@ -134,8 +139,8 @@ plot(river.landcover, axes = F, mar = c(0, 0, 0, 2))
 
 \section{Conducting simulations}
 \subsection{Basic simulations}
-In the simplest form, conducting simulations is straightforward. Without any other parameters, individuals will be simulated
-in an homogeneous environment, start at (0, 0), and have a unit step length for all states.
+In the simplest form, conducting simulations is straightforward. Using the default parameters setting, individuals will be simulated
+in an homogeneous environment, will start at coordinates (0, 0), and have a unit step length for all states, moving according to a random walk (cif. Turchin 1998).
 
 <<simriv-6, fig=TRUE , echo=TRUE, grdevice=my.Swd2>>=
 rand.walker <- species(state.RW())
@@ -172,6 +177,11 @@ plot(river.landcover, axes = F, mar = c(0, 0, 0, 2), ylim = range(sim.lw.river[,
 
 lines(sim.lw.river)
 @
+
+\section{References}
+
+Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population
+redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.
 
 \end{document}
 
