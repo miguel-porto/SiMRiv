@@ -2,7 +2,7 @@
 \usepackage[utf8]{inputenc}
 %\VignetteIndexEntry{Usage of the SiMRiv package}
 
-\newcommand{\R}{{\normalfont\textsf{R }}{}}
+\newcommand{\code}[1]{{\tt #1}}
 
 \SweaveOpts{keep.source=TRUE}
 
@@ -41,16 +41,11 @@ my.Swd2.off <- function() {
 \section{Data import}{
 \verb@SiMRiv@ can be used to simulate movements in an homogeneous environment, in which case you don't need to import data.
 However, if you want to conduct simulations in heterogeneous environments (which includes riverscapes), a resistance raster must be given as input to the simulation procedure.
-Any object of class \verb@RasterLayer@ (from the \verb@raster@ package - @Manual{,
-     title = {raster: Geographic analysis and modeling with raster data},
-     author = {Robert J. Hijmans & Jacob van Etten},
-     year = {2012},
-     note = {R package version 2.0-12},
-     url = {http://CRAN.R-project.org/package=raster},
-   }) with values in the range [0, 1] can be used, where 0 means a pixel with no resistance and 1 a pixel with 'infinite' resistance (i.e. where the individual cannot move).
+This raster defines, for all pixels in space, the propensity of the individuals to move within/into each pixel (see details and discussion in {\bf help(simulate)}).
+Any object of class \verb@RasterLayer@ (from the \verb@raster@ package) with values in the range [0, 1] can be used, where 0 means a pixel with no resistance and 1 a pixel with 'infinite' resistance (i.e. where the individual cannot move).
 
-\verb@SiMRiv@ provides a helper function to aid the conversion from vector data (line and polygon shapefiles) to a resistance raster, optionally combining multiple rasters into one (e.g., a physical resistance raster and a resource distribution raster).
-It basically uses the functionality provided by the \verb@raster@ package, combining multiple features in one function:
+\verb@SiMRiv@ provides a helper function \code{resistanceFromShape} to aid the conversion from vector data (line and polygon shapefiles) to a resistance raster, optionally combining multiple rasters into one (e.g., a physical resistance raster and a resource distribution raster).
+It is basically a wrapper for the functionality provided by the \code{raster} package, combining multiple features in one function:
 
 \enumerate{
 \item{Rasterize polygon or line shapefiles with a user-given pixel resolution}
@@ -65,9 +60,8 @@ Its use is exemplified below.
 
 \subsection{Importing shapefiles to use as resistance raster}
 The following example is the simplest case, it creates a binary resistance raster with 100m resolution, assigning resistance 0 to areas
-covered by polygons in the given shapefile and resistance 1 to areas not covered. You can change these values with the parameters \verb@field@ (defaults to 0)
-and \verb@background@ (defaults to 1). The same works for line shapefiles.
-
+covered by polygons in the given shapefile and resistance 1 to areas not covered. You can change these values with the parameters \code{field} (defaults to 0)
+and \code{background} (defaults to 1). The same works for line shapefiles.
 
 <<simriv-1, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 library(SiMRiv)
@@ -76,9 +70,10 @@ resistance <- resistanceFromShape("../inst/doc/landcover.shp"
 plot(resistance, axes = F, mar = c(0, 0, 0, 2))
 @
 
-The following example creates a resistance raster with 100m resolution by importing a polygon shapefile while assigning different resistance values to each land cover class (given by the \verb@mapvalues@ parameter)
-provided in the shapefile field \verb@coverclass@. All pixels not covered by a polygon are assigned a resistance of 0.9.
-Note that you can add a margin around the extent of the shapes (here, we used a 3000m margin).
+The following example creates a resistance raster with 100m resolution by importing a polygon shapefile while assigning different resistance values to each land cover class (given by the \code{mapvalues} parameter)
+provided in the shapefile field \code{coverclass}. All pixels not covered by a polygon are assigned a resistance of 0.9.
+Note that you can add a margin around the extent of the shapes (here, we used a 3000 m margin), to minimize the boundary effect in simulations:
+during simulations, all area outside the extent of the resistance raster is given resistance 1, which makes the simulated individuals never move out of this rectangle, thus creating a boundary effect.
 
 <<simriv-2, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 resistance <- resistanceFromShape("../inst/doc/landcover.shp"
@@ -89,9 +84,11 @@ resistance <- resistanceFromShape("../inst/doc/landcover.shp"
 plot(resistance, axes = F, mar = c(0, 0, 0, 2))
 @
 
-The same applies for line shapefiles. In this case, it is usually useful to make a buffer around lines, otherwise the rasterized
-version may be too thin for the simulation to adequately proceed. In this example with a river (using a buffer of 150m),
-resistance is assigned according to the river order field of the shapefile (higher resistance values for lower stream order sectors - i.e., the species is thought to use  main river sectors more than tributaries):
+The same applies for line shapefiles. In this case, it is useful to make a buffer around lines, otherwise the rasterized
+version may be too thin for the simulation to adequately proceed.
+Note that, by default, if no buffer is used, the rasterization of lines 'projects' the lines into all cells that are touched by the line (see \code{help(rasterize)} of the \code{raster} package), which results in 1-pixel wide features.
+This should be avoided; always make sure that the thinnest line elements are at least 3 pixel wide in the resistance raster.
+In this example with a river (using a buffer of 150m), resistance is manually assigned according to the river order field '\code{Order}' of the shapefile (higher resistance values for lower stream order sectors - i.e., the species is assumed to use main river sectors more than tributaries):
 
 <<simriv-3, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 resistance <- resistanceFromShape("../inst/doc/river-sample.shp"
@@ -103,26 +100,31 @@ plot(resistance, axes = F, mar = c(0, 0, 0, 2))
 @
 
 A better, and possibly more realistic, option for rivers, instead of varying the resistance,
- would be to use a buffer proportional to the river order (alternatively, both solutions may be applied). In that case, we're better off loading the shape separately:
+would be to use a buffer proportional to the river order (alternatively, both solutions may be applied).
+In that case, we're better off loading the shape separately:
 
 <<simriv-4, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 # load shapefile
 river.shape <- shapefile("../inst/doc/river-sample.shp")
 
-# you can provide the shapefile filename, or the R shapefile
-# object itself
+# below you can provide the shapefile filename, or the
+# R shapefile object itself
 resistance <- resistanceFromShape(river.shape, res = 100
   , buffer = (9 - river.shape@data$Order) ^ 3
   , background = 0.95, margin = 3000)
+
+# buffer here is just some magical function to convert river
+# order into a meaningful value in the [0, 1] range!
 
 plot(resistance, axes = F, mar = c(0, 0, 0, 2))
 @
 
 \subsection{Combining multiple shapefiles or rasters in one resistance raster}
 Often one needs to combine data from different shapefiles into a combined resistance raster. The following example places the river
-on top of the land cover shape, using the parameter \verb@baseRaster@.
-The extent is automatically adjusted to fit all provided shapefiles' extents (plus the optional margin). Note also that, if
-we want a constant resistance value for all lines/polygons in a shape, we may specify it with the parameter \verb@field@.
+on top of the land cover shape, using the parameter \code{baseRaster}.
+The extent is automatically adjusted to fit all provided shapefiles' extents (plus the optional margin).
+Note also that, if we want a constant resistance value for all lines/polygons in a shape, we may specify the value with the parameter
+\code{field} (as is done below in \code{river.landcover}), instead of giving a field name (as is done below in \code{landcover}).
 
 <<simriv-5, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 landcover <- resistanceFromShape("../inst/doc/landcover.shp"
@@ -140,34 +142,83 @@ plot(river.landcover, axes = F, mar = c(0, 0, 0, 2))
 \section{Conducting simulations}
 \subsection{Basic simulations}
 In the simplest form, conducting simulations is straightforward. Using the default parameters setting, individuals will be simulated
-in an homogeneous environment, will start at coordinates (0, 0), and have a unit step length for all states, moving according to a random walk (cif. Turchin 1998).
+in an homogeneous environment, will start at coordinates (0, 0), and have a unit step length for all states.
+You only have to provide the movement type of each state. This is done by defining a \code{species}
+Let's first look at the simplest case, a simple Random Walk (cf. Turchin 1998):
 
-<<simriv-6, fig=TRUE , echo=TRUE, grdevice=my.Swd2>>=
+<<simriv-6, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+# define a species with a single-state movement type
+# characterized by a random walk
 rand.walker <- species(state.RW())
+
+# simulate one individual of this species
+# 10000 simulation steps
 sim.rw <- simulate(rand.walker, 10000)
 
-# a Lévy walker is a two-state walker, composed of a random walk state
-# and a correlated random walk state.
-levy.walker <- species(list(state.RW(), state.CRW(0.98))
+plot(sim.rw, type = "l", asp = 1, main = "Random walk")
+@
+
+\code{state.RW} is a shortcut function for defining a totally random movement state, with unit step length.
+Now let's try with a more interesting movement type, a simple Correlated Random Walk, where the direction taken in one step is correlated with the direction of the previous step.
+For this you have the shortcut function \code{state.CRW}, to which you must provide the amount of correlation (here we use 0.98).
+This parameter varies between [0, 1], being 0 no correlation (yielding a random walk state) and 1, a 100\% correlation (step direction does not change, it's always the same as the previous step). Obviously, \code{state.RW()} is a shortcut for \code{state.CRW(0)}.
+
+<<simriv-7, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+# define a species with a single-state movement type
+# characterized by a correlated random walk with
+# correlation=0.98
+c.rand.walker <- species(state.CRW(0.98))
+
+# simulate one individual of this species
+# 10000 simulation steps
+sim.crw <- simulate(c.rand.walker, 10000)
+
+plot(sim.crw, type = "l", asp = 1, main = "Correlated Random walk")
+@
+
+Additionally, you have a third shortcut \code{state.Resting()}, which corresponds to a state where the individual is stopped.
+These three shortcut functions are the bricks with which you construct any complex multistate movement. You can combine them with \code{+} to define a multistate movement.
+
+\subsection{Multi-state movement simulations}
+Let's simulate a two-state movement, by defining a species with two desired states.
+We'll create here a Lévy-like walker, i.e. a walker who alternates between random walks and correlated random walks.
+For defining such movement, we can combine the two states like \code{state.RW() + state.CRW(0.98)}.
+Now emerges a crucial parameter that must be defined for the species, which is the probability of transitions between these two states.
+This transition matrix has an overwhelming importance in the final movement pattern.
+Formally, it is just a square matrix with all values in the range [0, 1], and whose rows must sum to one (but not columns).
+It should be read row-wise, that is, the cell at row 2 column 3 defines the probability of changing from state \#2 to state \#3.
+A convenience function is provided to build such matrix.
+TODO HERE TODO HERE
+
+<<simriv-8, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+# a Lévy walker can be approximated by a two-state walker
+# composed of a random walk state and a correlated
+# random walk state.
+levy.walker <- species(state.RW() + state.CRW(0.98)
   , trans = transitionMatrix(0.01, 0.01))
 sim.lw <- simulate(levy.walker, 10000)
 
-par(mfcol=c(2, 1))
-plot(sim.rw, type = "l", asp = 1, main = "Random walk")
 plot(sim.lw, type = "l", asp = 1, main = "Lévy-like walker")
 @
+
+
+The steps needed to conduct a simulation are:
+define a species
+
+\subsection{Customizing state parameters}
+
 
 \subsection{Simulating in heterogeneous environments}
 
 This example also demonstrates how to set the starting coordinates to a random pixel with given resistance value(s).
 
-<<simriv-7, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+<<simriv-9, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 
 # set starting coordinates anywhere within the river
 init = xyFromCell(river.landcover, sample(which(values(river.landcover) == 0), 1))
 
 # multiplying a species by a number is a shortcut for changing accordingly the step lengths of all states
-levy.walker <- extend(levy.walker * 10, 1000)
+levy.walker <- (levy.walker + 10) * 1000
 sim.lw.river <- simulate(levy.walker, 10000, resist = river.landcover, coords = init)
 
 plot(river.landcover, axes = F, mar = c(0, 0, 0, 2), ylim = range(sim.lw.river[, 2]), xlim = range(sim.lw.river[, 1]))
@@ -177,6 +228,10 @@ plot(river.landcover, axes = F, mar = c(0, 0, 0, 2), ylim = range(sim.lw.river[,
 
 lines(sim.lw.river)
 @
+
+\section{Advices for conducting bias-free simulations}
+\subsection{Step lengths and resolution}
+
 
 \section{References}
 
