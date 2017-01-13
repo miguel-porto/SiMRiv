@@ -1,5 +1,6 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage{fullpage}
 %\VignetteIndexEntry{Usage of the SiMRiv package}
 
 \newcommand{\code}[1]{{\tt #1}}
@@ -31,20 +32,101 @@ my.Swd2 <- function(name, width, height, ...) {
 my.Swd2.off <- function() {
     grDevices::dev.off()
 }
+
+library(SiMRiv)
 @
 
 \title{Using the 'SiMRiv' package\\(version \Sexpr{version$Version})}
 \author{Miguel Porto, Lorenzo Quaglietta}
 \maketitle
 
+\section{Conducting basic simulations}
+In the simplest form, conducting simulations is straightforward. Using the default parameters setting, individuals will be simulated
+in an homogeneous environment, will start at coordinates (0, 0), and have a unit step length for all states.
+You only have to provide the movement type of each state. This is done by defining a \code{species}
+Let's first look at the simplest case, a simple Random Walk (cf. Turchin 1998):
 
-\section{Data import}{
-\verb@SiMRiv@ can be used to simulate movements in an homogeneous environment, in which case you don't need to import data.
+<<simriv-1, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+# define a species with a single-state movement type
+# characterized by a random walk
+rand.walker <- species(state.RW())
+
+# simulate one individual of this species
+# 10000 simulation steps
+sim.rw <- simulate(rand.walker, 10000)
+
+# plot trajectory
+plot(sim.rw, type = "l", asp = 1, main = "Random walk")
+@
+
+\code{state.RW} is a shortcut function for defining a totally random movement state, with unit step length.
+Now let's try with a more interesting movement type, a simple Correlated Random Walk, where the direction taken in one step is correlated with the direction of the previous step.
+For this you have the shortcut function \code{state.CRW}, to which you must provide the amount of correlation (here we use 0.98).
+This parameter varies between [0, 1], being 0 no correlation (yielding a random walk state) and 1, a 100\% correlation (step direction does not change, it's always the same as the previous step). Obviously, \code{state.RW()} is a shortcut for \code{state.CRW(0)}.
+
+<<simriv-2, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+# define a species with a single-state movement type
+# characterized by a correlated random walk with
+# correlation=0.98
+c.rand.walker <- species(state.CRW(0.98))
+
+# simulate one individual of this species
+# 10000 simulation steps
+sim.crw <- simulate(c.rand.walker, 10000)
+
+plot(sim.crw, type = "l", asp = 1, main = "Correlated Random walk")
+@
+
+Additionally, you have a third shortcut \code{state.Resting()}, which corresponds to a state where the individual is stopped.
+These three shortcut functions are the bricks with which you construct any complex multistate movement. You can combine them with \code{+} to define a multistate movement, see next topic.
+
+All simulations above were conducted with the step length = 1, which is the default. You may set the desired step length for any state simply by adding a number to the state definition,
+or you may set the same step length for all states by adding a number to the species itself.
+
+<<simriv-3, fig=FALSE , echo=TRUE>>=
+# define a species with a correlated random walk
+# and step length = 15
+c.rand.walker.15 <- species(state.CRW(0.98) + 15)
+
+# which, in single-state species, is the same as:
+c.rand.walker.15 <- species(state.CRW(0.98)) + 15
+@
+
+\section{Multi-state movement simulations}
+Multi-state movements require specifying the probabilities of transition between the movement states.
+This transition matrix, which is a parameter you specify when defining the species, has an overwhelming importance in the final movement pattern.
+Formally, it is just a square matrix with all values in the range [0, 1], and whose rows must sum to one (but not columns).
+It should be read row-wise, that is, the cell at row 2 column 3 defines the probability of the individual changing from state \#2 to state \#3.
+
+As an example, let's simulate a two-state movement, a Lévy-like walker, i.e. a walker who alternates between random walks and correlated random walks.
+We can define the multi-state movement by combining the two states like \code{state.RW() + state.CRW(0.98)}.
+Then, we have to provide the probabilities of changing from state \#1 to state \#2 and from state \#2 to state \#1.
+A convenience function, \code{transitionMatrix}, is provided to build such matrix. In the example below, we define the probabilities: \#1 -> \#2: 0.005; \#2 -> \#1: 0.01
+We also set the step length for both states to \code{25}.
+
+<<simriv-4, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+# a Lévy walker can be approximated by a two-state walker
+# composed of a random walk state and a correlated
+# random walk state.
+levy.walker <- species(state.RW() + state.CRW(0.98)
+  , trans = transitionMatrix(0.005, 0.01)) + 25
+
+sim.lw <- simulate(levy.walker, 10000)
+
+plot(sim.lw, type = "l", asp = 1, main = "Lévy-like walker")
+@
+
+The same logic applies to any number of states, but obviously, the transition matrix quickly gets large. See \code{help(transitionMatrix)} for details.
+
+
+\section{Simulating in heterogeneous environments}
+\code{SiMRiv} can be used to simulate movements in an homogeneous environment, in which case you don't need to import data.
 However, if you want to conduct simulations in heterogeneous environments (which includes riverscapes), a resistance raster must be given as input to the simulation procedure.
-This raster defines, for all pixels in space, the propensity of the individuals to move within/into each pixel (see details and discussion in {\bf help(simulate)}).
-Any object of class \verb@RasterLayer@ (from the \verb@raster@ package) with values in the range [0, 1] can be used, where 0 means a pixel with no resistance and 1 a pixel with 'infinite' resistance (i.e. where the individual cannot move).
+This raster defines, for all pixels in space, the propensity of the individuals to move within/into each pixel (see details and discussion in \code{help(simulate)}).
+Any object of class \code{RasterLayer} (from the \code{raster} package) with values in the range [0, 1] can be used, where 0 means a pixel with no resistance and 1 a pixel with 'infinite' resistance (i.e. where the individual cannot move).
 
-\verb@SiMRiv@ provides a helper function \code{resistanceFromShape} to aid the conversion from vector data (line and polygon shapefiles) to a resistance raster, optionally combining multiple rasters into one (e.g., a physical resistance raster and a resource distribution raster).
+\subsection{Data import}{
+\code{SiMRiv} provides a helper function \code{resistanceFromShape} to aid the conversion from vector data (line and polygon shapefiles) to a resistance raster, optionally combining multiple rasters into one (e.g., a physical resistance raster and a resource distribution raster).
 It is basically a wrapper for the functionality provided by the \code{raster} package, combining multiple features in one function:
 
 \enumerate{
@@ -58,16 +140,15 @@ It is basically a wrapper for the functionality provided by the \code{raster} pa
 Its use is exemplified below.
 }
 
-\subsection{Importing shapefiles to use as resistance raster}
+\subsubsection{Importing shapefiles to use as resistance raster}
 The following example is the simplest case, it creates a binary resistance raster with 100m resolution, assigning resistance 0 to areas
 covered by polygons in the given shapefile and resistance 1 to areas not covered. You can change these values with the parameters \code{field} (defaults to 0)
 and \code{background} (defaults to 1). The same works for line shapefiles.
 
-<<simriv-1, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-library(SiMRiv)
+<<simriv-5, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 resistance <- resistanceFromShape("../inst/doc/landcover.shp"
   , res = 100)
-plot(resistance, axes = F, mar = c(0, 0, 0, 2))
+plot(resistance, axes = F)#, mar = c(0, 0, 0, 2))
 @
 
 The following example creates a resistance raster with 100m resolution by importing a polygon shapefile while assigning different resistance values to each land cover class (given by the \code{mapvalues} parameter)
@@ -75,7 +156,7 @@ provided in the shapefile field \code{coverclass}. All pixels not covered by a p
 Note that you can add a margin around the extent of the shapes (here, we used a 3000 m margin), to minimize the boundary effect in simulations:
 during simulations, all area outside the extent of the resistance raster is given resistance 1, which makes the simulated individuals never move out of this rectangle, thus creating a boundary effect.
 
-<<simriv-2, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+<<simriv-6, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 resistance <- resistanceFromShape("../inst/doc/landcover.shp"
   , res = 100, field = "coverclass", mapvalues = c(
     "forest" = 0.5, "urban" = 1, "dam" = 0
@@ -90,7 +171,7 @@ Note that, by default, if no buffer is used, the rasterization of lines 'project
 This should be avoided; always make sure that the thinnest line elements are at least 3 pixel wide in the resistance raster.
 In this example with a river (using a buffer of 150m), resistance is manually assigned according to the river order field '\code{Order}' of the shapefile (higher resistance values for lower stream order sectors - i.e., the species is assumed to use main river sectors more than tributaries):
 
-<<simriv-3, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+<<simriv-7, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 resistance <- resistanceFromShape("../inst/doc/river-sample.shp"
   , res = 100, field = "Order", mapvalues = c("2" = 0
     , "3" = 0.2, "4" = 0.4, "5" = 0.6, "6" = 0.8)
@@ -103,7 +184,7 @@ A better, and possibly more realistic, option for rivers, instead of varying the
 would be to use a buffer proportional to the river order (alternatively, both solutions may be applied).
 In that case, we're better off loading the shape separately:
 
-<<simriv-4, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+<<simriv-8, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 # load shapefile
 river.shape <- shapefile("../inst/doc/river-sample.shp")
 
@@ -119,14 +200,14 @@ resistance <- resistanceFromShape(river.shape, res = 100
 plot(resistance, axes = F, mar = c(0, 0, 0, 2))
 @
 
-\subsection{Combining multiple shapefiles or rasters in one resistance raster}
+\subsubsection{Combining multiple shapefiles or rasters in one resistance raster}
 Often one needs to combine data from different shapefiles into a combined resistance raster. The following example places the river
 on top of the land cover shape, using the parameter \code{baseRaster}.
 The extent is automatically adjusted to fit all provided shapefiles' extents (plus the optional margin).
 Note also that, if we want a constant resistance value for all lines/polygons in a shape, we may specify the value with the parameter
 \code{field} (as is done below in \code{river.landcover}), instead of giving a field name (as is done below in \code{landcover}).
 
-<<simriv-5, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
+<<simriv-9, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 landcover <- resistanceFromShape("../inst/doc/landcover.shp"
   , res = 50, field = "coverclass", mapvalues = c(
     "forest" = 0.5, "urban" = 1, "dam" = 0
@@ -139,102 +220,57 @@ river.landcover <- resistanceFromShape("../inst/doc/river-sample.shp"
 plot(river.landcover, axes = F, mar = c(0, 0, 0, 2))
 @
 
-\section{Conducting simulations}
-\subsection{Basic simulations}
-In the simplest form, conducting simulations is straightforward. Using the default parameters setting, individuals will be simulated
-in an homogeneous environment, will start at coordinates (0, 0), and have a unit step length for all states.
-You only have to provide the movement type of each state. This is done by defining a \code{species}
-Let's first look at the simplest case, a simple Random Walk (cf. Turchin 1998):
+\subsection{Conducting simulations on a resistance raster}
+When simulating in heterogeneous environments, one further parameter must be taken into account, which is how the species perceives the environment to make its movement decisions.
+This is implemented as the concept of \textbf{perception window}: the area around the individual's current position, which it takes into account for making decisions.
+As of version \Sexpr{version$Version}, this is implemented as a circle centered on the individual's position, with a user-specified radius.
 
-<<simriv-6, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-# define a species with a single-state movement type
-# characterized by a random walk
-rand.walker <- species(state.RW())
+During simulations, at each step, the turning angles of the individuals will be biased towards lower resistance areas, and this is evaluated only within the radius of the perception window.
+This parameter also has an overwhelming importance in the resulting movement patterns.
+A species with a wider perception window will be attracted to lower resistance areas, even if it has to cross high resistance areas, because it 'sees' farther.
+Conversely, a species with a small perception window will not 'see' those lower resistance areas, so it will be detained by high resistance areas.
+This can have important consequences, for example, when simulating amphibious species in a river: the size of the perception window will determine how likely the individuals will take overland shortcuts between river segments.
 
-# simulate one individual of this species
-# 10000 simulation steps
-sim.rw <- simulate(rand.walker, 10000)
+In order to allow more flexibility, the perception window is an attribute of each state (not of the species).
+For ease of use, the size of the perception window of a state can be set simply by multiplying the state by a number, for example \code{state.RW() * 1000} will define a random walk state with a perception window of 1000 m.
+If you want to set the same value for all the states of a species, you can directly multiply the species by a number, e.g. \code{levy.walker * 1500} will set the perception window of both states of the Lévy-like walker to 1500 m.
 
-plot(sim.rw, type = "l", asp = 1, main = "Random walk")
-@
-
-\code{state.RW} is a shortcut function for defining a totally random movement state, with unit step length.
-Now let's try with a more interesting movement type, a simple Correlated Random Walk, where the direction taken in one step is correlated with the direction of the previous step.
-For this you have the shortcut function \code{state.CRW}, to which you must provide the amount of correlation (here we use 0.98).
-This parameter varies between [0, 1], being 0 no correlation (yielding a random walk state) and 1, a 100\% correlation (step direction does not change, it's always the same as the previous step). Obviously, \code{state.RW()} is a shortcut for \code{state.CRW(0)}.
-
-<<simriv-7, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-# define a species with a single-state movement type
-# characterized by a correlated random walk with
-# correlation=0.98
-c.rand.walker <- species(state.CRW(0.98))
-
-# simulate one individual of this species
-# 10000 simulation steps
-sim.crw <- simulate(c.rand.walker, 10000)
-
-plot(sim.crw, type = "l", asp = 1, main = "Correlated Random walk")
-@
-
-Additionally, you have a third shortcut \code{state.Resting()}, which corresponds to a state where the individual is stopped.
-These three shortcut functions are the bricks with which you construct any complex multistate movement. You can combine them with \code{+} to define a multistate movement.
-
-\subsection{Multi-state movement simulations}
-Let's simulate a two-state movement, by defining a species with two desired states.
-We'll create here a Lévy-like walker, i.e. a walker who alternates between random walks and correlated random walks.
-For defining such movement, we can combine the two states like \code{state.RW() + state.CRW(0.98)}.
-Now emerges a crucial parameter that must be defined for the species, which is the probability of transitions between these two states.
-This transition matrix has an overwhelming importance in the final movement pattern.
-Formally, it is just a square matrix with all values in the range [0, 1], and whose rows must sum to one (but not columns).
-It should be read row-wise, that is, the cell at row 2 column 3 defines the probability of changing from state \#2 to state \#3.
-A convenience function is provided to build such matrix.
-TODO HERE TODO HERE
-
-<<simriv-8, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-# a Lévy walker can be approximated by a two-state walker
-# composed of a random walk state and a correlated
-# random walk state.
-levy.walker <- species(state.RW() + state.CRW(0.98)
-  , trans = transitionMatrix(0.01, 0.01))
-sim.lw <- simulate(levy.walker, 10000)
-
-plot(sim.lw, type = "l", asp = 1, main = "Lévy-like walker")
-@
-
-
-The steps needed to conduct a simulation are:
-define a species
-
-\subsection{Customizing state parameters}
-
-
-\subsection{Simulating in heterogeneous environments}
-
+In the next example, we simulate a Lévy-like walker in a riverscape, assuming an amphibious species, i.e. that moves mainly in water but may also walk overland if needed.
 This example also demonstrates how to set the starting coordinates to a random pixel with given resistance value(s).
 
-<<simriv-9, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-
+<<simriv-10, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 # set starting coordinates anywhere within the river
 init = xyFromCell(river.landcover, sample(which(values(river.landcover) == 0), 1))
 
-# multiplying a species by a number is a shortcut for changing accordingly the step lengths of all states
-levy.walker <- (levy.walker + 10) * 1000
-sim.lw.river <- simulate(levy.walker, 10000, resist = river.landcover, coords = init)
 
-plot(river.landcover, axes = F, mar = c(0, 0, 0, 2), ylim = range(sim.lw.river[, 2]), xlim = range(sim.lw.river[, 1]))
+# adding a number to a species is a shortcut for setting
+# the step lengths of all states
+# multiplying is a shortcut for setting the perception window radius
+levy.walker <- (levy.walker + 10) * 1000
+
+sim.lw.river <- simulate(levy.walker, 20000
+  , resist = river.landcover, coords = init)
+
+# plot resistance
+plot(river.landcover, axes = F, mar = c(0, 0, 0, 2)
+  , ylim = range(sim.lw.river[, 2]), xlim = range(sim.lw.river[, 1]))
+
+# plot trajectory on top of resistance
+lines(sim.lw.river)
 
 #image(river.landcover, maxpixels=Inf, asp=1, zlim=c(0,1)#, col=c(gray(seq(1, 0.6, len=20)), "#990000")
 #	, ylim = range(sim.lw.river[, 2]), xlim = range(sim.lw.river[, 1]), axes = F, xlab = NA, ylab = NA)
-
-lines(sim.lw.river)
 @
 
 \section{Advices for conducting bias-free simulations}
 \subsection{Step lengths and resolution}
-
+When using resistance rasters, it is important to adequately choose the step length. You should consider the size of the raster features when choosing an appropriate step length:
+if the step length is larger than the smaller features (say, the width of a river), the individuals will jump over those features, and the simulation will not be correct.
+Step length should always be small, close to the real steps of the simulated species, and much smaller than the smallest landscape features.
+This is because the \code{SiMRiv} simulation algorithm was developed in the logic of conducting infinitesimal simulations.
+If you want to have simulated data which is comparable to real tracking data, you must downsample the simulation results with the function \code{sampleMovement}.
 
 \section{References}
-
 Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population
 redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.
 

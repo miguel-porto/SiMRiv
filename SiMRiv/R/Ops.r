@@ -1,3 +1,8 @@
+setClass("perceptionWindow",slots=c("type"="character","parameters"="numeric"))
+setClass("state",slots=c("turningAngleConcentration"="numeric","perceptionWindow"="perceptionWindow","stepLength"="numeric","name"="character"))
+setClass("species",slots=c("name"="character","transitionMatrix"="matrix","states"="list", "resistanceMap" = "numeric"))
+#setClass("individual",slots=c("species"="species"))
+
 setMethod("+", signature(e1 = "species"), function(e1, e2) {
 	for(i in 1:length(e1@states)) {
 		e1@states[[i]] <- callGeneric(e1@states[[i]], e2)

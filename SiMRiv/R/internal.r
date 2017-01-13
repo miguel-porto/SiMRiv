@@ -1,8 +1,3 @@
-setClass("perceptionWindow",slots=c("type"="character","parameters"="numeric"))
-setClass("state",slots=c("turningAngleConcentration"="numeric","perceptionWindow"="perceptionWindow","stepLength"="numeric","name"="character"))
-setClass("species",slots=c("name"="character","transitionMatrix"="matrix","states"="list", "resistanceMap" = "numeric"))
-#setClass("individual",slots=c("species"="species"))
-
 MULTIPLIER=1000000L
 
 perceptionWindow<-function(type = "circular", radius) {
