@@ -306,10 +306,10 @@ This section is mainly intended as an authors’ to-do list. As such, you may sk
 The software in its current version does not allow for:
 - parameter estimation through maximum likelihood (e.g., Morales et al 2004; Van de Kerk et al 2015; Patterson et al 2016; ...);
 - spatial bias (e.g., to fit a biased random walk);
-- multiple individuals' simulations;
+- multiple interacting individuals' simulations;
 - differentiate between physical resistance and habitat suitability;
-- steplength NOT in function of the resistance (i.e., currently, steplength depends on resistance values. In future versions, we'd like to allow it to be independent from the resistance, as well as dependent of other features - e.g., habitat type);
-- other distributions (e.g., turning angles: von Mises, wrapped normal, wrapped Cauchy, etc.; steplength: log-normal, gamma, Weibull, etc.), or, nonparametric method (Langrock et al. 2015) for estimating the distributions – cf. Van de Kerk et al 2015 and Patterson et al 2016)
+- turning angle in function of the habitat suitability (i.e., currently, it depends on resistance values. In future versions, we'd like to allow it to be dependent on other features - e.g., habitat type);
+- other distributions for turning angles and steplength (currently, we allow ..., ...);
 - memory effects.
 Also, although they would be relatively easy and straightforward to implement, several potentially useful functions are not yet implemented. They include:
 - calculate the shortest distance among points along a linear network (e.g., river, road) - useful, for instance, to define linear home range extensions of species moving in linear habitats (e.g., fish or otters);
