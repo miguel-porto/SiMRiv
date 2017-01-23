@@ -296,6 +296,8 @@ If you want to have simulated data which is comparable to real tracking data, yo
 Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population
 redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.
 
+TBC...
+
 \section{To do list}
 This section is mainly intended as an authors’ to-do list. As such, you may skip it.
 
