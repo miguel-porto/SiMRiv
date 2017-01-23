@@ -40,12 +40,8 @@ library(SiMRiv)
 \author{Miguel Porto, Lorenzo Quaglietta}
 \maketitle
 
-\section{INDEX}
-1 Conducting basic simulations                                                                  1
-2 Multi-state movement simulations                                                              3
-3 Simulating in heterogeneous environments                                                      4
-3.1 Data import                                                                                 5
-3.1.1 Importing shapefiles to use as resistance raster                                          5
+\tableofcontents
+
 ... TBC
 
 \section{Introduction}
