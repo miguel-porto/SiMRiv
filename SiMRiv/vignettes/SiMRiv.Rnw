@@ -270,7 +270,7 @@ init = xyFromCell(river.landcover, sample(which(values(river.landcover) == 0), 1
 # multiplying is a shortcut for setting the perception window radius
 levy.walker <- (levy.walker + 10) * 1000
 
-sim.lw.river <- simulate(levy.walker, 40000
+sim.lw.river <- simulate(levy.walker, 20000
   , resist = river.landcover, coords = init)
 
 # plot resistance
@@ -324,7 +324,7 @@ Also, although they would be relatively easy and straightforward to implement, s
 \item interpolation along lines.
 \end{enumerate}
 
-However, we programmed the software in order to be possible to implement the above-mentioned features in a near future. We highly encourage interested programmers to join our project and help us developing and further extending the package.
+However, we programmed the software in order to be possible to implement the above-mentioned features in a near future. \bf{We highly encourage interested programmers to join our project (https://github.com/miguel-porto/SiMRiv/)} and help us developing and further extending the package.
 
 \end{document}
 
