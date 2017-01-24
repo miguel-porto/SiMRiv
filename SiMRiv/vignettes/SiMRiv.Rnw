@@ -42,7 +42,7 @@ library(SiMRiv)
 
 \tableofcontents
 
-... TBC
+\\... TBC
 
 \section{Introduction}
 The study of animal movement behaviour, recently reframed in the 'Movement Ecology' paradigm (Nathan 2008), is key to a variety of fields including landscape ecology, species distribution modeling,
@@ -57,10 +57,10 @@ for simulating individual trajectories of species that move without restrictions
 appropriate software for simulating individual movement trajectories of species inhabiting (or more intensively using) linear landscapes (e.g., trouts or otters in rivers) or somehow conditioned by landscape heterogeneity. 
 SiMRiv allows such task. It was specifically conceived to allow simulating individual-based, spatially-explicit movements in river networks and heterogeneous landscapes. However, the software was thought and developed to be highly flexible,
 allowing simulating trajectories of any species living in any landscape (i.e., irrespective of the landscape the species live within). It thus allows fitting realistically complex movement models, using multi-state markov models, while taking into account environmental complexity.
-We present the main functions and analyses provided by our package, introduce some case studies, and provide an overview of the possible uses of the package as well as a to do list indicating the main functions we are planning (or would like) to develop.
-We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology in Nathan 2008, Codling et al 2008, Smouse et al 2010, and Patterson et al 2016), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its vignette (http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf).
+
 In this document, we: (i) introduce how to prepare the data for the simulations; (ii) report the main functionalities of the software; (iii) introduce some examples of use of the software; and (iv) provide an overview on main software's potential applications, expected outcomes,
-and features we would like to modify or develop by new. This is a work in progress, report of any bug or suggestion is warmly welcomed. We are particularly interested in any collaboration, especially stemming from other programmers who would like to add some functions to our package or extend the already implemented ones.
+and features we would like to modify or develop by new. We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology in Nathan 2008, Codling et al 2008, Smouse et al 2010, and Patterson et al 2016), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its vignette (http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf).
+This is a work in progress, \bf{report of any bug or suggestion is warmly welcomed. We are particularly interested in any collaboration, especially stemming from other programmers} who would like to add some functions to our package or extend the already implemented ones (https://github.com/miguel-porto/SiMRiv/).
 
 \section{Conducting basic simulations}
 In the simplest form, conducting simulations is straightforward. Using the default parameters setting, individuals will be simulated
@@ -295,6 +295,7 @@ If you want to have simulated data which is comparable to real tracking data, yo
 \section{References}
 Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population
 redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.
+
 
 TBC...
 
