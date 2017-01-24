@@ -270,7 +270,7 @@ init = xyFromCell(river.landcover, sample(which(values(river.landcover) == 0), 1
 # multiplying is a shortcut for setting the perception window radius
 levy.walker <- (levy.walker + 10) * 1000
 
-sim.lw.river <- simulate(levy.walker, 20000
+sim.lw.river <- simulate(levy.walker, 40000
   , resist = river.landcover, coords = init)
 
 # plot resistance
