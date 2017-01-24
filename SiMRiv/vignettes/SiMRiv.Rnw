@@ -1,6 +1,8 @@
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{fullpage}
+\usepackage[pdfborder={0 0 0}, colorlinks=true, urlcolor=blue, linkcolor=black]{hyperref}
+
 %\VignetteIndexEntry{Usage of the SiMRiv package}
 
 \newcommand{\code}[1]{{\tt #1}}
@@ -60,8 +62,8 @@ SiMRiv allows such task. It was specifically conceived to allow simulating indiv
 allowing simulating trajectories of any species living in any landscape (i.e., irrespective of the landscape the species live within). It thus allows fitting realistically complex movement models, using multi-state markov models, while taking into account environmental complexity.
 
 In this document, we: (i) introduce how to prepare the data for the simulations; (ii) report the main functionalities of the software; (iii) introduce some examples of use of the software; and (iv) provide an overview on main software's potential applications, expected outcomes,
-and features we would like to modify or develop by new. We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology in Nathan 2008, Codling et al 2008, Smouse et al 2010, and Patterson et al 2016), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its vignette (http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf).
-This is a work in progress, \textbf{report of any bug or suggestion is warmly welcomed. We are particularly interested in any collaboration, especially stemming from other programmers} who would like to add some functions to our package or extend the already implemented ones (https://github.com/miguel-porto/SiMRiv/).
+and features we would like to modify or develop by new. We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology in Nathan 2008, Codling et al 2008, Smouse et al 2010, and Patterson et al 2016), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its \href{http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf}{vignette}.
+This is a work in progress, \textbf{report of any bug or suggestion is warmly welcomed. We are particularly interested in any collaboration, especially stemming from other programmers} who would like to add some functions to our package or extend the already implemented ones, please visit \href{https://github.com/miguel-porto/SiMRiv/}{GitHub}.
 
 \section{Conducting basic simulations}
 In the simplest form, conducting simulations is straightforward. Using the default parameters setting, individuals will be simulated
@@ -325,7 +327,7 @@ Also, although they would be relatively easy and straightforward to implement, s
 \item interpolation along lines.
 \end{enumerate}
 
-However, we programmed the software in order to be possible to implement the above-mentioned features in a near future. \textbf{We highly encourage interested programmers to join our project (https://github.com/miguel-porto/SiMRiv/)} and help us developing and further extending the package.
+However, we programmed the software in order to be possible to implement the above-mentioned features in a near future. \textbf{We highly encourage interested programmers to join our project on} \href{https://github.com/miguel-porto/SiMRiv/}{GitHub} and help us developing and further extending the package.
 
 \end{document}
 
