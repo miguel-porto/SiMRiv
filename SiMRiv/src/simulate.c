@@ -79,74 +79,68 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 
 // START SIMULATION
 	{
-		PDF tmpPDF,tmprotPDF;
+		PDF tmpPDF, tmprotPDF;
 		CDF tmpMultCDF;
-		double **curtrans=malloc(sizeof(double*)*ninds);
-		unsigned long r,s,k;
-		float lengthmove;//,ecdfstep=getEmpiricalCDFStep();
+		double **curtrans = malloc(sizeof(double*) * ninds);
+		unsigned long r, s, k;
+		float lengthmove;
 		STATE *tmpstate;
-// assign initial states and angles and starting positions
-		for(i=0;i<ninds;i++) {
-			ind[i].curpos.x=start[i];
-			ind[i].curpos.y=start[i + ninds];
-			ind[i].curstate=runif(0,ind[i].nstates-1);		//rand() % ind[i].nstates;
-			
-			ind[i].curang=drawRandomAngle(NULL);	// uniform random angle
-			for(j=0;j<ind[i].nstates;j++) {
-// compute base circular PDFs for all states of all individuals (centerd on 0)
-				circNormal(ind[i].states[j].taconc,ind[i].states[j].basePDF,ind[i].states[j].scaledPDF);
-// compute cumulative circular PDFs for all states of all individuals
-				for(k=1,ind[i].states[j].cumPDF[0]=(long)(ind[i].states[j].basePDF[0]*MULTIPLIER);k<ANGLERES;k++) {
-					ind[i].states[j].cumPDF[k]=ind[i].states[j].cumPDF[k-1]+(long)(ind[i].states[j].basePDF[k]*MULTIPLIER);
+// assign initial states, angles and starting positions
+		for(i=0; i<ninds; i++) {
+			ind[i].curpos.x = start[i];
+			ind[i].curpos.y = start[i + ninds];
+			ind[i].curstate = runif(0, ind[i].nstates - 1);	// random initial state
+			ind[i].curang = drawRandomAngle(NULL);	// uniform random angle
+// initialize states
+			for(j=0; j<ind[i].nstates; j++) {
+// compute base circular PDFs for all states of all individuals (centered on 0), with given concentration
+				circNormal(ind[i].states[j].taconc, ind[i].states[j].basePDF, ind[i].states[j].scaledPDF);
+// compute the respective cumulative circular PDFs
+				for(k=1, ind[i].states[j].cumPDF[0] = (long)(ind[i].states[j].basePDF[0]*MULTIPLIER); k<ANGLERES; k++) {
+					ind[i].states[j].cumPDF[k] = ind[i].states[j].cumPDF[k-1]+(long)(ind[i].states[j].basePDF[k]*MULTIPLIER);
 				}
-// Rprintf("\nState %d\n",j);for(k=0;k<ANGLERES;k++) Rprintf("%d ",ind[i].states[j].cumPDF[k]);
 			}
 		}
+/***************************************
+/* MAIN TIME LOOP
+***************************************/
+// NOTE: time is unitless for now
+		for(time=0; time<timespan; time++) {
+			for(i=0; i<ninds; i++)
+				curtrans[i] = ind[i].transitionmatrix;	// for now, constant transition matrix
 
-// MAIN TIME LOOP	**************************************
-		for(time=0;time<timespan;time++) {
-			for(i=0;i<ninds;i++) {
-//			for(k=0;k<4;k++) Rprintf("%f ",ind[i].transitionmatrix[k]);
-				curtrans[i]=ind[i].transitionmatrix;	// for now, constant transition matrix
-			}
 // LOOP FOR EACH INDIVIDUAL			
-			for(i=0,tmp2=0;i<ninds;i++,tmp2+=timespan) {	// tmp2 is just a relative pointer to output matrix
+			for(i=0, tmp2=0; i<ninds; i++, tmp2+=timespan) {	// tmp2 is just a relative pointer to output matrix
 // draw new state according to transition matrix
-				r=runif(0,MULTIPLIER-1);
-				for(k=0,s=(unsigned long)(curtrans[i][ind[i].curstate]*MULTIPLIER);k<=ind[i].nstates && r>=s;k++,s+=(unsigned long)(curtrans[i][ind[i].curstate + k*ind[i].nstates]*MULTIPLIER)) {}
-				ind[i].curstate=k;
-// Rprintf("curstate %d random %d newstate %d\n",ind[i].curstate,r,k);
+				r = runif(0, MULTIPLIER-1);
+				for(k=0, s=(unsigned long)(curtrans[i][ind[i].curstate]*MULTIPLIER)
+					; k<=ind[i].nstates && r>=s
+					; k++, s+=(unsigned long)(curtrans[i][ind[i].curstate + k*ind[i].nstates]*MULTIPLIER)) {}
+				ind[i].curstate = k;
 
-// draw random turning angle according to basePDF of curstate
-// note that this angle is not biased based on resistance, it just depends on the state definition and previous angle
-// this angle is the change in direction that the individual will make in the next step, so the "CRW component"
-
-				tmpstate=&ind[i].states[ind[i].curstate];
-// rotate the 0-centered PDF so to be centered in the previous step angle instead
+				tmpstate = &ind[i].states[ind[i].curstate];
+// rotate the 0-centered base PDF (the one calculated from the state's concentration parameter)
+// to center on the previous step angle
 				rotatePDF(tmpstate->scaledPDF, tmprotPDF, ind[i].curang-ANGLECENTER);
-// computes the empirical resistance around the current position
+// compute the empirical resistance PDF around the current position
 				computeEmpiricalResistancePDF(ind[i].curpos, resist, &tmpstate->pwind, tmpPDF);
 				if(tmpPDF[0]!=-1) {		// resistance is heterogeneous
 // multiply rotated base PDF by empirical PDF and compute cumulative PDF directly
 					for(j=1, tmpMultCDF[0] = (unsigned long)(tmprotPDF[0] * tmpPDF[0] * MULTIPLIER); j<ANGLERES; j++)
 						tmpMultCDF[j] = tmpMultCDF[j-1] + (long)(tmprotPDF[j] * tmpPDF[j] * MULTIPLIER);
-//Rprintf("New\n");
-/*for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmpPDF[j]);
-Rprintf("\n");*/
-/*for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmprotPDF[j]);
-Rprintf("\n");
-//for(j=0;j<ANGLERES;j+=2) Rprintf("%.01f ",(float)tmpMultCDF[j]/(float)tmpMultCDF[ANGLERES-1]);
-for(j=0;j<ANGLERES;j+=1) Rprintf("%d ",tmpMultCDF[j]);
-Rprintf("\n");*/
-					if(tmpMultCDF[ANGLERES-1]==0)	// TODO what to do when the desired direction is facing towards an infinite resistance area and there is no overlap of PDFs? keep trying, or abort step?
-						ind[i].curang=drawRandomAngle(NULL);	// here we just draw a uniform random angle
+
+// TODO what to do when the desired direction is facing towards an infinite resistance area and there is no overlap of PDFs? keep trying, or abort step?
+					if(tmpMultCDF[ANGLERES-1] == 0)
+						ind[i].curang = drawRandomAngle(NULL);	// here we just draw a uniform random angle
 					else
-						ind[i].curang=drawRandomAngle(tmpMultCDF);
+// draw random angle based on compound PDF (resistance + correlated components)
+						ind[i].curang = drawRandomAngle(tmpMultCDF);
 
 				} else {	// ignore resistance when resistance is equal in all directions
-					for(j=1,tmpMultCDF[0]=(unsigned long)(tmprotPDF[0]*MULTIPLIER);j<ANGLERES;j++)
-						tmpMultCDF[j]=tmpMultCDF[j-1] + (unsigned long)(tmprotPDF[j]*MULTIPLIER);
-					ind[i].curang=drawRandomAngle(tmpMultCDF);
+					for(j=1, tmpMultCDF[0]=(unsigned long)(tmprotPDF[0]*MULTIPLIER); j<ANGLERES; j++)
+						tmpMultCDF[j] = tmpMultCDF[j-1] + (unsigned long)(tmprotPDF[j]*MULTIPLIER);
+// draw random angle based on base PDF
+					ind[i].curang = drawRandomAngle(tmpMultCDF);
 				}
 /*for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmpstate->scaledPDF[j]);
 Rprintf("\n");
