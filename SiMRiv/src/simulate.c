@@ -211,9 +211,11 @@ Rprintf("\n");*/
 */
 
 /*
-make a circular PDF centered on zero
+make a circular wrapped normal PDF centered on zero
 note that there's an offset of -PI, so the first value corresponds to the density of -PI
 If scaledout is provided, also output range-standardized PDF
+Code adapted from the CircStats package, function dwrpnorm()
+_rho is the concentration parameter, varying from 0 (flat) to 1 (one peak)
 */
 void circNormal(float _rho,float* out,float* scaledout) {
 	float var=-2.f*log(_rho),next,last,delta;
