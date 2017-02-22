@@ -1,4 +1,4 @@
-simulate <- function(individuals, time, coords = NULL, states = NULL, resist = NULL) {
+simulate <- function(individuals, time, coords = NULL, states = NULL, resist = NULL, start.resistance) {
 	# TODO: different resistance raster for each individual, using the species' resistanceMap
 	if(mode(time)!="numeric") stop("time must be numeric")
 
@@ -22,11 +22,18 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 			)
 			warning("No starting coordinates and no raster given: starting positions set to (0,0)")
 		} else {
-			e=extent(resist)
-			coords=cbind(
-				as.integer(runif(length(individuals),e@xmin,e@xmax))
-				,as.integer(runif(length(individuals),e@ymin,e@ymax))
-			)
+			if(missing(start.resistance) || is.null(start.resistance)) {
+				e=extent(resist)
+				coords <- cbind(
+					as.integer(runif(length(individuals),e@xmin,e@xmax))
+					,as.integer(runif(length(individuals),e@ymin,e@ymax))
+				)
+			} else {
+				coords <- matrix(as.integer(
+					xyFromCell(resist, sample(which(values(resist) <= start.resistance)
+					, length(individuals)))
+				), nc = 2)
+			}
 		}
 	}
 
@@ -107,7 +114,7 @@ sampleMovement<-function(relocs, resolution = 1, resist = NULL) {
 	if(resolution<1) stop("Resolution must be at least 1 time tick.")
 	tmp=as.integer(round(resolution))
 	if(tmp != resolution) stop("Resolution must be an integer number")
-	if(dim(relocs)[2] != 3) stop("Only implemented for single individual simulations at the moment.")
+	if(dim(relocs)[2] > 3) warning("Only implemented for single individual simulations at the moment, using only the first two columns as coordinates")
 	relocs=relocs[seq(1,dim(relocs)[1],by=tmp),1:2]
 	diffs=apply(relocs,2,diff)
 	steplengths=sqrt(apply(diffs^2,1,sum))
