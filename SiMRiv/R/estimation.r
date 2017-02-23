@@ -28,74 +28,50 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = range(a.var)
 	return(hist.var.ref)
 }
 
-speciesModel <- function(type, perception.window) {
-	if(missing(perception.window)) {
-		return(switch(pmatch(type, c("RW.CRW", "CRW.CRW")), {
-			f <- function(parameters) {
-				return(species(
-					state.CRW(parameters[1]) + state.RW()
-					, transitionMatrix(parameters[2], parameters[3])
-				))
-			}
-			attr(f, "npars") <- 3
-			attr(f, "lower.bounds") <- c(0, rep(0.00001, 2))
-			attr(f, "upper.bounds") <- c(1, rep(0.5, 2))
-			return(f)
-		}, {
-			f <- function(parameters) {
-				return(species(
-					state.CRW(parameters[1]) + state.CRW(parameters[2])
-					, transitionMatrix(parameters[3], parameters[4])
-				))
-			}
-			attr(f, "npars") <- 4
-			attr(f, "lower.bounds") <- c(0, 0, rep(0.00001, 2))
-			attr(f, "upper.bounds") <- c(1, 1, rep(0.5, 2))
-			return(f)
-		}))
-	} else {
-		return(switch(pmatch(type, c("RW.CRW", "CRW.CRW")), {
-			f <- function(parameters) {
-				return(species(
-					state.CRW(parameters[1]) + state.RW()
-					, transitionMatrix(parameters[2], parameters[3])
-				) * perception.window)
-			}
-			attr(f, "npars") <- 3
-			attr(f, "lower.bounds") <- c(0, rep(0.00001, 2))
-			attr(f, "upper.bounds") <- c(1, rep(0.5, 2))
-			return(f)
-		}, {
-			f <- function(parameters) {
-				return(species(
-					state.CRW(parameters[1]) + state.CRW(parameters[2])
-					, transitionMatrix(parameters[3], parameters[4])
-				) * perception.window)
-			}
-			attr(f, "npars") <- 4
-			attr(f, "lower.bounds") <- c(0, 0, rep(0.00001, 2))
-			attr(f, "upper.bounds") <- c(1, 1, rep(0.5, 2))
-			return(f)
-		}))
-	}
+speciesModel <- function(type, perception.window = 0, steplength = 1) {
+	return(switch(pmatch(type, c("RW.CRW", "CRW.CRW")), {
+		f <- function(parameters) {
+			return(species(
+				state.CRW(parameters[1]) + state.RW()
+				, transitionMatrix(parameters[2], parameters[3])
+			) * perception.window + steplength)
+		}
+		attr(f, "npars") <- 3
+		attr(f, "lower.bounds") <- c(0, rep(0.00001, 2))
+		attr(f, "upper.bounds") <- c(1, rep(0.5, 2))
+		return(f)
+	}, {
+		f <- function(parameters) {
+			return(species(
+				state.CRW(parameters[1]) + state.CRW(parameters[2])
+				, transitionMatrix(parameters[3], parameters[4])
+			) * perception.window + steplength)
+		}
+		attr(f, "npars") <- 4
+		attr(f, "lower.bounds") <- c(0, 0, rep(0.00001, 2))
+		attr(f, "upper.bounds") <- c(1, 1, rep(0.5, 2))
+		return(f)
+	}))
 }
 
 adjustModel <- function(
 	realData
 	, species.model
 	, resolution = 10
+# simulation parameters
 	, resistance = NULL
+	, coords = NULL
 	, start.resistance = NULL
 # fitness function parameters
 	, nbins = 100
 	, nbins.hist = 7
 	, nrepetitions = 1
 # GA options
-	, popsize = 100, ngenerations = 400, parallel = TRUE
+	, popsize = 100, ngenerations = 400, parallel = is.null(resistance)
 ) {
 	nsteps <- dim(realData)[1]
 # compute turning angles and step lengths
-	reference <- sampleMovement(realData)
+	reference <- sampleMovement(realData, resist = resistance)
 # compute the SD of turning angles in a moving window
 	a.var.ref <- angle.variation(reference, nbins)
 # make the (fixed-range) histogram of all the moving window SDs
@@ -115,10 +91,10 @@ adjustModel <- function(
 		cl <- makeCluster(parallel)
 	}
 
-	if(!is.null(cl)) {
+	if(!is.null(cl)) {	# GO PARALLEL
 		clusterCall(cl, function() library(SiMRiv))
 		clusterExport(cl, c("nrepetitions", "nbins.hist", "nsteps", "nbins"
-			, "range.hist", "resolution", "species.model", "resistance", "start.resistance"
+			, "range.hist", "resolution", "species.model", "resistance", "coords", "start.resistance"
 			), envir = environment())
 	
 		objective.function.par <- function(inp.mat, reference) {
@@ -127,14 +103,14 @@ adjustModel <- function(
 	
 				hist.mat <- matrix(nc = nbins.hist, nr = nrepetitions)
 				if(nrepetitions == 1) {
-					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, start.resistance = start.resistance)
-					s <- sampleMovement(rel, resolution)
+					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
+					s <- sampleMovement(rel, resolution, resist = resistance)
 					a.var.sim <- angle.variation(s, nbins)
 					hist.var <- histogram.fixed(a.var.sim, range.hist, nbins.hist)
 				} else {
 					for(i in 1:nrepetitions) {
-						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, start.resistance = start.resistance)
-						s <- sampleMovement(rel, resolution)
+						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
+						s <- sampleMovement(rel, resolution, resist = resistance)
 						a.var.sim <- angle.variation(s, nbins)
 						hist.mat[i, ] <- histogram.fixed(a.var.sim, range.hist, nbins.hist)
 					}
@@ -154,20 +130,20 @@ print(crit)
 			, upper.bounds = attr(species.model, "upper.bounds")
 			, vectorized = TRUE, mprob = 0.1
 		)
-	} else {	# not parallel
+	} else {	# GO SINGLE CORE
 		objective.function = function(inp.par, ref) {
 			sp.sim = species.model(inp.par)
 	
 			hist.mat = matrix(nc = nbins.hist, nr = nrepetitions)
 			if(nrepetitions == 1) {
-				rel = simulate(sp.sim, nsteps * resolution, resist = resistance, start.resistance = start.resistance)
-				s = sampleMovement(rel, resolution)
+				rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
+				s = sampleMovement(rel, resolution, resist = resistance)
 				a.var.sim = angle.variation(s, nbins)
 				hist.var = histogram.fixed(a.var.sim, range.hist, nbins.hist)
 			} else {
 				for(i in 1:nrepetitions) {
-					rel = simulate(sp.sim, nsteps * resolution, resist = resistance, start.resistance = start.resistance)
-					s = sampleMovement(rel, resolution)
+					rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
+					s = sampleMovement(rel, resolution, resist = resistance)
 					a.var.sim = angle.variation(s, nbins)
 					hist.mat[i, ] = histogram.fixed(a.var.sim, range.hist, nbins.hist)
 				}
@@ -175,6 +151,9 @@ print(crit)
 			}
 			crit = abs(hist.var - ref[[3]])
 		#	crit = sum(abs(hist.var - ref[[3]]))
+		for(p in inp.par)
+			cat(sprintf("%.3f ", p))
+		cat(": ")
 		for(o in crit)
 			cat(sprintf("%5.2f ", o))
 		cat("\n")
