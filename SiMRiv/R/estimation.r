@@ -29,7 +29,17 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = range(a.var)
 }
 
 speciesModel <- function(type, perception.window = 0, steplength = 1) {
-	return(switch(pmatch(type, c("RW.CRW", "CRW.CRW")), {
+	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw")), {
+		f <- function(parameters) {
+			return(species(
+				state.CRW(parameters[1])
+			) * perception.window + steplength)
+		}
+		attr(f, "npars") <- 1
+		attr(f, "lower.bounds") <- 0
+		attr(f, "upper.bounds") <- 1
+		return(f)
+	}, {
 		f <- function(parameters) {
 			return(species(
 				state.CRW(parameters[1]) + state.RW()
@@ -50,6 +60,17 @@ speciesModel <- function(type, perception.window = 0, steplength = 1) {
 		attr(f, "npars") <- 4
 		attr(f, "lower.bounds") <- c(0, 0, rep(0.00001, 2))
 		attr(f, "upper.bounds") <- c(1, 1, rep(0.5, 2))
+		return(f)
+	}, {
+		if(perception.window <= 1) stop("You must provide the maximum allowable perception window size, e.g. perception.window = 500")
+		f <- function(parameters) {
+			return(species(
+				state.CRW(parameters[1])
+			) * parameters[2] + steplength)
+		}
+		attr(f, "npars") <- 2
+		attr(f, "lower.bounds") <- c(0, 1)
+		attr(f, "upper.bounds") <- c(1, perception.window)
 		return(f)
 	}))
 }

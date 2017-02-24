@@ -1,4 +1,5 @@
-#define USEOPENMP		FIXME: some bug with OMP in i386 architecture...
+// FIXME: some bug with OMP in i386 architecture...
+#define USEOPENMP
 #ifdef USEOPENMP
 #include <omp.h>
 #endif
@@ -12,12 +13,11 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 	#endif
 	rho=envir;
 	RASTER *resist=NULL;
-	double rasterRes;
 	GetRNGstate();
 	
 	if(_resist!=R_NilValue) {
 		resist=openRaster(_resist,rho);
-		rasterRes=NUMERIC_POINTER(getRasterRes(_resist,rho))[0];	// TODO handle cases when there is more than one raster (minimum resolution!)
+//		rasterRes=NUMERIC_POINTER(getRasterRes(_resist,rho))[0];	// TODO handle cases when there is more than one raster (minimum resolution!)
 	}
 	int timespan=INTEGER_POINTER(_timespan)[0],*start=INTEGER_POINTER(_starting_positions);
 	double *prelocs;
@@ -30,11 +30,6 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 	
 	PROTECT(relocs=allocMatrix(REALSXP,timespan,3*ninds));	// output is a matrix with columns x,y,state appended for each individual
 	prelocs=NUMERIC_POINTER(relocs);
-
-	float minimumRes=1000000000.f;
-	minimumRes=(float)rasterRes;		// TODO handle cases when there is more than one raster (minimum resolution!)
-	
-	// minimumRes is computed as the minimum of all step lengths across all individuals and the resistance raster
 	
 // get pointers to individual, species and state data
 	for(i=0;i<ninds;i++) {
@@ -70,7 +65,7 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 				}
 			}
 
-			if(ind[i].states[j].steplength>0 && minimumRes>ind[i].states[j].steplength) minimumRes=ind[i].states[j].steplength;
+//			if(ind[i].states[j].steplength>0 && minimumRes>ind[i].states[j].steplength) minimumRes=ind[i].states[j].steplength;
 		}
 		
 //for(j=0;j<ind[i].nstates*ind[i].nstates;j++) {Rprintf("%d ",ind[i].transitionmatrix[j]);}
