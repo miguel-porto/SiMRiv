@@ -21,9 +21,10 @@ histogram.fixed <- function(data, range, nbins) {
 
 # Computes the turning angle variation histogram (variation computed in a time-moving window)
 # This histogram gives a view of the relative amount of time that the animal spends in each distinct state
-computeVariationHistogram <- function(relocs, nbins = 7, range = range(a.var)
-	, window.size = dim(relocs$stats)[1] %/% 100) {
-	a.var <- angle.variation(relocs, window = window.size)
+computeVariationHistogram <- function(relocs, nbins = 7, range = NULL, window.size = dim(relocs$stats)[1] %/% 100) {
+	a.var <- angle.variation(relocs, window.size = window.size)
+	if(is.null(range)) 
+		range <- range(a.var)
 	hist.var.ref <- histogram.fixed(a.var, range, nbins)
 	return(hist.var.ref)
 }
@@ -193,7 +194,7 @@ print(crit)
 	if(!is.null(cl)) stopCluster(cl)
 	return(list(
 		solutions = sol
-		, species = apply(sol$par, 1, species.model)
+		#, species = apply(sol$par, 1, species.model)
 	))
 }
 

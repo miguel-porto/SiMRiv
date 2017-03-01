@@ -21,3 +21,6 @@ export(adjustModel)
 export(speciesModel)
 export(computeVariationHistogram)
 export(plot.relocs)
+
+export(angle.variation)
+export(histogram.fixed)
