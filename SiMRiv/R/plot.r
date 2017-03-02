@@ -1,9 +1,9 @@
-plot.relocs = function(resist, relocs, n.rep = NA , xlim = NA, ylim = NA
+plot.relocs = function(relocs, resist, n.rep = NA , xlim = NA, ylim = NA
 	, kde, col = ifelse(is.na(n.rep), "#0000ff", "#0000ff30"), lwd = 0.2, scale = F, contour.lines = c(5, 25, 50, 75, 95)) {
 	if(all(is.na(xlim))) xlim = range(relocs[, 1])
 	if(all(is.na(ylim))) ylim = range(relocs[, 2])
 
-	if(!is.null(resist)) {
+	if(!missing(resist) && !is.null(resist) && !is.na(resist)) {
 		image(resist, maxpixels=Inf, asp=1, zlim=c(0,1), col=c(gray(seq(1, 0.6, len=20)), "#990000")
 			, ylim = ylim, xlim = xlim, axes = F, xlab = NA, ylab = NA)
 	} else {

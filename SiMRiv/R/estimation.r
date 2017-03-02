@@ -39,6 +39,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1) {
 		attr(f, "npars") <- 1
 		attr(f, "lower.bounds") <- 0
 		attr(f, "upper.bounds") <- 1
+		attr(f, "param.names") <- "Turning angle correlation"
 		return(f)
 	}, {
 		f <- function(parameters) {
@@ -50,6 +51,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1) {
 		attr(f, "npars") <- 3
 		attr(f, "lower.bounds") <- c(0, rep(0.00001, 2))
 		attr(f, "upper.bounds") <- c(1, rep(0.5, 2))
+		attr(f, "param.names") <- c("Turning angle correlation", "Prob. CRW -> RW", "Prob. RW -> CRW")
 		return(f)
 	}, {
 		f <- function(parameters) {
@@ -61,6 +63,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1) {
 		attr(f, "npars") <- 4
 		attr(f, "lower.bounds") <- c(0, 0, rep(0.00001, 2))
 		attr(f, "upper.bounds") <- c(1, 1, rep(0.5, 2))
+		attr(f, "param.names") <- c("Turning angle correlation state 1", "Turning angle correlation state 2", "Prob. st.1 -> st.2", "Prob. st.2 -> st.1")
 		return(f)
 	}, {
 		if(perception.window <= 1) stop("You must provide the maximum allowable perception window size, e.g. perception.window = 500")
@@ -72,6 +75,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1) {
 		attr(f, "npars") <- 2
 		attr(f, "lower.bounds") <- c(0, 1)
 		attr(f, "upper.bounds") <- c(1, perception.window)
+		attr(f, "param.names") <- c("Turning angle correlation", "Perception window radius")
 		return(f)
 	}))
 }
@@ -89,12 +93,13 @@ adjustModel <- function(
 	, nbins.hist = 7
 	, nrepetitions = 1
 # GA options
-	, popsize = 100, ngenerations = 400, parallel = is.null(resistance)
+	, popsize = 100, ngenerations = 400, mprob = 0.2
+	, parallel = is.null(resistance)
 ) {
 	nsteps <- dim(realData)[1]
-# compute turning angles and step lengths
+# compute turning angles and step lengths of the real movement
 	reference <- sampleMovement(realData, resist = resistance)
-# compute the SD of turning angles in a moving window
+# compute the SD of turning angles in a fixed-size juxtaposed moving window
 	a.var.ref <- angle.variation(reference, nbins)
 # make the (fixed-range) histogram of all the moving window SDs
 # the range of the histogram is 20% larger than observed range to account for stochasticity in simulations
@@ -102,6 +107,7 @@ adjustModel <- function(
 	range.hist <- range(a.var.ref) + c(-increase, increase)
 	hist.var.ref <- histogram.fixed(a.var.ref, range.hist, nbins.hist)
 	cl <- NULL
+	cat("Real data:", nsteps,", Simulating", nsteps * resolution,"steps @ res", resolution,"\n")
 	
 	if(inherits(parallel, "cluster")) {
 		cl <- parallel
@@ -139,10 +145,11 @@ adjustModel <- function(
 					hist.var <- apply(hist.mat, 2, mean)
 				}
 				crit <- abs(hist.var - ref[[3]])
-			#	crit = sum(abs(hist.var - ref[[3]]))
+#				crit = c(mean(abs(hist.var - ref[[3]])), sd(abs(hist.var - ref[[3]])))
 				return(crit)
 			}, reference)
 print(crit)
+#cat(".")
 			return(crit)
 		}
 
@@ -150,7 +157,7 @@ print(crit)
 			, generations = ngenerations, popsize = popsize
 			, lower.bounds = attr(species.model, "lower.bounds")
 			, upper.bounds = attr(species.model, "upper.bounds")
-			, vectorized = TRUE, mprob = 0.1
+			, vectorized = TRUE, mprob = mprob
 		)
 	} else {	# GO SINGLE CORE
 		objective.function = function(inp.par, ref) {
@@ -188,7 +195,7 @@ print(crit)
 			, generations = ngenerations, popsize = popsize
 			, lower.bounds = attr(species.model, "lower.bounds")
 			, upper.bounds = attr(species.model, "upper.bounds")
-			, vectorized = FALSE, mprob = 0.1)
+			, vectorized = FALSE, mprob = mprob)
 	}
 	
 	if(!is.null(cl)) stopCluster(cl)
