@@ -1,7 +1,8 @@
-\name{sampleMovement}
-\alias{sampleMovement}
-\title{Resample a simulated movement and compute step-wise statistics}
+\name{adjustModel}
+\alias{adjustModel}
+\title{Finds ("estimates") simulation input parameters for a given trajectory, assuming the given species model}
 \description{
+  Given a trajectory and 
   Resamples a movement simulated with the function \code{\link{simulate}} to a lower temporal resolution (frequency).
   Simultaneously, computes step length, turning angles (\cite{Turchin 1998}) and accumulated resistance
   for each resampled step, assuming that a straight line connects each re-sampled location.
@@ -10,6 +11,22 @@
   sampleMovement(relocs, resolution = 1, resist = NULL)
 }
 \arguments{
+  \item{realData}{the given trajectory for which the input parameters are to be "estimated", given as a matrix with two columns (coordinates).}
+  \item{species.model}{the species model to adjust, created with \code{\link{speciesModel}}. This defines the type of movement that is to be adjusted (e.g. how many, and which type of, behavioral states, see details).}
+  \item{resolution}{the time frequency at which to adjust the parameters .}
+  \item{resistance}{the resistance raster to use in simulations, during "estimation".}
+  \item{coords}{the initial coordinates of the simulated individuals (only relevant if \code{resistance} is provided).}
+  \item{start.resistance}{the maximum value of resistance in which the individuals are allowed to start. Only used if \code{coords} is not provided.}
+  
+	, start.resistance = NULL
+# fitness function parameters
+	, nbins = 100
+	, nbins.hist = 7
+	, nrepetitions = 1
+# GA options
+	, popsize = 100, ngenerations = 400, mprob = 0.2
+	, parallel = is.null(resistance)
+
   \item{relocs}{the simulated movement, an object returned by \code{\link{simulate}}. NOTE: currently this is only implemented for simulations of single individuals.}
   \item{resolution}{movement will be resampled every this number of time ticks. If 1, no resampling is done (but metrics are computed).}
   \item{resist}{a landscape resistance raster, usually the same that was used in \code{simulate}}
