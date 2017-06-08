@@ -3,7 +3,7 @@ plot.relocs = function(relocs, resist, n.rep = NA , xlim = NA, ylim = NA
 	if(all(is.na(xlim))) xlim = range(relocs[, 1])
 	if(all(is.na(ylim))) ylim = range(relocs[, 2])
 
-	if(!missing(resist) && !is.null(resist) && !is.na(resist)) {
+	if(!missing(resist) && !is.null(resist)) {
 		image(resist, maxpixels=Inf, asp=1, zlim=c(0,1), col=c(gray(seq(1, 0.6, len=20)), "#990000")
 			, ylim = ylim, xlim = xlim, axes = F, xlab = NA, ylab = NA)
 	} else {
