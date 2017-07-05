@@ -43,12 +43,12 @@ state.Resting<-function() {
 	return(state(0, steplen = 0, name = "Resting"))
 }
 
-state.RW<-function(steplen = 1) {
-	return(state(0, steplen = steplen, name = "Random Walk"))
+state.RW<-function() {
+	return(state(0, steplen = 1, name = "Random Walk"))
 }
 
-state.CRW<-function(correlation, steplen = 1) {
-	return(state(correlation, steplen = steplen, name = "Correlated Random Walk"))
+state.CRW<-function(correlation) {
+	return(state(correlation, steplen = 1, name = "Correlated Random Walk"))
 }
 
 .printState<-function(object) {
@@ -63,7 +63,7 @@ state.CRW<-function(correlation, steplen = 1) {
 
 setMethod("show", signature(object="state"),.printState)
 
-species<-function(states, trans = transitionMatrix(), name = "<unnamed>", resistanceMap = numeric(0)) {
+species<-function(states, trans = transitionMatrix(), name = "<unnamed>", resistanceMap = NULL) {
 	if(!(inherits(states,"list"))) states=list(states)
 
 	out=new("species", states = states

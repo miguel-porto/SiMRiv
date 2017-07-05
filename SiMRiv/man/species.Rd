@@ -5,12 +5,13 @@
   Creates a species, characterized by one or more behavioral states, to be simulated with function \code{\link{simulate}}.
 }
 \usage{
-  species(states, trans = transitionMatrix(), name = "<unnamed>")
+  species(states, trans = transitionMatrix(), name = "<unnamed>", resistanceMap = NULL)
 }
 \arguments{
   \item{states}{a list of \code{state}s characterizing the behavior of the species, or a single \code{state}, for simple movements}
   \item{trans}{a square state transition matrix, defining the probability of changing between states. For convenience, use the function \code{\link{transitionMatrix}}. Can be omitted if this species has a single-state movement.}
   \item{name}{the name of the species}
+  \item{resistanceMap}{not used. Will be implemented in future versions.}
 }
 \details{
   The rows and columns of the transition matrix correspond in the same order to the list of states.

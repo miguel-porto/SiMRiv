@@ -10,7 +10,7 @@ angle.variation <- function(relocs, nbins = 100, window.size = dim(relocs$stats)
 
 histogram.fixed <- function(data, range, nbins) {
 	bins <- seq(range[1], range[2], len = nbins + 1)
-	inter <- findInterval(data, bins, rightmost=T)
+	inter <- findInterval(data, bins, rightmost.closed=T)
 	inter <- inter[inter > 0 & inter <= nbins]
 	tr <- table(inter)
 	tra <- rep(0, nbins)
@@ -29,7 +29,7 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = NULL, window.si
 	return(hist.var.ref)
 }
 
-speciesModel <- function(type, perception.window = 0, steplength = 1) {
+speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upperbound = 1) {
 	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw")), {
 		f <- function(parameters) {
 			return(species(
@@ -49,8 +49,8 @@ speciesModel <- function(type, perception.window = 0, steplength = 1) {
 			) * perception.window + steplength)
 		}
 		attr(f, "npars") <- 3
-		attr(f, "lower.bounds") <- c(0, rep(0.00001, 2))
-		attr(f, "upper.bounds") <- c(1, rep(0.5, 2))
+		attr(f, "lower.bounds") <- c(0, rep(0, 2))
+		attr(f, "upper.bounds") <- c(1, rep(prob.upperbound, 2))
 		attr(f, "param.names") <- c("Turning angle correlation", "Prob. CRW -> RW", "Prob. RW -> CRW")
 		return(f)
 	}, {
@@ -61,8 +61,8 @@ speciesModel <- function(type, perception.window = 0, steplength = 1) {
 			) * perception.window + steplength)
 		}
 		attr(f, "npars") <- 4
-		attr(f, "lower.bounds") <- c(0, 0, rep(0.00001, 2))
-		attr(f, "upper.bounds") <- c(1, 1, rep(0.5, 2))
+		attr(f, "lower.bounds") <- c(0, 0, rep(0, 2))
+		attr(f, "upper.bounds") <- c(1, 1, rep(prob.upperbound, 2))
 		attr(f, "param.names") <- c("Turning angle correlation state 1", "Turning angle correlation state 2", "Prob. st.1 -> st.2", "Prob. st.2 -> st.1")
 		return(f)
 	}, {
@@ -129,7 +129,7 @@ adjustModel <- function(
 			crit <- parApply(cl, inp.mat, 1, function(inp.par, ref) {
 				sp.sim <- species.model(inp.par)
 	
-				hist.mat <- matrix(nc = nbins.hist, nr = nrepetitions)
+				hist.mat <- matrix(ncol = nbins.hist, nrow = nrepetitions)
 				if(nrepetitions == 1) {
 					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 					s <- sampleMovement(rel, resolution, resist = resistance)
@@ -163,7 +163,7 @@ print(crit)
 		objective.function = function(inp.par, ref) {
 			sp.sim = species.model(inp.par)
 	
-			hist.mat = matrix(nc = nbins.hist, nr = nrepetitions)
+			hist.mat = matrix(ncol = nbins.hist, nrow = nrepetitions)
 			if(nrepetitions == 1) {
 				rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 				s = sampleMovement(rel, resolution, resist = resistance)

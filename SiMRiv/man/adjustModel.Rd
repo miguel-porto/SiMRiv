@@ -2,22 +2,28 @@
 \alias{adjustModel}
 \title{Finds ("estimates") simulation input parameters for a given trajectory, assuming the given species model}
 \description{
-  Given a trajectory and 
-  Resamples a movement simulated with the function \code{\link{simulate}} to a lower temporal resolution (frequency).
-  Simultaneously, computes step length, turning angles (\cite{Turchin 1998}) and accumulated resistance
-  for each resampled step, assuming that a straight line connects each re-sampled location.
+  Given a trajectory, a type of movement and the time resolution at which the user wants to simulate, 
+  this function approximates the values for the input parameters so that the simulated movement is maximally
+  similar to the given trajectory, in terms of general patterns. If the user wants to simulate at a higher frequency 
+  than real data (which is the norm), the function tries to maximize the similarity between the real trajectory and 
+  the simulated trajectories after downsampled to the same frequency as the real.
 }
 \usage{
-  sampleMovement(relocs, resolution = 1, resist = NULL)
+  adjustModel(realData, species.model, resolution = 10
+    , resistance = NULL, coords = NULL, start.resistance = NULL
+    , popsize = 100, ngenerations = 400, mprob = 0.2
+    , nbins = 100, nbins.hist = 7, nrepetitions = 1
+    , parallel = is.null(resistance)
+  )
 }
 \arguments{
   \item{realData}{the given trajectory for which the input parameters are to be "estimated", given as a matrix with two columns (coordinates).}
   \item{species.model}{the species model to adjust, created with \code{\link{speciesModel}}. This defines the type of movement that is to be adjusted (e.g. how many, and which type of, behavioral states, see details).}
-  \item{resolution}{the time frequency at which to adjust the parameters .}
-  \item{resistance}{the resistance raster to use in simulations, during "estimation".}
-  \item{coords}{the initial coordinates of the simulated individuals (only relevant if \code{resistance} is provided).}
-  \item{start.resistance}{the maximum value of resistance in which the individuals are allowed to start. Only used if \code{coords} is not provided.}
-  
+  \item{resolution}{the desired time frequency of the simulations for which parameters will be approximated, as a fraction of the real data, i.e. a value of 20 will simulate movements at a 20-fold higher frequency than real data.}
+  \item{resistance}{the resistance raster to use in simulations during parameter approximation.}
+  \item{coords}{the initial coordinates of the simulated individuals (only relevant if \code{resistance} is provided because the metrics used in optimization are not spatially-agnostic).}
+  \item{start.resistance}{the maximum value of resistance in which the individuals are allowed to start. Only used if \code{resistance} is provided and \code{coords} is not provided.}
+  \item{nbins}{the time lag used for computing the standard deviation of the turning angles}
 	, start.resistance = NULL
 # fitness function parameters
 	, nbins = 100

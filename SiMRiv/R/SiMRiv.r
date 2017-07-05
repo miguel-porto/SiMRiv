@@ -32,7 +32,7 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 				coords <- matrix(as.integer(
 					xyFromCell(resist, sample(which(values(resist) <= start.resistance)
 					, length(individuals)))
-				), nc = 2)
+				), ncol = 2)
 			}
 		}
 	}

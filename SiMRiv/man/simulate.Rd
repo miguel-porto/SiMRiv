@@ -6,13 +6,16 @@
 }
 \usage{
 simulate(individuals, time, coords = NULL
-  , states = NULL, resist = NULL)
+  , states = NULL, resist = NULL, angles = NULL
+  , start.resistance)
 }
 \arguments{
   \item{individuals}{a \code{species} or a list of N \code{species} whose movements are to be simulated}
   \item{time}{the number of time steps to be simulated}
   \item{coords}{a N x 2 matrix giving the initial coordinates of the simulation, for each individual. Can be a vector of the form c(x, y) if only one individual is provided.}
   \item{resist}{an optional landscape resistance raster of class \code{RasterLayer}. If not provided, movements are simulated in an homogeneous environment.}
+  \item{angles}{An optional numeric vector of length N giving the initial direction of each individual, in radians. Zero is north and angles increase clockwise.}
+  \item{start.resistance}{An optional scalar in the range [0, 1] giving the maximum resistance value in which the individuals are allowed to start, if coords is NULL}
   \item{states}{Not implemented yet. An optional numeric vector of length N giving the initial state of each individual.}
 }
 \details{

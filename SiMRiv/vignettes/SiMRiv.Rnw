@@ -171,7 +171,8 @@ covered by polygons in the given shapefile and resistance 1 to areas not covered
 and \code{background} (defaults to 1). The same works for line shapefiles.
 
 <<simriv-5, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-resistance <- resistanceFromShape("../inst/doc/landcover.shp"
+resistance <- resistanceFromShape(
+  system.file("doc/landcover.shp", package="SiMRiv")
   , res = 100)
 plot(resistance, axes = F)#, mar = c(0, 0, 0, 2))
 @
@@ -182,7 +183,8 @@ Note that you can add a margin around the extent of the shapes (here, we used a 
 during simulations, all area outside the extent of the resistance raster is given resistance 1, which makes the simulated individuals never move out of this rectangle, thus creating a boundary effect.
 
 <<simriv-6, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-resistance <- resistanceFromShape("../inst/doc/landcover.shp"
+resistance <- resistanceFromShape(
+  system.file("doc/landcover.shp", package="SiMRiv")
   , res = 100, field = "coverclass", mapvalues = c(
     "forest" = 0.5, "urban" = 1, "dam" = 0
     , "shrubland" = 0.75), background = 0.9, margin = 3000)
@@ -197,7 +199,8 @@ This should be avoided; always make sure that the thinnest line elements are at 
 In this example with a river (using a buffer of 150m), resistance is manually assigned according to the river order field '\code{Order}' of the shapefile (higher resistance values for lower stream order sectors - i.e., the species is assumed to use main river sectors more than tributaries):
 
 <<simriv-7, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-resistance <- resistanceFromShape("../inst/doc/river-sample.shp"
+resistance <- resistanceFromShape(
+  system.file("doc/river-sample.shp", package="SiMRiv")
   , res = 100, field = "Order", mapvalues = c("2" = 0
     , "3" = 0.2, "4" = 0.4, "5" = 0.6, "6" = 0.8)
   , buffer = 150, background = 0.95, margin = 3000)
@@ -211,7 +214,7 @@ In that case, we're better off loading the shape separately:
 
 <<simriv-8, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
 # load shapefile
-river.shape <- shapefile("../inst/doc/river-sample.shp")
+river.shape <- shapefile(system.file("doc/river-sample.shp", package="SiMRiv"))
 
 # below you can provide the shapefile filename, or the
 # R shapefile object itself
@@ -233,12 +236,14 @@ Note also that, if we want a constant resistance value for all lines/polygons in
 \code{field} (as is done below in \code{river.landcover}), instead of giving a field name (as is done below in \code{landcover}).
 
 <<simriv-9, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
-landcover <- resistanceFromShape("../inst/doc/landcover.shp"
+landcover <- resistanceFromShape(
+  system.file("doc/landcover.shp", package="SiMRiv")
   , res = 50, field = "coverclass", mapvalues = c(
     "forest" = 0.5, "urban" = 1, "dam" = 0
     , "shrubland" = 0.75), background = 0.95)
 
-river.landcover <- resistanceFromShape("../inst/doc/river-sample.shp"
+river.landcover <- resistanceFromShape(
+  system.file("doc/river-sample.shp", package="SiMRiv")
   , baseRaster = landcover, buffer = 100, field = 0
   , background = 0.95, margin = 3000)
 
