@@ -105,6 +105,7 @@ adjustModel <- function(
 	, nbins = 100
 	, window.size = dim(reference$stats)[1] %/% nbins
 	, nbins.hist = c(5, 5)
+	, step.hist.range = c(0, 0.99)
 	, nrepetitions = 1
 # GA options
 	, popsize = 100, ngenerations = 400, mprob = 0.2
@@ -121,9 +122,10 @@ adjustModel <- function(
 	range.varta <- range(a.var.ref) + c(-increase, increase)
 	hist.var.ref <- histogram.fixed(a.var.ref, range.varta, nbins.hist[1])
 # make the step length histogram	
-	increase <- (diff(range(reference$stats[, "steplengths"])) * 0) / 2
-	range.step <- range(reference$stats[, "steplengths"]) + c(-increase, increase)
-	range.step[range.step < 0] = -0.001
+#	increase <- (diff(range(reference$stats[, "steplengths"])) * 0) / 2
+#	range.step <- range(reference$stats[, "steplengths"]) + c(-increase, increase)
+#	range.step[range.step < 0] = -0.001
+	range.step <- quantile(reference$stats[, "steplengths"], probs = step.hist.range)
 	hist.step.ref <- histogram.fixed(reference$stats[, "steplengths"], range.step, nbins.hist[2])
 
 	cl <- NULL
