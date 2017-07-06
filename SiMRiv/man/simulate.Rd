@@ -14,9 +14,9 @@ simulate(individuals, time, coords = NULL
   \item{time}{the number of time steps to be simulated}
   \item{coords}{a N x 2 matrix giving the initial coordinates of the simulation, for each individual. Can be a vector of the form c(x, y) if only one individual is provided.}
   \item{resist}{an optional landscape resistance raster of class \code{RasterLayer}. If not provided, movements are simulated in an homogeneous environment.}
-  \item{angles}{An optional numeric vector of length N giving the initial direction of each individual, in radians. Zero is north and angles increase clockwise.}
-  \item{start.resistance}{An optional scalar in the range [0, 1] giving the maximum resistance value in which the individuals are allowed to start, if coords is NULL}
-  \item{states}{Not implemented yet. An optional numeric vector of length N giving the initial state of each individual.}
+  \item{angles}{an optional numeric vector of length N defining the initial heading of each individual, in radians. Zero is north and angles increase clockwise.}
+  \item{start.resistance}{an optional scalar in the range [0, 1] giving the maximum resistance value in which the individuals are allowed to start, if \code{coords} is \code{NULL} and \code{resist} is provided}
+  \item{states}{Not implemented yet. An optional numeric vector of length N defining the initial state of each individual.}
 }
 \details{
   Performs a mechanistic simulation of the movement of the given individual/s (when more than one individual is given,
