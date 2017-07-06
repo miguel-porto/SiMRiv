@@ -6,25 +6,31 @@
 #include "SiMRiv.h"
 SEXP rho;
 
-SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _timespan,SEXP _resist,SEXP envir) {
+SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir) {
 	#ifdef USEOPENMP
 	omp_set_num_threads(omp_get_num_procs ( ));
 //	Rprintf("Using multicore processing with %d threads.\n",omp_get_num_procs ( ));
 	#endif
 	rho=envir;
-	RASTER *resist=NULL;
+	RASTER *resist = NULL;
 	GetRNGstate();
 	
-	if(_resist!=R_NilValue) {
-		resist=openRaster(_resist,rho);
+	if(_resist != R_NilValue) {
+		resist = openRaster(_resist,rho);
 //		rasterRes=NUMERIC_POINTER(getRasterRes(_resist,rho))[0];	// TODO handle cases when there is more than one raster (minimum resolution!)
 	}
-	int timespan=INTEGER_POINTER(_timespan)[0],*start=INTEGER_POINTER(_starting_positions);
+	
+	int timespan = INTEGER_POINTER(_timespan)[0], *start = INTEGER_POINTER(_starting_positions);
+	double *angles = NULL;
 	double *prelocs;
 	unsigned int ninds=LENGTH(_individuals),i,j,k,time,tmp1,tmp2;
 	SEXP relocs,tmp3,tmp4;
 	const char *tmp5;
 	float curangtrans;
+	
+	if(_angles != R_NilValue)
+		angles = NUMERIC_POINTER(_angles);
+
 // pointers to individual data
 	INDIVIDUAL *ind=malloc(sizeof(INDIVIDUAL)*ninds);
 	
@@ -85,7 +91,7 @@ SEXP _simulate_individuals(SEXP _individuals,SEXP _starting_positions,SEXP _time
 			ind[i].curpos.x = start[i];
 			ind[i].curpos.y = start[i + ninds];
 			ind[i].curstate = runif(0, ind[i].nstates - 1);	// random initial state
-			ind[i].curang = drawRandomAngle(NULL);	// uniform random angle
+			ind[i].curang = angles ? (ISNAN(angles[i]) ? drawRandomAngle(NULL) : ((angles[i] + PI) / ANGLESTEP)) : drawRandomAngle(NULL);		// uniform random angle
 // initialize states
 			for(j=0; j<ind[i].nstates; j++) {
 // compute base circular PDFs for all states of all individuals (centered on 0), with given concentration

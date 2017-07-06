@@ -10,7 +10,7 @@ angle.variation <- function(relocs, nbins = 100, window.size = dim(relocs$stats)
 
 histogram.fixed <- function(data, range, nbins) {
 	bins <- seq(range[1], range[2], len = nbins + 1)
-	inter <- findInterval(data, bins, rightmost.closed=T)
+	inter <- findInterval(data, bins, rightmost.closed = TRUE)
 	inter <- inter[inter > 0 & inter <= nbins]
 	tr <- table(inter)
 	tra <- rep(0, nbins)

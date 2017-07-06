@@ -1,4 +1,4 @@
-simulate <- function(individuals, time, coords = NULL, states = NULL, resist = NULL, start.resistance) {
+simulate <- function(individuals, time, coords = NULL, states = NULL, resist = NULL, angles = NULL, start.resistance) {
 	# TODO: different resistance raster for each individual, using the species' resistanceMap
 	if(mode(time)!="numeric") stop("time must be numeric")
 
@@ -43,13 +43,18 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 		# TODO: initial states not implmented
 	}
 	
+	if(!is.null(angles)) {
+		if(length(angles) != length(individuals)) stop("angles must be a numeric vector of initial directions in radians, the same length of individuals")
+		angles = (-angles + pi/2) %% (2*pi)
+	}
+
 	if(dim(coords)[1] != length(individuals)) stop("The number of rows in the 'coords' matrix must be the same as the number of individuals")
 		
 	for(i in 1:length(individuals)) {
 		if(!inherits(individuals[[i]],"species")) stop("individuals must be a list of species class")
 	}
 	
-	.Call("_simulate_individuals",individuals,coords,as.integer(time),resist,new.env())
+	.Call("_simulate_individuals", individuals, coords, as.integer(time), angles, resist, new.env())
 }
 
 resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
