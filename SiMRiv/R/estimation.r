@@ -8,14 +8,19 @@ angle.variation <- function(relocs, nbins = 100, window.size = dim(relocs$stats)
 	return(sda)
 }
 
-histogram.fixed <- function(data, range, nbins) {
+histogram.fixed <- function(data, range, nbins, log = FALSE) {
 	if(nbins == 0) return(NULL)
+	if(log) {
+		data = log(data + 1)
+		range = log(range + 1)
+	}
 	bins <- seq(range[1], range[2], len = nbins + 1)
 	inter <- findInterval(data, bins, rightmost.closed = TRUE)
 	inter <- inter[inter > 0 & inter <= nbins]
 	tr <- table(inter)
 	tra <- rep(0, nbins)
-	names(tra) <- 1:nbins
+#	names(tra) <- 1:nbins
+	names(tra) <- paste(round(bins[1:nbins]), "-", round(bins[2:(nbins+1)]), sep="")
 	tra[as.numeric(names(tr))] <- tr
 	return(tra)
 }
@@ -31,7 +36,7 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = NULL, window.si
 }
 
 speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upperbound = 1) {
-	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl")), {
+	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl", "CRW.CRW.sl")), {
 		f <- function(parameters) {
 			return(species(
 				state.CRW(parameters[1])
@@ -90,6 +95,18 @@ speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upper
 		attr(f, "upper.bounds") <- c(1, rep(prob.upperbound, 2), rep(steplength, 2))
 		attr(f, "param.names") <- c("Turning angle correlation", "Prob. CRW -> RW", "Prob. RW -> CRW", "Step length RW", "Step length CRW")
 		return(f)
+	}, {
+		f <- function(parameters) {
+			return(species(
+				(state.CRW(parameters[1]) + parameters[5]) + (state.CRW(parameters[2]) + parameters[6])
+				, transitionMatrix(parameters[3], parameters[4])
+			) * perception.window)
+		}
+		attr(f, "npars") <- 6
+		attr(f, "lower.bounds") <- rep(0, 6)
+		attr(f, "upper.bounds") <- c(1, 1, rep(prob.upperbound, 2), rep(steplength, 2))
+		attr(f, "param.names") <- c("Turning angle correlation S1", "Turning angle correlation S2", "Prob. S1 -> S2", "Prob. S2 -> S1", "Step length S1", "Step length S2")
+		return(f)
 	}))
 }
 
@@ -106,6 +123,7 @@ adjustModel <- function(
 	, window.size = dim(reference$stats)[1] %/% nbins
 	, nbins.hist = c(5, 5)
 	, step.hist.range = c(0, 0.99)
+	, step.hist.log = FALSE
 	, nrepetitions = 1
 # GA options
 	, popsize = 100, ngenerations = 400, mprob = 0.2
@@ -126,7 +144,7 @@ adjustModel <- function(
 #	range.step <- range(reference$stats[, "steplengths"]) + c(-increase, increase)
 #	range.step[range.step < 0] = -0.001
 	range.step <- quantile(reference$stats[, "steplengths"], probs = step.hist.range)
-	hist.step.ref <- histogram.fixed(reference$stats[, "steplengths"], range.step, nbins.hist[2])
+	hist.step.ref <- histogram.fixed(reference$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 
 	cl <- NULL
 	cat("Real data:", nsteps,", Simulating", nsteps * resolution,"steps @ res", resolution,"\n")
@@ -159,14 +177,14 @@ adjustModel <- function(
 					s <- sampleMovement(rel, resolution, resist = resistance)
 					a.var.sim <- angle.variation(s, window.size = window.size)
 					hist.var <- histogram.fixed(a.var.sim, range.varta, nbins.hist[1])
-					hist.step <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2])
+					hist.step <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 				} else {
 					for(i in 1:nrepetitions) {
 						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 						s <- sampleMovement(rel, resolution, resist = resistance)
 						a.var.sim <- angle.variation(s, window.size = window.size)
 						hist.mat[i, ] <- histogram.fixed(a.var.sim, range.varta, nbins.hist[1])
-						hist.step[i, ] <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2])
+						hist.step[i, ] <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 					}
 					hist.var <- apply(hist.mat, 2, mean)
 					hist.step <- apply(hist.step, 2, mean)
@@ -205,14 +223,14 @@ print(crit)
 				s = sampleMovement(rel, resolution, resist = resistance)
 				a.var.sim = angle.variation(s, window.size = window.size)
 				hist.var = histogram.fixed(a.var.sim, range.varta, nbins.hist[1])
-				hist.step <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2])
+				hist.step <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 			} else {
 				for(i in 1:nrepetitions) {
 					rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 					s = sampleMovement(rel, resolution, resist = resistance)
 					a.var.sim = angle.variation(s, window.size = window.size)
 					hist.mat[i, ] = histogram.fixed(a.var.sim, range.varta, nbins.hist[1])
-					hist.step[i, ] <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2])
+					hist.step[i, ] <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 				}
 				hist.var = apply(hist.mat, 2, mean)
 				hist.step <- apply(hist.step, 2, mean)
