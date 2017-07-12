@@ -127,16 +127,17 @@ adjustModel <- function(
 	, nrepetitions = 1
 # GA options
 	, popsize = 100, ngenerations = 400, mprob = 0.2
-	, parallel = is.null(resistance)
+	, parallel = is.null(resistance)	# if using a raster, parallel performance doesn't increase because it is loaded in all R processes
 ) {
+	realData <- as.matrix(realData)
 	nsteps <- dim(realData)[1]
 # compute turning angles and step lengths of the real movement
 	reference <- sampleMovement(realData, resist = resistance)
 # compute the SD of turning angles in a fixed-size juxtaposed moving window
 	a.var.ref <- angle.variation(reference, window.size = window.size)
 # make the (fixed-range) histogram of all the moving window SDs
-# the range of the histogram is 20% larger than observed range to account for stochasticity in simulations
-	increase <- (diff(range(a.var.ref)) * 0.2) / 2
+# the range of the histogram is 10% larger than observed range to account for stochasticity in simulations
+	increase <- (diff(range(a.var.ref)) * 0.1) / 2
 	range.varta <- range(a.var.ref) + c(-increase, increase)
 	hist.var.ref <- histogram.fixed(a.var.ref, range.varta, nbins.hist[1])
 # make the step length histogram	
@@ -244,9 +245,6 @@ print(crit)
 			}
 			
 		#	crit = sum(abs(hist.var - ref[[3]]))
-		for(p in inp.par)
-			cat(sprintf("%.3f ", p))
-		cat(": ")
 		for(o in crit)
 			cat(sprintf("%5.2f ", o))
 		cat("\n")

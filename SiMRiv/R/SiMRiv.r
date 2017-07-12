@@ -58,7 +58,7 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 }
 
 resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
-	, field = NA, background = 1, buffer = NA, margin = 0, mapvalues = NA, ...) {
+	, field = NA, background = 1, buffer = NA, margin = 0, mapvalues = NA, extend = TRUE, ...) {
 	if(missing(baseRaster) && missing(res)) stop("Either raster resolution or a base raster must be given")
 	if(inherits(shp, "character")) {
 		l <- shapefile(shp)
@@ -75,7 +75,11 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 	if(missing(baseRaster)) {
 		er <- raster(ext = extent(b) + margin, crs = proj4string(l), resolution = res)
 	} else {
-		er <- extend(baseRaster, extent(b) + margin, value = background)
+		if(extend) {
+			er <- extend(baseRaster, extent(b) + margin, value = background)
+		} else {
+			er <- baseRaster
+		}
 	}
 	
 	if(binary) {
