@@ -13,7 +13,7 @@ perceptionWindow(type = "circular", radius)
 }
 \details{
   The perception window is defined as the distance radius at which the species perceives the environment,
-  based e.g. on sense of smell, vision, audition, etc. (\cite{Powell 2000}).
+  based, e.g., on sense of smell, vision, audition, etc. (sometimes also called "perceptual range" - \cite{Lima & Zollner 1996} or "radius of perception" - \cite{Powell 2000}).
   
   A \code{circular} window gives equal weight to all pixels, which form a circle centered on current individual's position.
   
@@ -25,5 +25,6 @@ perceptionWindow(type = "circular", radius)
 \references{
   \itemize{
     \item{Powell, R. A. 2000. Animal home ranges and territories and home range estimators. In: Research techniques in animal ecology: controversies and consequences, 442. Boitani, L., & Fuller, T. (Eds.). Columbia university press, New York: pp.65-110.}
+    \item{Lima, S. L., & Zollner, P. A. (1996). Towards a behavioral ecology of ecological landscapes. Trends in Ecology & Evolution, 11(3), 131-135.}
   }
 }
