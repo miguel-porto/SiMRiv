@@ -122,11 +122,11 @@ adjustModel <- function(
 	, nbins = 100
 	, window.size = dim(reference$stats)[1] %/% nbins
 	, nbins.hist = c(5, 5)
-	, step.hist.range = c(0, 0.99)
+	, step.hist.range = c(0, 1)
 	, step.hist.log = FALSE
 	, nrepetitions = 1
 # GA options
-	, popsize = 100, ngenerations = 400, mprob = 0.2
+	, popsize = 100, generations = seq(5, 1000, by=5), mprob = 0.2
 	, parallel = is.null(resistance)	# if using a raster, parallel performance doesn't increase because it is loaded in all R processes
 ) {
 	realData <- as.matrix(realData)
@@ -191,24 +191,38 @@ adjustModel <- function(
 					hist.step <- apply(hist.step, 2, mean)
 				}
 				
-				if(nbins.hist[1] == 0) {
-					crit <- abs(hist.step - ref[["hist.step"]])
-				} else if(nbins.hist[2] == 0) {
-					crit <- abs(hist.var - ref[["hist.var"]])
-				} else {
-					crit <- c(abs(hist.var - ref[["hist.var"]]), abs(hist.step - ref[["hist.step"]]))
-				}
+				if(nbins.hist[1] > 0) {
+					crit.ta <- abs(hist.var - ref[["hist.var"]])
+					
+					#div1 <- (hist.var[2:length(hist.var)] + 1) / (hist.var[-length(hist.var)] + 1)
+					#div2 <- (ref[["hist.var"]][2:length(ref[["hist.var"]])] + 1) / (ref[["hist.var"]][-length(ref[["hist.var"]])] + 1)
+					
+					#div1 <- diff(hist.var)
+					#div2 <- diff(ref[["hist.var"]])
+					#crit.ta <- abs(div1 - div2)
+				} else crit.ta <- NULL
+				
+				if(nbins.hist[2] > 0) {
+					crit.sl <- abs(hist.step - ref[["hist.step"]])
+					#div1 <- (hist.step[2:length(hist.step)] + 1) / (hist.step[-length(hist.step)] + 1)
+					#div2 <- (ref[["hist.step"]][2:length(ref[["hist.step"]])] + 1) / (ref[["hist.step"]][-length(ref[["hist.step"]])] + 1)
+					#div1 <- diff(hist.step)
+					#div2 <- diff(ref[["hist.step"]])
+
+					#crit.sl <- abs(div1 - div2)
+				} else crit.sl <- NULL
+
+				crit <- c(crit.ta, crit.sl)
 
 #				crit = c(mean(abs(hist.var - ref[[3]])), sd(abs(hist.var - ref[[3]])))
 				return(crit)
 			}, reference)
 print(crit)
-#cat(".")
 			return(crit)
 		}
 
-		sol <- nsga2(objective.function.par, attr(species.model, "npars"), sum(nbins.hist), list(reference, a.var.ref, hist.var = hist.var.ref, hist.step = hist.step.ref)
-			, generations = ngenerations, popsize = popsize
+		sol <- nsga2(objective.function.par, attr(species.model, "npars"), sum(nbins.hist) - 0, list(reference, a.var.ref, hist.var = hist.var.ref, hist.step = hist.step.ref)
+			, generations = generations, popsize = popsize
 			, lower.bounds = attr(species.model, "lower.bounds")
 			, upper.bounds = attr(species.model, "upper.bounds")
 			, vectorized = TRUE, mprob = mprob
@@ -254,7 +268,7 @@ print(crit)
 		}
 		
 		sol <- nsga2(objective.function, attr(species.model, "npars"), sum(nbins.hist), list(reference, a.var.ref, hist.var = hist.var.ref, hist.step = hist.step.ref)
-			, generations = ngenerations, popsize = popsize
+			, generations = generations, popsize = popsize
 			, lower.bounds = attr(species.model, "lower.bounds")
 			, upper.bounds = attr(species.model, "upper.bounds")
 			, vectorized = FALSE, mprob = mprob)
