@@ -1,12 +1,14 @@
 useDynLib(SiMRiv)
-importFrom("methods", "new", "show")
-importFrom("stats", "runif")
+importFrom("methods", "new", "show", "callGeneric")
+importFrom("stats", "runif", "sd")
 importFrom("sp", "proj4string")
+importFrom("utils", "flush.console")
+
 import(raster)
 import(mco)
 import(parallel)
 
-export(perceptionWindow)
+export(perceptualRange)
 export(state)
 export(transitionMatrix)
 export(state.Resting)

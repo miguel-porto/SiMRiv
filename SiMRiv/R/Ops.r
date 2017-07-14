@@ -1,5 +1,5 @@
-setClass("perceptionWindow",slots=c("type"="character","parameters"="numeric"))
-setClass("state",slots=c("turningAngleConcentration"="numeric","perceptionWindow"="perceptionWindow","stepLength"="numeric","name"="character"))
+setClass("perceptualRange",slots=c("type"="character","parameters"="numeric"))
+setClass("state",slots=c("turningAngleConcentration"="numeric","perceptualRange"="perceptualRange","stepLength"="numeric","name"="character"))
 setClass("species",slots=c("name"="character","transitionMatrix"="matrix","states"="list", "resistanceMap" = "ANY"))
 #setClass("individual",slots=c("species"="species"))
 
@@ -23,7 +23,7 @@ setMethod("+", signature(e1 = "state", e2 = "numeric"), function(e1, e2) {
 })
 
 setMethod("*", signature(e1 = "state", e2 = "numeric"), function(e1, e2) {
-	e1@perceptionWindow@parameters[["radius"]] = e2
+	e1@perceptualRange@parameters[["radius"]] = e2
 	return(e1)
 })
 

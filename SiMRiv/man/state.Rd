@@ -8,7 +8,7 @@
   Defines a behavioral state to be used when creating \code{\link{species}}.
 }
 \usage{
-  state(correlation, pwind = perceptionWindow("circular", 0)
+  state(correlation, pwind = perceptualRange("circular", 0)
     , steplen = 1, name = "")
   state.Resting()    # still state
   state.RW()         # uniform random walk (brownian motion),
@@ -18,7 +18,7 @@
 }
 \arguments{
   \item{correlation}{turning angle concentration, a value between 0 (uniform distribution resulting in random walk) and 1 (only one value possible resulting in a straight line path)}
-  \item{pwind}{a \code{\link{perceptionWindow}} definition}
+  \item{pwind}{a \code{\link{perceptualRange}} definition}
   \item{steplen}{the base (maximum) step length of this state in map units. Note that the actual step length depends on the resistance in each step.}
   \item{name}{the name of the state}
 }
@@ -32,12 +32,12 @@
   For a review of different random walks, see Codling et al. (2008)
 }
 \seealso{
-  \code{\link{species}}, \code{\link{perceptionWindow}}.
+  \code{\link{species}}, \code{\link{perceptualRange}}.
 }
 \examples{
 ## a correlated random walk influenced by landscape
 
-state(0.97, perceptionWindow("cir", 500), 10, "CorrelatedRW")
+state(0.97, perceptualRange("cir", 500), 10, "CorrelatedRW")
 }
 \references{
   \itemize{

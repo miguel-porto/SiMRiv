@@ -1,10 +1,10 @@
 MULTIPLIER=1000000L
 
-perceptionWindow<-function(type = "circular", radius) {
+perceptualRange<-function(type = "circular", radius) {
 	switch(pmatch(type,c("circular","gaussian"),nomatch=3),{
-			out=new("perceptionWindow",type="circular",parameters=c(radius=radius))
+			out=new("perceptualRange",type="circular",parameters=c(radius=radius))
 		},{
-			out=new("perceptionWindow",type="gaussian",parameters=c(sigma=radius))
+			out=new("perceptualRange",type="gaussian",parameters=c(sigma=radius))
 		}
 		,stop("'type' must be one of 'circular', 'gaussian'.")
 	)
@@ -19,17 +19,17 @@ perceptionWindow<-function(type = "circular", radius) {
 	})	
 }
 
-setMethod("show", signature(object="perceptionWindow"),.printPercWind)
-setMethod("print", signature(x="perceptionWindow"),function(x) show(x))
+setMethod("show", signature(object="perceptualRange"),.printPercWind)
+setMethod("print", signature(x="perceptualRange"),function(x) show(x))
 
 # steplen is assumed to be in the same units of the coordinates! Usually meters.
-state<-function(correlation, pwind = perceptionWindow("circular", 0), steplen = 1, name = "") {
+state<-function(correlation, pwind = perceptualRange("circular", 0), steplen = 1, name = "") {
 	if(correlation==1) correlation=0.99999
 	if(correlation==0) correlation=0.00001
 	
 	return(new("state"
 		, turningAngleConcentration=correlation
-		, perceptionWindow=pwind
+		, perceptualRange=pwind
 		, stepLength=steplen
 		, name=name ))
 }
@@ -57,7 +57,7 @@ state.CRW<-function(correlation) {
 	} else {
 		cat("State",object@name,"with\n\t")
 	}
-	show(object@perceptionWindow)
+	show(object@perceptualRange)
 	cat("\tStep length =",object@stepLength,"\n\tTurning angle concentration =",object@turningAngleConcentration,"\n")
 }
 

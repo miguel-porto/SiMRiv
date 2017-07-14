@@ -51,7 +51,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 			ind[i].states[j].taconc=NUMERIC_POINTER(GET_SLOT(tmp3,SCALARCHAR("turningAngleConcentration")))[0];
 			ind[i].states[j].steplength=NUMERIC_POINTER(GET_SLOT(tmp3,SCALARCHAR("stepLength")))[0];
 			//ind[i].states[j].stubb=NUMERIC_POINTER(GET_SLOT(tmp3,SCALARCHAR("stubb")))[0];
-			tmp4=GET_SLOT(tmp3,SCALARCHAR("perceptionWindow"));
+			tmp4=GET_SLOT(tmp3,SCALARCHAR("perceptualRange"));
 			ind[i].states[j].pwind.radius=NUMERIC_POINTER(GET_SLOT(tmp4,SCALARCHAR("parameters")))[0];
 			tmp5=CHAR(STRING_ELT(GET_SLOT(tmp4,SCALARCHAR("type")),0));
 			if(strcmp(tmp5,"circular")==0)

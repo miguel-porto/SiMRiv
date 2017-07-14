@@ -22,7 +22,7 @@
   An object of class \code{species}.
 }
 \seealso{
-  \code{\link{simulate}}, \code{\link{perceptionWindow}}, \code{\link{state}}, \code{\link{transitionMatrix}}.
+  \code{\link{simulate}}, \code{\link{perceptualRange}}, \code{\link{state}}, \code{\link{transitionMatrix}}.
 }
 \examples{
 ## example from 'simulate'
@@ -30,7 +30,7 @@
 ## note: perception window radii and step lengths must be
 ## adequate to the raster resolution!
 LevyWalker <- species(list(
-    state(0, perceptionWindow("cir", 100), 10, "RandomWalk")
-    ,state(0.97, perceptionWindow("cir", 500), 20, "CorrelatedRW")
+    state(0, perceptualRange("cir", 100), 10, "RandomWalk")
+    ,state(0.97, perceptualRange("cir", 500), 20, "CorrelatedRW")
 ), transitionMatrix(0.005, 0.001))
 }

@@ -116,8 +116,8 @@ data(river)
 ## adequate to the raster resolution!
 
 LevyWalker <- species(list(
-    state(0, perceptionWindow("cir", 100), 10, "RandomWalk")
-    ,state(0.97, perceptionWindow("cir", 500), 20, "CorrelatedRW")
+    state(0, perceptualRange("cir", 100), 10, "RandomWalk")
+    ,state(0.97, perceptualRange("cir", 500), 20, "CorrelatedRW")
 ), transitionMatrix(0.005, 0.001))
 
 sim <- simulate(LevyWalker, 20000, resist = river
