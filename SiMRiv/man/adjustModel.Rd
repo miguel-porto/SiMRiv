@@ -11,7 +11,7 @@
 \usage{
   adjustModel(realData, species.model, resolution = 10
     , resistance = NULL, coords = NULL, start.resistance = NULL
-    , nbins = 100, window.size = dim(reference$stats)[1] %/% nbins
+    , nbins = 100, window.size = dim(reference$stats)[1]%/%nbins
     , nbins.hist = c(5, 5), step.hist.range = c(0, 1)
     , step.hist.log = FALSE, nrepetitions = 1
     , popsize = 100, generations = seq(5, 1000, by=5), mprob = 0.2
