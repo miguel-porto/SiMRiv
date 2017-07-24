@@ -345,7 +345,7 @@ The software in its current version does not allow for:
 \item memory effects.
 \end{enumerate}
 
-Although the highlighted (as well as others, potentially useful) extentions are not yet implemented, we programmed the software so that it would be relatively straightforward to do so in a near future. \textbf{We highly encourage interested programmers to join our project on} \href{https://github.com/miguel-porto/SiMRiv/}{GitHub} and help us developing and further extending the package.
+Although the highlighted extentions are not yet implemented, we programmed the software so that it would be relatively straightforward to do so in a near future (as well as implement further potentially useful updates that we identified so far). \textbf{We highly encourage interested programmers to join our project on} \href{https://github.com/miguel-porto/SiMRiv/}{GitHub} and help us developing and further extending the package.
 
 \end{document}
 
