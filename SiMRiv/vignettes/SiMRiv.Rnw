@@ -49,20 +49,19 @@ library(SiMRiv)
 
 \section{Introduction}
 The study of animal movement behaviour, recently reframed in the 'Movement Ecology' paradigm (Nathan 2008), is key to a variety of fields including landscape ecology, species distribution modeling,
-and population size estimation among others (Turchin 1998; Nathan 2008; Royle et al. 2014). All the most widely adopted statistical and modeling approaches to study movement,
-including Lévy walks (e.g., Humphries et al. 2010; Viswanathan 2010; Sims et al. 2008), (hidden) Markov models (e.g., Morales et al. 2004; Langrock et al. 2012; McClintock et al. 2012),
-state-space models (e.g., Forester et al. 2007; Patterson et al. 2008), step (or resource) selection functions (e.g., Fortin et al. 2005; Forester et al. 2009),
-mechanistic (home range) models (e.g., Mitchell \& Powell 2004; Moorcroft \& Lewis 2006), and combinations of the last two (e.g., Moorcroft \& Barnett 2008; Potts et al. 2014)
-as well as to study movement-related issues in fields as varied as anthropology (Raichlen et al. 2014), paleontology (Sims et al. 2014), cell biology (Dickinson \& Tranquillo 1993),
-tumour angiogenesis (Plank \& Sleeman 2003), and, increasingly often, molecular ecology (Hoban et al. 2012; Hoban 2014), lie in the mathematical analysis of random walks. As such,
-they require to simulate random, spatially-explicit individual trajectories, that are then compared to real trajectories to infer the underlying movement processes. While software
-for simulating individual trajectories of species that move without restrictions in the landscape (species moving in a bi-dimensional space, i.e., using the space at 360º) exist, we are aware of no
-appropriate software for simulating individual movement trajectories of species inhabiting (or more intensively using) linear landscapes (e.g., trouts or otters in rivers) or somehow conditioned by landscape heterogeneity. 
-SiMRiv allows such task. It was specifically conceived to allow simulating individual-based, spatially-explicit movements in river networks and heterogeneous landscapes. However, the software was thought and developed to be highly flexible,
+and population size estimation among others (Turchin 1998; Nathan 2008; Royle et al. 2014). A common feature in the modeling of animal movement data, used also in fields as varied as anthropology (Raichlen et al., 2014), paleontology (Sims et al., 2014), (Dickinson & Tranquillo 1993), tumour angiogenesis (Plank & Sleeman 2003), and molecular ecology (Hoban 2014),
+is the comparison between real and simulated spatially-explicit, individual trajectories (Sims et al., 2008, 2014; Humphries et al. 2010; Viswanathan et al., 2010; reviews in Patterson et al 2008, Schick et al 2008, Smouse et al 2010, and Hooten et al 2017). Despite the increasing availability of (GPS) telemetry data and of powerful statistical and modeling approaches for the study of movement, however,
+lack of suitable analytical software and computational power still constrains our comprehension of animal movement patterns (Morales et al. 2010; Calabrese et al 2016; Michelot et al. 2016; Hooten et al 2017). 
+
+In particular, we note that while software for simulating individual trajectories of species that move without restrictions in the landscape (species moving in a bi-dimensional space, i.e., using the space at 360º) is available (e.g., Calenge et al 2009; Beyer 2012012, used e.g. in Fortin et al 2005; Humphries et al. 2013; Michelot et al 2016), we are aware of no
+appropriate software for simulating spatially-explicit, individual movement trajectories of species inhabiting (or intensively using) linear or dendritic landscapes (e.g., trouts or otters in rivers) or somehow conditioned by landscape heterogeneity. 
+This lack of software may at least partly explain why, while a number of studies focused on marine environments (e.g., Sims et al. 2008; Humphries et al. 2010; Viswanathan 2010; Reynolds 2014; Hussey et al 2015), movement ecology has been poorly investigated in freshwater linear landscapes (e.g., river networks), also called dendritic (Patterson et al 2013) - or highly structured (Sutherland et al 2014) - ecological networks (DENs). Knowledge on the movement ecology of freshwater aquatic and semiaquatic species is in fact particularly scant.
+
+SiMRiv was specifically conceived to allow simulating individual-based, spatially-explicit movements in river networks and heterogeneous landscapes, thus filling the above-highlighted gap of software simulating movements in DENs. Importantly, nonetheless, the software was thought and developed to be highly flexible,
 allowing simulating trajectories of any species living in any landscape (i.e., irrespective of the landscape the species live within). It thus allows fitting realistically complex movement models, using multi-state markov models, while taking into account environmental complexity.
 
 In this document, we: (i) introduce how to prepare the data for the simulations; (ii) report the main functionalities of the software; (iii) introduce some examples of use of the software; and (iv) provide an overview on main software's potential applications, expected outcomes,
-and features we would like to modify or develop by new. We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology in Nathan 2008, Codling et al 2008, Smouse et al 2010, and Patterson et al 2016), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its \href{http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf}{vignette}.
+and features we would like to modify or develop by new. We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology, in Nathan 2008, Codling et al 2008, Patterson et al 2008, Schick et al 2008, Smouse et al 2010), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its \href{http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf}{vignette}.
 This is a work in progress, \textbf{report of any bug or suggestion is warmly welcomed. We are particularly interested in any collaboration, especially stemming from other programmers} who would like to add some functions to our package or extend the already implemented ones, please visit \href{https://github.com/miguel-porto/SiMRiv/}{GitHub}.
 
 \section{Conducting basic simulations}
@@ -252,18 +251,18 @@ plot(river.landcover, axes = F, mar = c(0, 0, 0, 2))
 
 \subsection{Conducting simulations on a resistance raster}
 When simulating in heterogeneous environments, one further parameter must be taken into account, which is how the species perceives the environment to make its movement decisions.
-This is implemented as the concept of \textbf{perception window}: the area around the individual's current position, which it takes into account for making decisions.
+This is implemented as the concept of \textbf{perceptual range}: the area around the individual's current position, which it takes into account for making decisions (Lima & Zollner 1996).
 As of version \Sexpr{version$Version}, this is implemented as a circle centered on the individual's position, with a user-specified radius.
 
-During simulations, at each step, the turning angles of the individuals will be biased towards lower resistance areas, and this is evaluated only within the radius of the perception window.
+During simulations, at each step, the turning angles of the individuals will be biased towards lower resistance areas, and this is evaluated only within the radius of the perceptual range.
 This parameter also has an overwhelming importance in the resulting movement patterns.
-A species with a wider perception window will be attracted to lower resistance areas, even if it has to cross high resistance areas, because it 'sees' farther.
-Conversely, a species with a small perception window will not 'see' those lower resistance areas, so it will be detained by high resistance areas.
-This can have important consequences, for example, when simulating amphibious species in a river: the size of the perception window will determine how likely the individuals will take overland shortcuts between river segments.
+A species with a wider perceptual range will be attracted to lower resistance areas, even if it has to cross high resistance areas, because it 'sees' farther.
+Conversely, a species with a small perceptual range will not 'see' those lower resistance areas, so it will be detained by high resistance areas.
+This can have important consequences, for example, when simulating amphibious species in a river: the size of the perceptual range will determine how likely the individuals will take overland shortcuts between river segments.
 
-In order to allow more flexibility, the perception window is an attribute of each state (not of the species).
-For ease of use, the size of the perception window of a state can be set simply by multiplying the state by a number, for example \code{state.RW() * 1000} will define a random walk state with a perception window of 1000 m.
-If you want to set the same value for all the states of a species, you can directly multiply the species by a number, e.g. \code{levy.walker * 1500} will set the perception window of both states of the Lévy-like walker to 1500 m.
+In order to allow more flexibility, the perceptual range is an attribute of each state (not of the species).
+For ease of use, the size of the perceptual range of a state can be set simply by multiplying the state by a number, for example \code{state.RW() * 1000} will define a random walk state with a perceptual range of 1000 m.
+If you want to set the same value for all the states of a species, you can directly multiply the species by a number, e.g. \code{levy.walker * 1500} will set the perceptual range of both states of the Lévy-like walker to 1500 m.
 
 In the next example, we simulate a Lévy-like walker in a riverscape, assuming an amphibious species, i.e. that moves mainly in water but may also walk overland if needed.
 This example also demonstrates how to set the starting coordinates to a random pixel with given resistance value(s).
@@ -275,7 +274,7 @@ init = xyFromCell(river.landcover, sample(which(values(river.landcover) == 0), 1
 
 # adding a number to a species is a shortcut for setting
 # the step lengths of all states
-# multiplying is a shortcut for setting the perception window radius
+# multiplying is a shortcut for setting the perceptual range radius
 levy.walker <- (levy.walker + 15) * 1000
 
 sim.lw.river <- simulate(levy.walker, 40000
@@ -301,14 +300,38 @@ This is because the \code{SiMRiv} simulation algorithm was developed in the logi
 If you want to have simulated data which is comparable to real tracking data, you must downsample the simulation results with the function \code{sampleMovement}.
 
 \section{References}
-Turchin, P. 1998. Quantitative analysis of movement: measuring and modeling population
-redistribution in animals and plants (Vol. 1). Sinauer Associates, Sunderland, MA.
+
+Beyer, H.L. (2012). Geospatial modeling environment (version 0.7. 2.1). URL:< http://www. spatialecology. com/gme.
+Calabrese, J. M., Fleming, C. H., & Gurarie, E. (2016). ctmm: an r package for analyzing animal relocation data as a continuous‐time stochastic process. Methods in Ecology and Evolution, 7(9), 1124-1132.
+Calenge, C., Dray, S., & Royer-Carenzi, M. (2009). The concept of animals' trajectories from a data analysis perspective. Ecological informatics 4, 34-41.
+Codling, E. A., Plank, M. J., & Benhamou, S. (2008). Random walk models in biology. Journal of the Royal Society Interface, 5(25), 813-834.
+Dickinson, R.B. & Tranquillo, R.T. (1993). Optimal estimation of cell movement indices from the statistical analysis of cell tracking data. AIChE Journal 39, 1995-2010.
+Fortin, D., Beyer, H.L., Boyce, M.S., Smith, D.W., Duchesne, T., & Mao, J.S. (2005). Wolves influence elk movements: behavior shapes a trophic cascade in Yellowstone National Park. Ecology 86, 1320-1330.
+Hoban, S. (2014). An overview of the utility of population simulation software in molecular ecology. Molecular ecology 23, 2383-2401.
+Hooten, M. B., Johnson, D. S., McClintock, B. T., & Morales, J. M. (2017). Animal movement: statistical models for telemetry data. CRC Press.
+Humphries, N.E., Queiroz, N., Dyer, J.R.M., et al. (2010). Environmental context explains Lévy and Brownian movement patterns of marine predators. Nature 465, 1066–1069. doi:10.1038/nature09116.
+Humphries, N.E., Weimerskirch, H. & Sims, D.W. (2013). A new approach for objective identification of turns and steps in organism movement data relevant to random walk modelling. Methods in Ecology and Evolution 4, 930–938. DOI: 10.1111/2041­210X.12096.
+Hussey, N. E., Kessel, S. T., Aarestrup, K., Cooke, S. J., Cowley, P. D., Fisk, A. T., ... & Flemming, J. E. M. (2015). Aquatic animal telemetry: a panoramic window into the underwater world. Science, 348(6240), 1255642.
+Lima, S. L., & Zollner, P. A. (1996). Towards a behavioral ecology of ecological landscapes. Trends in Ecology & Evolution, 11(3), 131-135.
+Michelot, T., Langrock, R., & Patterson, T. A. (2016). moveHMM: An R package for the statistical modelling of animal movement data using hidden Markov models. Methods in Ecology and Evolution, 7(11), 1308-1315.
+Morales, J.M., Moorcroft, P.R., Matthiopoulos, J. et al. (2010). Building the bridge between animal movement and population dynamics. Phil. Trans. R. Soc. B 365, 2289–2301.
+Nathan, R. (2008). An emerging movement ecology paradigm. PNAS 105, 19050–19051.
+Patterson, T.A., Thomas, L., Wilcox, C., Ovaskainen, O., & Matthiopoulos, J. (2008). State–space models of individual animal movement. Trends in ecology & evolution 23, 87-94.
+Peterson, E.E., Ver Hoef, J.M., Isaak, D.J., et al. (2013). Modelling dendritic ecological networks in space: an integrated network perspective. Ecology Letters 16, 707–719.
+Plank, M.J. & Sleeman, B.D. (2003). A reinforced random walk model of tumour angiogenesis and anti‐angiogenic strategies. Mathematical Medicine and Biology 20, 135-181.
+Raichlen, D.A., Wood, B.M., Gordon, A.D., Mabulla, A.Z., Marlowe, F.W. & Pontzer, H. (2014). Evidence of Lévy walk foraging patterns in human hunter–gatherers. Proceedings of the National Academy of Sciences 111, 728-733.
+Reynolds, A. M. (2014). Mussels realize Weierstrassian Lévy walks as composite correlated random walks. Scientific reports, 4, 4409.
+Royle, J.A., Chandler, R.B., Sollmann, R. & Gardner, B. (Eds) (2014). Spatial Capture Recapture. Academic Press.
+Schick, R. S., Loarie, S. R., Colchero, F., Best, B. D., Boustany, A., Conde, D. A., ... & Clark, J. S. (2008). Understanding movement data and movement processes: current and emerging directions. Ecology letters, 11(12), 1338-1350.
+Sims, D.W., Southall, E.J., Humphries, N.E., et al. (2008). Scaling laws of marine predator search behaviour. Nature 451, 1098­1102.
+Sims, D.W., Reynolds, A.M., Humphries, N.E., Southall, E.J., Wearmouth, V.J., Metcalfe, B. & Twitchett, R.J. (2014). Hierarchical random walks in trace fossils and the origin of optimal search behavior. Proceedings of the National Academy of Sciences 111, 11073-11078.
+Smouse, P. E., Focardi, S., Moorcroft, P. R., Kie, J. G., Forester, J. D., & Morales, J. M. (2010). Stochastic modelling of animal movement. Philosophical Transactions of the Royal Society of London B: Biological Sciences, 365(1550), 2201-2211.
+Sutherland, C., Fuller, A. K., & Royle, J. A. (2015). Modelling non‐Euclidean movement and landscape connectivity in highly structured ecological networks. Methods in Ecology and Evolution, 6(2), 169-177.
+Turchin, P. (1998). Quantitative Analysis of Movement: measuring and modeling population redistribution in plants and animals. Sinauer Associates, Sunderland, MA.
+Viswanathan, G.M. (2010). Ecology: Fish in Lévy­flight foraging. Nature 465, 1018–1019.
 
 
-TBC...
-
-\section{To do list}
-This section is mainly intended as an authors’ to-do list. As such, you may skip it.
+\section{To do list and opportunities for collaborations}
 
 The software in its current version does not allow for:
 
@@ -322,17 +345,7 @@ The software in its current version does not allow for:
 \item memory effects.
 \end{enumerate}
 
-Also, although they would be relatively easy and straightforward to implement, several potentially useful functions are not yet implemented. They include:
-\begin{enumerate}
-\item calculate the shortest distance among points along a linear network (e.g., river, road) - useful, for instance, to define linear home range extensions of species moving in linear habitats (e.g., fish or otters);
-\item calculate core areas (areas of more intense use) of species moving in linear habitats;
-\item estimate linear home ranges (e.g., linear kernel density estimation);
-\item step selection function analysis applied to species moving in linear habitats;
-\item generate random points along linear networks;
-\item interpolation along lines.
-\end{enumerate}
-
-However, we programmed the software in order to be possible to implement the above-mentioned features in a near future. \textbf{We highly encourage interested programmers to join our project on} \href{https://github.com/miguel-porto/SiMRiv/}{GitHub} and help us developing and further extending the package.
+Although the highlighted (as well as others, potentially useful) extentions are not yet implemented, we programmed the software so that it would be relatively straightforward to do so in a near future. \textbf{We highly encourage interested programmers to join our project on} \href{https://github.com/miguel-porto/SiMRiv/}{GitHub} and help us developing and further extending the package.
 
 \end{document}
 
