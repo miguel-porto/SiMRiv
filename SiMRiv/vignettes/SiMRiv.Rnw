@@ -62,7 +62,7 @@ allowing simulating trajectories of any species living in any landscape (i.e., i
 
 In this document, we: (i) introduce how to prepare the data for the simulations; (ii) report the main functionalities of the software; (iii) introduce some examples of use of the software; and (iv) provide an overview on main software's potential applications, expected outcomes,
 and features we would like to modify or develop by new. We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology, in Nathan 2008, Codling et al 2008, Patterson et al 2008, Schick et al 2008, Smouse et al 2010), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its \href{http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf}{vignette}.
-This is a work in progress, \textbf{report of any bug or suggestion is warmly welcomed. Also, we are particularly interested in any collaboration, especially stemming from other programmers} who would like to add some functions to our package or extend the already implemented ones (please visit \href{https://github.com/miguel-porto/SiMRiv/}{GitHub}).
+This is a work in progress, \textbf{report of any bug or suggestion is warmly welcomed.}
 
 \section{Conducting basic simulations}
 In the simplest form, conducting simulations is straightforward. Using the default parameters setting, individuals will be simulated
