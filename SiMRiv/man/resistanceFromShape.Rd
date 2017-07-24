@@ -2,11 +2,9 @@
 \alias{resistanceFromShape}
 \title{Build resistance raster by combining shapefiles}
 \description{
-  Given a trajectory, a type of movement and the time resolution at which the user wants to simulate, 
-  this function approximates the values for the input parameters so that the simulated movement is maximally
-  similar to the given trajectory, in terms of general non-spatial patterns. If the user wants to simulate at a higher frequency 
-  than real data (which is the norm), the function tries to maximize the similarity between the real trajectory and 
-  the simulated trajectories after downsampled to the same frequency as the real.
+  Creates a resistance raster to be used in simulations, by rasterizing and combining different shapefiles.
+  It is basically a helper function that uses the functions from package \code{\link{raster-package}} to create and manipulate
+  such raster.
 }
 \usage{
   resistanceFromShape(shp, baseRaster, res, binary = is.na(field)
@@ -24,15 +22,16 @@
   \item{margin}{the margin to leave around the shapefile's extent when rasterizing (i.e. how much to increase shapefile's extent).}
   \item{mapvalues}{a named vector specifying the resistance value mapping from the classes of \code{field}.}
   \item{extend}{set to TRUE to extend \code{baseRaster} if the shapefile has a larger extent. If FALSE, the shapefile will be clipped to \code{baseRaster}'s extent.}
+  \item{...}{other arguments to pass to \code{\link{rasterize}}.}
 }
 \details{
-  This function finds possible parameters for the simulation (solutions), so that the resulting movements are as similar as possible
+  This function rasterizes the given shapefile using provided options and optionally stacks it onto the provided \code{baseRaster}.
 }
 \note{
   This function
 }
 \value{
-  The object
+  The resistance raster, an object of class \code{\link{RasterLayer-class}}.
 }
 \seealso{
   \code{\link{simulate}}.

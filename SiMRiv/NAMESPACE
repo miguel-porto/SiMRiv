@@ -21,7 +21,5 @@ export(resistanceFromShape)
 
 export(adjustModel)
 export(speciesModel)
-export(computeVariationHistogram)
-
-export(angle.variation)
-export(histogram.fixed)
+export(generationPlot)
+export(binCounts)

@@ -96,8 +96,7 @@ lines(sim[,4:5], col=3)
 ###################################################################
 
 LevyWalker <- species(
-    list(state.RW(),
-    state.CRW(0.99)),
+    state.RW() + state.CRW(0.99),
     transitionMatrix(0.005, 0.02))
     
 sim <- simulate(LevyWalker, 10000)
@@ -106,19 +105,26 @@ plot(sim, type="l", asp=1)
 ## Linear habitats, e.g. fish in a river network
 ################################################
 
-## sample river raster in a fish's perspective,
+## load sample river raster in a fish's perspective,
 ## i.e. resistance is 0 within the river, 1 otherwise.
 
 data(river)
 
 ## let's try a Levy-like movement in a river network
-## note: perception window radii and step lengths must be
+## note: perceptual range radii and step lengths must be
 ## adequate to the raster resolution!
 
 LevyWalker <- species(list(
     state(0, perceptualRange("cir", 100), 10, "RandomWalk")
     ,state(0.97, perceptualRange("cir", 500), 20, "CorrelatedRW")
 ), transitionMatrix(0.005, 0.001))
+
+## NOTE: the following lines do exactly the same as above, but
+## using the more convenient arithmetic operator shortcuts
+
+LevyWalker <- species(
+	(state.RW() * 100 + 10) + (state.CRW(0.97) * 500 + 20)
+, transitionMatrix(0.005, 0.001))
 
 sim <- simulate(LevyWalker, 20000, resist = river
     , coords = c(280635, 505236))

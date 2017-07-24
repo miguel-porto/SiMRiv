@@ -8,7 +8,7 @@ angle.variation <- function(relocs, nbins = 100, window.size = dim(relocs$stats)
 	return(sda)
 }
 
-histogram.fixed <- function(data, range, nbins, log = FALSE) {
+binCounts <- function(data, range, nbins, log = FALSE) {
 	if(nbins == 0) return(NULL)
 	if(log) {
 		data = log(data + 1)
@@ -31,11 +31,11 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = NULL, window.si
 	a.var <- angle.variation(relocs, window.size = window.size)
 	if(is.null(range)) 
 		range <- range(a.var)
-	hist.var.ref <- histogram.fixed(a.var, range, nbins)
+	hist.var.ref <- binCounts(a.var, range, nbins)
 	return(hist.var.ref)
 }
 
-speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upperbound = 1) {
+speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upperbound = 0.5) {
 	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl", "CRW.CRW.sl")), {
 		f <- function(parameters) {
 			return(species(
@@ -121,13 +121,14 @@ adjustModel <- function(
 # fitness function parameters
 	, nbins = 100
 	, window.size = dim(reference$stats)[1] %/% nbins
-	, nbins.hist = c(5, 5)
+	, nbins.hist = c(3, 3)
 	, step.hist.range = c(0, 1)
 	, step.hist.log = FALSE
 	, nrepetitions = 1
 # GA options
 	, popsize = 100, generations = seq(5, 1000, by=5), mprob = 0.2
 	, parallel = is.null(resistance)	# if using a raster, parallel performance doesn't increase because it is loaded in all R processes
+	, trace = TRUE
 ) {
 	realData <- as.matrix(realData)
 	nsteps <- dim(realData)[1]
@@ -139,13 +140,13 @@ adjustModel <- function(
 # the range of the histogram is 10% larger than observed range to account for stochasticity in simulations
 	increase <- (diff(range(a.var.ref)) * 0.1) / 2
 	range.varta <- range(a.var.ref) + c(-increase, increase)
-	hist.var.ref <- histogram.fixed(a.var.ref, range.varta, nbins.hist[1])
+	hist.var.ref <- binCounts(a.var.ref, range.varta, nbins.hist[1])
 # make the step length histogram	
 #	increase <- (diff(range(reference$stats[, "steplengths"])) * 0) / 2
 #	range.step <- range(reference$stats[, "steplengths"]) + c(-increase, increase)
 #	range.step[range.step < 0] = -0.001
 	range.step <- quantile(reference$stats[, "steplengths"], probs = step.hist.range)
-	hist.step.ref <- histogram.fixed(reference$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
+	hist.step.ref <- binCounts(reference$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 
 	cl <- NULL
 	cat("Real data:", nsteps,", Simulating", nsteps * resolution,"steps @ res", resolution,"\n")
@@ -177,15 +178,15 @@ adjustModel <- function(
 					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 					s <- sampleMovement(rel, resolution, resist = resistance)
 					a.var.sim <- angle.variation(s, window.size = window.size)
-					hist.var <- histogram.fixed(a.var.sim, range.varta, nbins.hist[1])
-					hist.step <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
+					hist.var <- binCounts(a.var.sim, range.varta, nbins.hist[1])
+					hist.step <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 				} else {
 					for(i in 1:nrepetitions) {
 						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 						s <- sampleMovement(rel, resolution, resist = resistance)
 						a.var.sim <- angle.variation(s, window.size = window.size)
-						hist.mat[i, ] <- histogram.fixed(a.var.sim, range.varta, nbins.hist[1])
-						hist.step[i, ] <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
+						hist.mat[i, ] <- binCounts(a.var.sim, range.varta, nbins.hist[1])
+						hist.step[i, ] <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 					}
 					hist.var <- apply(hist.mat, 2, mean)
 					hist.step <- apply(hist.step, 2, mean)
@@ -217,7 +218,8 @@ adjustModel <- function(
 #				crit = c(mean(abs(hist.var - ref[[3]])), sd(abs(hist.var - ref[[3]])))
 				return(crit)
 			}, reference)
-print(crit)
+			
+			if(trace) print(crit)
 			return(crit)
 		}
 
@@ -237,15 +239,15 @@ print(crit)
 				rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 				s = sampleMovement(rel, resolution, resist = resistance)
 				a.var.sim = angle.variation(s, window.size = window.size)
-				hist.var = histogram.fixed(a.var.sim, range.varta, nbins.hist[1])
-				hist.step <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
+				hist.var = binCounts(a.var.sim, range.varta, nbins.hist[1])
+				hist.step <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 			} else {
 				for(i in 1:nrepetitions) {
 					rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 					s = sampleMovement(rel, resolution, resist = resistance)
 					a.var.sim = angle.variation(s, window.size = window.size)
-					hist.mat[i, ] = histogram.fixed(a.var.sim, range.varta, nbins.hist[1])
-					hist.step[i, ] <- histogram.fixed(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
+					hist.mat[i, ] = binCounts(a.var.sim, range.varta, nbins.hist[1])
+					hist.step[i, ] <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 				}
 				hist.var = apply(hist.mat, 2, mean)
 				hist.step <- apply(hist.step, 2, mean)
@@ -259,11 +261,12 @@ print(crit)
 			}
 			
 		#	crit = sum(abs(hist.var - ref[[3]]))
-		for(o in crit)
-			cat(sprintf("%5.2f ", o))
-		cat("\n")
-		flush.console()
-
+			if(trace) {
+				for(o in crit)
+					cat(sprintf("%5.2f ", o))
+				cat("\n")
+				flush.console()
+			}
 			return(crit)
 		}
 		
@@ -275,9 +278,54 @@ print(crit)
 	}
 	
 	if(!is.null(cl)) stopCluster(cl)
-	return(list(
-		solutions = sol
-		#, species = apply(sol$par, 1, species.model)
-	))
+	attr(sol, "generations") <- generations
+	return(sol)
+}
+
+generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.5, 0.90), show.legend = TRUE) {
+	generations <- attr(solutions, "generations")
+	
+	# some fancy colors and their semi-transparent counterparts
+	plot.colors = matrix(c("#000000", "#00000022", "#00ff00", "#00ff0022", "#ff0000", "#ff000022", "#ff7700", "#ff770022", "#00ffff", "#00ffff22", "#ff0077", "#ff007722"), nc = 2, byr = T)
+	# compute quantiles for plotting
+	quantiles <- sapply(solutions, function(x) {
+		apply(x$par[, , drop = F], 2, quantile, plot.quantiles)
+	})
+	dim(quantiles) <- c(3, attr(species.model, "npars"), length(generations))
+	dimnames(quantiles) <- list(
+		quantile = plot.quantiles
+		, parameter = 1:attr(species.model, "npars")
+		, generation = generations)
+	
+	par(mar = c(2.3, 2.3, 0.2, 2.3), mgp = c(1.2, 0.2, 0), tcl = -0.25)
+	plot.new()
+	# plot scale for correlation and probabilites (left axis)
+	plot.window(xlim = c(0, max(generations)), ylim = c(0, 1))
+	axis(1)
+	axis(2)
+	coor.probs <- which(attr(species.model, "upper.bounds") <= 1)
+	the.others <- setdiff(1:attr(species.model, "npars"), coor.probs)
+	for(p in coor.probs) {		# correlation and probabilities are those parameters bounded by 1
+		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ])), border = NA, col = plot.colors[p, 2])
+		lines(generations, quantiles[2, p, ], lwd = 1.5, col = plot.colors[p, 1])
+	}
+	# plot scale for step lengths (right axis)
+	plot.window(xlim = c(0, max(generations)), ylim = c(0, max(attr(species.model, "upper.bounds"))))
+	axis(4)
+	for(p in the.others) {		# step lengths are the last params
+		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ])), border = NA, col = plot.colors[p, 2])
+		lines(generations, quantiles[2, p, ], lwd = 1.5, col = plot.colors[p, 1])
+	}
+	
+	title(xlab = c("Generation"))
+	mtext("Correlation and probabilities", 2, line = 1.2)
+	mtext("Step lengths", 4, line = 1.2)
+	box(bty = "u")
+
+	if(show.legend) {
+		legend("bottomleft"#, xpd = T, inset = c(-0, -0.15)
+			, legend = attr(species.model, "param.names")
+			, lwd = 1.5, col = plot.colors[1:4, 1], box.lwd=0, bg="#ffffff77")
+	}
 }
 
