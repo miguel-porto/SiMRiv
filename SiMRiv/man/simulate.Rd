@@ -29,10 +29,11 @@ simulate(individuals, time, coords = NULL
   
   In summary, at each micro-step the individual chooses a random direction which is based on the previous step heading and
   in the resistance context at the current position, such that it will avoid heading to areas with high resistance.
-  This evaluation depends on the individual's perception window in the current movement state.
+  This evaluation depends on the individual's perceptual range in the current movement state.
   At each step, a test to see if the individual changes its state is also performed, based on the provided \code{\link{transitionMatrix}}.
-  Each state may have its own perception window, step length and angular correlation (with previous step heading). It's up to the user the
-  definition of these values (e.g., expert- or literature-based).
+  Each state may have its own perceptual range, step length and angular correlation (with previous step heading). It's up to the user the
+  definition of these values (e.g., expert- or literature-based), but we provide an experimental function to numerically approximate these
+  values from real data, see \code{\link{adjustModel}}.
 
   In more detail, in each of the \code{time} steps, the procedure is as follows:
   \enumerate{
@@ -56,8 +57,8 @@ simulate(individuals, time, coords = NULL
       orthogonally.
     }
     \subsection{The empirical probability density}{
-      The empirical probability density for a given point (resistance component) is computed by summing the (1-resistance) values along all discrete radial lines departing from that point, forming a circle.
-      The length of the lines (i.e. radius) and weighting given to each pixel are defined in the current state's perception window.
+      The empirical probability density for a given point (resistance component) is computed by summing the \code{1 - resistance} values along a set of discrete radial lines departing from that point, forming a circle.
+      The length of the lines (i.e. radius) and weighting given to each pixel are defined in the current state's perceptual range.
       The sums are packed and used as the circular empirical distribution of the resistance component.
       This will be crossed with the correlated walk component to yield the final empirical probability distribution from which heading will be drawn.
     }
@@ -68,7 +69,7 @@ simulate(individuals, time, coords = NULL
 }
 \note{The structure of the returned object will change in the upcoming version.}
 \seealso{
-  \code{\link{species}}, \code{\link{sampleMovement}}.
+  \code{\link{species}}, \code{\link{sampleMovement}}, \code{\link{adjustModel}}.
 }
 \examples{
 library(SiMRiv)

@@ -15,11 +15,10 @@ perceptualRange(type = "circular", radius)
   The perceptual range is often defined as the distance (radius) at which the species perceives the environment, 
   based, e.g., on sense of smell, vision, audition, etc. (\cite{Lima & Zollner 1996}; \cite{Powell 2000}).
   In SiMRiv, perceptual range should be seen as the distance (radius) at which the species evaluates the landscape resistance around its current location, influencing species next heading.
-  Perceptual range size can be defined (in meters) based on available literature (on species perceptual range, or, as its surrogate, species home range size), on expert-based criteria, or estimate it from real data.
+  Perceptual range size can be defined (in meters or other map units) based on available literature (on species perceptual range, or, as its surrogate, species home range size), on expert-based criteria, or be estimated from real data.
   
-  A \code{circular} window gives equal weight to all pixels, which form a circle centered on current individual's position.
-  
-  A \code{gaussian} window gives weights corresponding to a gaussian kernel centered on current individual's position.
+  A \code{circular} range gives equal weight to all pixels, which form a circle centered on current individual's position.
+  A \code{gaussian} range gives weights corresponding to a gaussian kernel centered on current individual's position.
 }
 \seealso{
   \code{\link{state}}.

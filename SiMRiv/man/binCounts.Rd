@@ -16,8 +16,8 @@ binCounts(data, range, nbins, log = FALSE)
 \details{
   This is just a convenience function to simplify the task of couting data in equal bins.
   The same result could be achieved with \code{hist} with the right arguments.
-  It is mostly used internally by \code{\link{adjustModel}} during the approximation on input parameters
-  , for the computation of objectives.
+  It is mostly used internally by \code{\link{adjustModel}} during the approximation on input parameters,
+  for the computation of objectives.
 }
 \value{
 	A named vector with the counts of values in each bin.

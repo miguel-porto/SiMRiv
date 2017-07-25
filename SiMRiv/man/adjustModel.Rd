@@ -3,10 +3,11 @@
 \title{Finds ("estimates") simulation input parameters able to replicate a given (real) trajectory, assuming the given species model}
 \description{
   Given a trajectory, a type of movement and the time resolution at which the user wants to simulate, 
-  this function approximates the values for the input parameters so that the simulated movement is maximally
+  this function approximates the values for the simulation input parameters so that the simulated movement is maximally
   similar to the given trajectory, in terms of general non-spatial patterns. If the user wants to simulate at a higher frequency 
-  than real data (which is the norm), the function tries to maximize the similarity between the real trajectory and 
+  than real data (which is the norm), the function maximizes the similarity between the real trajectory and 
   the simulated trajectories (at a higher frequency) after downsampled to the same frequency as the real.
+  It does so by running a genetic optimization algorithm.
 }
 \usage{
   adjustModel(realData, species.model, resolution = 10
@@ -27,21 +28,21 @@
   \item{start.resistance}{the maximum value of resistance in which the individuals are allowed to start. Only used if \code{resistance} is provided and \code{coords} is not provided.}
   \item{nbins}{the number of time lags within which the standard deviation of the turning angles will be computed during optimization. Ignored if \code{window.size} is provided.}
   \item{window.size}{the size (in steps of the real sampling frequency) of the time lags within which the standard deviation of the turning angles will be computed during optimization. A different way of providing \code{nbins}. See details.}
-  \item{nbins.hist}{a vector with two positive integers defining the number of histogram bins for turning angle variation and step length histograms respectively. These bins will be used during optimization to compare simulated trajectories with the real trajectory to infer the quality of the "fit". Comparison is done bin-wise, which means that the more bins, the more detailed comparison is, the higher the quality of the solutions, but the more difficult it is to find them.}
-  \item{step.hist.range}{the quantiles used to define the range of the step length histogram computation. Used if the user wants to exclude outliers. The default is not to exclude outliers, thus [min, max].}
+  \item{nbins.hist}{a vector with two positive integers defining the number of histogram bins for turning angle variation and step length histograms respectively. These bins will be used during optimization to compare simulated trajectories with the real trajectory to infer the quality of the "fit". Comparison is done bin-wise, which means that the more bins, the more detailed comparison is, the higher the quality of the solutions, but the more difficult it is to find them. The default \code{c(3, 3)} yields good results in general.}
+  \item{step.hist.range}{the quantiles used to define the range of the step length histogram computation. Used if the user wants to exclude outliers. The default is not to exclude outliers, thus \code{c(0, 1)}.}
   \item{step.hist.log}{set to \code{TRUE} to use the histogram of the logarithm of the step lengths rather than of the raw values in the comparisons. Setting to \code{TRUE} usually results in more detail in the comparisons.}
   \item{nrepetitions}{the number of simulations conducted for each solution evaluation during optimization. If >1, the quality of the solutions is computed by comparing the averaged histograms across repetitions, with the real histograms.}
   \item{popsize}{number of solutions to optimize, to pass to \code{\link{nsga2}}}
   \item{generations}{number of algorithm generations to run, to pass to \code{\link{nsga2}}. The default is a vector, so that convergence of results can be assessed along generations.}
   \item{mprob}{mutation probability, to pass to \code{\link{nsga2}}}
   \item{parallel}{set to \code{TRUE} to use multicore processing.}
-  \item{trace}{set to \code{TRUE} print optimization objectives (rows) for each solution (columns) in each generation. These are the values that are being interanlly minimized. The number of rows is \code{sum(nbins.hist)}; the first \code{nbins.hist[1]} are the turning angle variation objectives, the last are the step length objectives.}
+  \item{trace}{set to \code{TRUE} to print the matrix of optimization objectives (rows) for each solution (columns) in each generation along optimization. These are the values that are being internally minimized. The number of rows is \code{sum(nbins.hist)}; the first \code{nbins.hist[1]} are the turning angle variation objectives, the last are the step length objectives.}
 }
 \details{
   This function finds possible parameters for the simulation (solutions), so that the resulting movements are as similar as possible
   to the given real trajectory, in terms of their intrinsic properties measured by step lengths and variation in turning angles. The input parameter
   approximations are found using a multiobjective genetic algorithm (NSGA-II, \cite{Deb et al. 2002}). The algorithm minimizes a vector
-  of objectives (\code{sum(nbins.hist)}) whose values are computed by the absolute differences between each pair of bins (real and simulated)
+  of N objectives (\code{N=sum(nbins.hist)}) whose values are computed by the absolute differences between each pair of bins (real and simulated)
   of two histograms: an histogram of the step lengths and an histogram of the standard deviation in turning angles computed
   in a moving time window along each trajectory.
 
@@ -49,8 +50,8 @@
   Hence, simulations should be conducted with a much higher time frequency than provided by the real data, which poses challenges for parameterization.
   This function incorporates this difference in the time scale during optimization (\code{resolution}), allowing the user
   to find the input parameters for simulations at a much higher frequency, which, when downsampled to the real data's time
-  frequency, will present similar patterns. The higher the frequency, the more flexibility the model has to adjust to real data
-  , but the more difficult it is to find solutions due to the higher impact of stochasticity.
+  frequency, will present similar patterns. The higher the frequency, the more flexibility the model has to adjust to real data,
+  but the more difficult it is to find solutions due to the higher impact of stochasticity.
   
   There are no limits to the number of parameters that can be approximated, but obviously, the higher the number, the more difficult convergence
   is achieved. As in any other method, a compromise should be sought. The number of parameters to approximate is defined by the user by providing a
@@ -117,7 +118,8 @@ species.model <- speciesModel("CRW.CRW.sl", steplength = max.step.length)
 
 ## now run optimization
 
-sol <- adjustModel(real.data, species.model, resol = 20, window = 10, nbins.hist = c(3, 3), step.hist.log = TRUE)
+sol <- adjustModel(real.data, species.model, resol = 20, window = 10, nbins.hist = c(3, 3)
+	, step.hist.log = TRUE)
 
 ## After finishing, we can extract the input parameters of the optimized solutions
 ## (100 by default) in the last generation (generation 1000 by default):
@@ -144,7 +146,9 @@ for(i in 1:3) {
 	# now we downsample frequency to match real
 	samp <- sampleMovement(sim, 20)
 	
-	# and plot simulated and downsampled 20 times.
+	# and plot the simulated trajectory before and after
+	# downsampling 20 times.
+	
 	plot(sim[, 1:2], type = "l", asp = 1, axes = F, col = "gray"
 		, main = "Simulated and downsampled")
 	lines(samp$relocs, col = "black")

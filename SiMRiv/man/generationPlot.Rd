@@ -1,42 +1,40 @@
 \name{generationPlot}
 \alias{generationPlot}
-\title{Finds ("estimates") simulation input parameters able to replicate a given (real) trajectory, assuming the given species model}
+\title{Plots input parameter optimization results}
 \description{
-  Given a trajectory, a type of movement and the time resolution at which the user wants to simulate, 
-  this function approximates the values for the input parameters so that the simulated movement is maximally
-  similar to the given trajectory, in terms of general non-spatial patterns. If the user wants to simulate at a higher frequency 
-  than real data (which is the norm), the function tries to maximize the similarity between the real trajectory and 
-  the simulated trajectories (at a higher frequency) after downsampled to the same frequency as the real.
+  Plots the evolution of the optimized solutions (sets of input parameters) along the \code{\link{adjustModel}} algorithm's generations.
 }
 \usage{
-  adjustModel(realData, species.model, resolution = 10
-    , resistance = NULL, coords = NULL, start.resistance = NULL
-    , nbins = 100, window.size = dim(reference$stats)[1]\%/\%nbins
-    , nbins.hist = c(3, 3), step.hist.range = c(0, 1)
-    , step.hist.log = FALSE, nrepetitions = 1
-    , popsize = 100, generations = seq(5, 1000, by=5), mprob = 0.2
-    , parallel = is.null(resistance), trace = TRUE
-  )
+  generationPlot(solutions, species.model, plot.quantiles = c(0.10, 0.5, 0.90)
+    , show.legend = TRUE, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3), mgp = c(1.2, 0.2, 0)
+    , tcl = -0.25, ...)
 }
 \arguments{
-  \item{realData}{the given trajectory for which the simulation input parameters are to be "estimated", given as a matrix with two columns (coordinates) and assuming that relocations are equally spaced in time.}
-  \item{species.model}{the species model to adjust, created with \code{\link{speciesModel}}. This defines the type of movement that is to be adjusted (e.g. how many, and which type of, behavioral states, see details).}
-  \item{resolution}{the desired time frequency of the simulations for which parameters will be approximated, as a fraction of the real data, i.e. a value of 20 will simulate movements at a 20-fold higher frequency than real data.}
-  \item{resistance}{the resistance raster to use in simulations during parameter approximation.}
+  \item{solutions}{the result of \code{\link{adjustModel}}.}
+  \item{species.model}{the species model that was adjusted and that was passed to \code{\link{adjustModel}}.}
+  \item{plot.quantiles}{the three quantiles to plot. The middle is plotted as a solid line, the extremes define the shaded area.}
+  \item{show.legend}{whether to show a legend indicating the correspondence of colors - input parameters.}
+  \item{lwd}{line width to be used to draw the middle quantile (usually the median).}
+  \item{mar, mgp, tcl, ...}{arguments to pass to \code{\link{par}}.}
 }
 \details{
-  The generation plot is a good way to assess whether the final solutions converged.
-  However, note that depending on how the problem is formulated, the solutions \strong{might} not be expected to converge to a single solution "type":
-  for example, there can be two types of solutions, depicting two different ways of achieving the same result.
+  The generation plot depicts, for each generation of the optimization algorithm, the given quantiles of each input parameter being optimized
+  in the population of solutions. This is not the ideal plot because input parameters are plotted independently, while they are only supposed to
+  make sense in the context of a given solution (i.e. it is the combination of the input parameters that is being optimized, not the parameters in isolation).
+  
+  Nonetheless, this plot is still a good way to assess whether the final solutions converged to stable values, which can indicate that the algorithm succeeded in replicating the real trajectory provided.
+  However, note that depending on how the problem is formulated, the solutions might not be expected to converge to a single solution "type":
+  for example, there can be two types of solutions, corresponding to two different ways of achieving similar results.
 }
 \note{
 }
 \value{
+  Returns, invisibly, a 3-D matrix with the computed quantiles for all input parameters along generations.
 }
 \seealso{
-  \code{\link{simulate}}.
+  \code{\link{adjustModel}}.
 }
 \examples{
+## see ?adjustModel for a complete example
 }
-\references{
-}
+

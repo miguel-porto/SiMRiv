@@ -35,12 +35,12 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = NULL, window.si
 	return(hist.var.ref)
 }
 
-speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upperbound = 0.5) {
+speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperbound = 0.5) {
 	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl", "CRW.CRW.sl")), {
 		f <- function(parameters) {
 			return(species(
 				state.CRW(parameters[1])
-			) * perception.window + steplength)
+			) * perceptual.range + steplength)
 		}
 		attr(f, "npars") <- 1
 		attr(f, "lower.bounds") <- 0
@@ -52,7 +52,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upper
 			return(species(
 				state.CRW(parameters[1]) + state.RW()
 				, transitionMatrix(parameters[2], parameters[3])
-			) * perception.window + steplength)
+			) * perceptual.range + steplength)
 		}
 		attr(f, "npars") <- 3
 		attr(f, "lower.bounds") <- c(0, rep(0, 2))
@@ -64,7 +64,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upper
 			return(species(
 				state.CRW(parameters[1]) + state.CRW(parameters[2])
 				, transitionMatrix(parameters[3], parameters[4])
-			) * perception.window + steplength)
+			) * perceptual.range + steplength)
 		}
 		attr(f, "npars") <- 4
 		attr(f, "lower.bounds") <- c(0, 0, rep(0, 2))
@@ -72,7 +72,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upper
 		attr(f, "param.names") <- c("Turning angle correlation state 1", "Turning angle correlation state 2", "Prob. st.1 -> st.2", "Prob. st.2 -> st.1")
 		return(f)
 	}, {
-		if(perception.window <= 1) stop("You must provide the maximum allowable perception window size, e.g. perception.window = 500")
+		if(perceptual.range <= 1) stop("You must provide the maximum allowable perceptual range size, e.g. perceptual.range = 500")
 		f <- function(parameters) {
 			return(species(
 				state.CRW(parameters[1])
@@ -80,7 +80,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upper
 		}
 		attr(f, "npars") <- 2
 		attr(f, "lower.bounds") <- c(0, 1)
-		attr(f, "upper.bounds") <- c(1, perception.window)
+		attr(f, "upper.bounds") <- c(1, perceptual.range)
 		attr(f, "param.names") <- c("Turning angle correlation", "Perception window radius")
 		return(f)
 	}, {
@@ -88,7 +88,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upper
 			return(species(
 				(state.CRW(parameters[1]) + parameters[5]) + (state.RW() + parameters[4])
 				, transitionMatrix(parameters[2], parameters[3])
-			) * perception.window)
+			) * perceptual.range)
 		}
 		attr(f, "npars") <- 5
 		attr(f, "lower.bounds") <- c(0, rep(0, 4))
@@ -100,7 +100,7 @@ speciesModel <- function(type, perception.window = 0, steplength = 1, prob.upper
 			return(species(
 				(state.CRW(parameters[1]) + parameters[5]) + (state.CRW(parameters[2]) + parameters[6])
 				, transitionMatrix(parameters[3], parameters[4])
-			) * perception.window)
+			) * perceptual.range)
 		}
 		attr(f, "npars") <- 6
 		attr(f, "lower.bounds") <- rep(0, 6)
@@ -282,11 +282,12 @@ adjustModel <- function(
 	return(sol)
 }
 
-generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.5, 0.90), show.legend = TRUE) {
+generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.5, 0.90), show.legend = TRUE
+	, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3), mgp = c(1.2, 0.2, 0), tcl = -0.25, ...) {
 	generations <- attr(solutions, "generations")
 	
 	# some fancy colors and their semi-transparent counterparts
-	plot.colors = matrix(c("#000000", "#00000022", "#00ff00", "#00ff0022", "#ff0000", "#ff000022", "#ff7700", "#ff770022", "#00ffff", "#00ffff22", "#ff0077", "#ff007722"), nc = 2, byr = T)
+	plot.colors = matrix(c("#000000", "#00000022", "#00ff00", "#00ff0022", "#ff0000", "#ff000022", "#ff7700", "#ff770022", "#00ffff", "#00ffff22", "#ff0077", "#ff007722"), ncol = 2, byrow = T)
 	# compute quantiles for plotting
 	quantiles <- sapply(solutions, function(x) {
 		apply(x$par[, , drop = F], 2, quantile, plot.quantiles)
@@ -297,7 +298,7 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 		, parameter = 1:attr(species.model, "npars")
 		, generation = generations)
 	
-	par(mar = c(2.3, 2.3, 0.2, 2.3), mgp = c(1.2, 0.2, 0), tcl = -0.25)
+	par(mar = mar, mgp = mgp, tcl = tcl, ...)
 	plot.new()
 	# plot scale for correlation and probabilites (left axis)
 	plot.window(xlim = c(0, max(generations)), ylim = c(0, 1))
@@ -307,14 +308,14 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 	the.others <- setdiff(1:attr(species.model, "npars"), coor.probs)
 	for(p in coor.probs) {		# correlation and probabilities are those parameters bounded by 1
 		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ])), border = NA, col = plot.colors[p, 2])
-		lines(generations, quantiles[2, p, ], lwd = 1.5, col = plot.colors[p, 1])
+		lines(generations, quantiles[2, p, ], lwd = lwd, col = plot.colors[p, 1])
 	}
 	# plot scale for step lengths (right axis)
 	plot.window(xlim = c(0, max(generations)), ylim = c(0, max(attr(species.model, "upper.bounds"))))
 	axis(4)
 	for(p in the.others) {		# step lengths are the last params
 		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ])), border = NA, col = plot.colors[p, 2])
-		lines(generations, quantiles[2, p, ], lwd = 1.5, col = plot.colors[p, 1])
+		lines(generations, quantiles[2, p, ], lwd = lwd, col = plot.colors[p, 1])
 	}
 	
 	title(xlab = c("Generation"))
@@ -325,7 +326,8 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 	if(show.legend) {
 		legend("bottomleft"#, xpd = T, inset = c(-0, -0.15)
 			, legend = attr(species.model, "param.names")
-			, lwd = 1.5, col = plot.colors[1:4, 1], box.lwd=0, bg="#ffffff77")
+			, lwd = lwd, col = plot.colors[1:4, 1], box.lwd = 0, bg = "#ffffff77")
 	}
+	return(invisible(quantiles))
 }
 

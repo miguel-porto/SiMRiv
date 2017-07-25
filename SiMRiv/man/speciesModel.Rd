@@ -6,12 +6,12 @@
   algorithm which parameters are to be approximated, and which are constant.
 }
 \usage{
-  speciesModel(type, perception.window = 0, steplength = 1
+  speciesModel(type, perceptual.range = 0, steplength = 1
     , prob.upperbound = 0.5)
 }
 \arguments{
   \item{type}{the type of movement to "fit". One of \code{CRW}, \code{RW.CRW}, \code{CRW.CRW}, \code{RW.CRW.sl}, \code{CRW.CRW.sl}}
-  \item{perception.window}{the perception window for all states.}
+  \item{perceptual.range}{the perceptual range for all states.}
   \item{steplength}{the fixed step length for fixed step length types \code{CRW}, \code{RW.CRW}, \code{CRW.CRW} or the maximum allowed value for variable step length types \code{RW.CRW.sl}, \code{CRW.CRW.sl}.}
   \item{prob.upperbound}{the maximum allowed value for the state switching probabilities. The default is 0.5 because very hight state switching probabilities don't make much sense from a biological point of view.}
 }

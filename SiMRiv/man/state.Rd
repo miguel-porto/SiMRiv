@@ -22,22 +22,29 @@
   \item{steplen}{the base (maximum) step length of this state in map units. Note that the actual step length depends on the resistance in each step.}
   \item{name}{the name of the state}
 }
+\details{
+  See \code{\link{Arith-methods}} for more convenient ways of setting parameters, instead of using \code{state}.
+}
 \value{
   An object of class \code{state}.
 }
 \note{
-  The perception window radius and step length must be adequate to the resolution of the resistance raster (if provided in simulations).
-  If no raster will be provided, then the perception window is irrelevant, and the step length has solely a relative meaning (in relation to other states or other species).
+  The perceptual range radius and step length must be adequate to the resolution of the resistance raster (if provided in simulations).
+  If no raster will be provided, then the perceptual range is irrelevant, and the step length has solely a relative meaning (in relation to other states or other species).
   
   For a review of different random walks, see Codling et al. (2008)
 }
 \seealso{
-  \code{\link{species}}, \code{\link{perceptualRange}}.
+  \code{\link{species}}, \code{\link{perceptualRange}}, \code{\link{Arith-methods}}.
 }
 \examples{
 ## a correlated random walk influenced by landscape
 
 state(0.97, perceptualRange("cir", 500), 10, "CorrelatedRW")
+
+## the same, but using the shortcut form
+
+state.CRW(0.97) * 500 + 10
 }
 \references{
   \itemize{

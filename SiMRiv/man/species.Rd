@@ -22,15 +22,15 @@
   An object of class \code{species}.
 }
 \seealso{
-  \code{\link{simulate}}, \code{\link{perceptualRange}}, \code{\link{state}}, \code{\link{transitionMatrix}}.
+  \code{\link{simulate}}, \code{\link{perceptualRange}}, \code{\link{state}}, \code{\link{transitionMatrix}}, \code{\link{Arith-methods}}.
 }
 \examples{
 ## example from 'simulate'
 
-## note: perception window radii and step lengths must be
+## note: perceptual range radii and step lengths must be
 ## adequate to the raster resolution!
-LevyWalker <- species(list(
-    state(0, perceptualRange("cir", 100), 10, "RandomWalk")
-    ,state(0.97, perceptualRange("cir", 500), 20, "CorrelatedRW")
-), transitionMatrix(0.005, 0.001))
+
+LevyWalker <- species(
+	(state.RW() * 100 + 10) + (state.CRW(0.97) * 500 + 20)
+, transitionMatrix(0.005, 0.001))
 }

@@ -16,9 +16,9 @@ Shortcuts for defining species movement states with the arithmetic operators \co
 
 The \code{+} applied to states or species and a number defines the step length of one behavioural state or of all states of a species.
 
-The \code{*} applied to states or species and a number defines the radius of the perception window of one behavioural state or of all states of a species.
+The \code{*} applied to states or species and a number defines the radius of the perceptual range of one behavioural state or of all states of a species.
 
-Further, states can be combined with \code{+} to define multistate species. See examples.
+Further, states can be combined with \code{+} to define multistate movements in a species. See examples.
 }
 
 
