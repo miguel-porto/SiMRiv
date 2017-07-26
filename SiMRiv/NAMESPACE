@@ -1,4 +1,4 @@
-useDynLib(SiMRiv)
+useDynLib(SiMRiv, .registration = TRUE, .fixes = "SR_")
 importFrom("methods", "new", "show", "callGeneric")
 importFrom("stats", "runif", "sd")
 importFrom("sp", "proj4string")

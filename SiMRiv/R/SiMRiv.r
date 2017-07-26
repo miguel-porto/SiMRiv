@@ -54,7 +54,7 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 		if(!inherits(individuals[[i]],"species")) stop("individuals must be a list of species class")
 	}
 	
-	.Call("_simulate_individuals", individuals, coords, as.integer(time), angles, resist, new.env())
+	.Call(SR__simulate_individuals, individuals, coords, as.integer(time), angles, resist, new.env())
 }
 
 resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
@@ -134,7 +134,7 @@ sampleMovement<-function(relocs, resolution = 1, resist = NULL) {
 	#hist(turnangles)
 	#plot(density(turnangles))
 	if(!is.null(resist)) {
-		resistance=.Call("stepRasterAccumulator",relocs,resist,new.env())
+		resistance=.Call(SR_stepRasterAccumulator,relocs,resist,new.env())
 		stats=data.frame(
 			steplengths=steplengths[2:length(steplengths)]
 			,turningangles=turnangles

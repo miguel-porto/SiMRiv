@@ -11,19 +11,18 @@ Imports: methods, stats, sp, mco, parallel, rgdal
 Suggests: adehabitatLT, moveHMM, rgeos
 Description: Provides functions to generate and analyze individual-based spatially-explicit
   simulations of multi-state movements in heterogeneous landscapes, based on "resistance"
-  rasters. Although originally conceived and designed to fill the gap of softwares simulating
-  spatially-explicit trajectories of species constrained to linear, dendritic habitats
-  (e.g., river networks), the simulation algorithm is built to be highly flexible and can be
-  applied to any (aquatic, semi-aquatic or terrestrial) organism. Thus, the user will be able
-  to use the package to simulate movements either in homogeneous landscapes, heterogeneous
-  landscapes (e.g. semi-aquatic animal in a riverscape), or even in highly contrasted
-  landscapes (e.g. fish in a river network). The algorithm and its input parameters are
-  the same for all cases, so that results are comparable. Simulated trajectories can then
-  be used as null models to test e.g. for species site fidelity and other movement ecology
-  hypotheses, or to build predictive, mechanistic movement models, among other things. The
-  package should thus be relevant to explore a broad spectrum of ecological phenomena, such
-  as those at the interface of animal behaviour, landscape, spatial and movement ecology,
-  disease and invasive species spread, and population dynamics.
+  rasters. Although originally conceived and designed to simulate spatially-explicit trajectories
+  of species constrained to linear, dendritic habitats (e.g., river networks), the simulation
+  algorithm is built to be highly flexible and can be applied to any (aquatic, semi-aquatic or
+  terrestrial) organism. Thus, the user will be able to use the package to simulate movements
+  either in homogeneous landscapes, heterogeneous landscapes (e.g. semi-aquatic animal moving
+  mainly along rivers but also using the matrix), or even in highly contrasted landscapes
+  (e.g. fish in a river network). The algorithm and its input parameters are the same for all
+  cases, so that results are comparable. Simulated trajectories can then be used as mechanistic
+  null models to test e.g. for species site fidelity and other 'Movement Ecology' hypotheses, or
+  for other predictive purposes. The package should thus be relevant to explore a broad spectrum
+  of ecological phenomena, such as those at the interface of animal behaviour, landscape, spatial
+  and movement ecology, disease and invasive species spread, and population dynamics.
 License: GPL (>= 2)
 URL: https://www.r-project.org, https://github.com/miguel-porto/SiMRiv
 BugReports: https://github.com/miguel-porto/SiMRiv

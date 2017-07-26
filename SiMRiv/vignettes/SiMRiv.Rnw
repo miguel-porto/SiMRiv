@@ -53,7 +53,7 @@ lack of suitable analytical software and computational power still constrains ou
 
 In particular, we note that while software for simulating individual trajectories of species that move without restrictions in the landscape (species moving in a bi-dimensional homogeneous space) is available (e.g., Calenge et al 2009; Beyer 2012012, used e.g. in Fortin et al 2005; Humphries et al. 2013; Michelot et al 2016), we are aware of no
 appropriate software for simulating spatially-explicit, individual movement trajectories of species inhabiting (or intensively using) linear or dendritic landscapes (e.g., trouts or otters in rivers, humans along roads) or somehow conditioned by landscape heterogeneity (e.g., species moving along corridors or avoiding certain habitat features). 
-This lack of software may at least partly explain why, while a number of studies focused on marine environments (e.g., Sims et al 2008; Humphries et al 2010; Viswanathan 2010; Reynolds 2014; Hussey et al 2015), movement ecology has been poorly investigated in freshwater linear landscapes (e.g., river networks), also called dendritic (Patterson et al 2013) - or highly structured (Sutherland et al 2014) - ecological networks (DENs). Knowledge on the movement ecology of freshwater aquatic and semiaquatic species is in fact particularly scant.
+This lack of software may at least partly explain why, while a number of studies focused on marine environments (e.g., Sims et al 2008; Humphries et al 2010; Viswanathan 2010; Reynolds 2014; Hussey et al 2015), movement ecology has been poorly investigated in freshwater linear landscapes (e.g., river networks), also called dendritic (Peterson et al 2013) - or highly structured (Sutherland et al 2014) - ecological networks (DENs). Knowledge on the movement ecology of freshwater aquatic and semiaquatic species is in fact particularly scant.
 
 SiMRiv was specifically conceived to allow simulating individual-based, spatially-explicit movements in river networks and heterogeneous landscapes, thus filling the above-highlighted gap of software simulating movements in DENs.
 More importantly, the software was thought and developed to be highly flexible, allowing to simulate trajectories of any species living in any landscape, irrespective of its complexity (including totally homogeneous landscapes), with precisely the same algorithm.
@@ -140,6 +140,11 @@ plot(sim.lw, type = "l", asp = 1, main = "Lévy-like walker")
 
 The same logic applies to any number of states, but obviously, the transition matrix quickly gets large. See \code{help(transitionMatrix)} for details.
 
+\section{Parameterizing the simulation}
+In the current version, we provide an experimental method for numerically approximating simulation input parameters from real trajectory data,
+using an heuristic optimization.
+This is done with the function \code{adjustModel}. This function numerically finds combinations of input parameters that minimize
+the differences between simulated trajectories and the real trajectory. See the working example in \code{help(adjustModel)}.
 
 \section{Simulating in heterogeneous environments}
 \code{SiMRiv} can be used to simulate movements in an homogeneous environment, in which case you don't need to import data.
@@ -338,7 +343,7 @@ The software in its current version does not allow for:
 \item spatial bias (e.g. simulate a biased random walk);
 \item separation between physical resistance and habitat suitability, which should have different effects on movement;
 \item simulations of multiple interacting individuals;
-\item parameter estimation through maximum likelihood (e.g., Morales et al 2004; Van de Kerk et al 2015; Patterson et al 2016; ...);
+\item improving current method for input parameter estimation (\code{adjustModel}) or assessing the applicability of other methods (cf. Michelot et al 2016)
 \item other distributions for turning angles and steplength (currently, we use wrapped normal for the former and a fixed value for the latter);
 \end{enumerate}
 
