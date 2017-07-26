@@ -47,7 +47,7 @@
 
 landcover <- resistanceFromShape(
   system.file("doc/landcover.shp", package="SiMRiv")
-  , res = 100, field = "coverclass", mapvalues = c(
+  , res = 150, field = "coverclass", mapvalues = c(
     "forest" = 0.5, "urban" = 1, "dam" = 0
     , "shrubland" = 0.75), background = 0.95)
     
@@ -57,7 +57,7 @@ landcover <- resistanceFromShape(
 river.landcover <- resistanceFromShape(
   system.file("doc/river-sample.shp", package="SiMRiv")
   , baseRaster = landcover, buffer = 100, field = 0
-  , background = 0.95, margin = 3000)
+  , background = 0.95, margin = 1000)
 
 plot(river.landcover, axes = FALSE, mar = c(0, 0, 0, 2))
 
