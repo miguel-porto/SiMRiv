@@ -20,7 +20,7 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 				as.integer(rep(0,length(individuals)))
 				,as.integer(rep(0,length(individuals)))
 			)
-			warning("No starting coordinates and no raster given: starting positions set to (0,0)")
+			# warning("No starting coordinates and no raster given: starting positions set to (0,0)")
 		} else {
 			if(missing(start.resistance) || is.null(start.resistance)) {
 				e=extent(resist)

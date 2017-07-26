@@ -26,8 +26,6 @@
   However, note that depending on how the problem is formulated, the solutions might not be expected to converge to a single solution "type":
   for example, there can be two types of solutions, corresponding to two different ways of achieving similar results.
 }
-\note{
-}
 \value{
   Returns, invisibly, a 3-D matrix with the computed quantiles for all input parameters along generations.
 }

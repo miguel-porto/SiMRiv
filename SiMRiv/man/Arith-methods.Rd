@@ -21,10 +21,6 @@ The \code{*} applied to states or species and a number defines the radius of the
 Further, states can be combined with \code{+} to define multistate movements in a species. See examples.
 }
 
-
-\details{
-}
-
 \section{Methods}{
 \describe{
 

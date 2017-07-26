@@ -103,7 +103,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 			}
 		}
 /***************************************
-/* MAIN TIME LOOP
+** MAIN TIME LOOP
 ***************************************/
 // NOTE: time is unitless for now
 		for(time=0; time<timespan; time++) {
@@ -298,13 +298,13 @@ void computeEmpiricalResistancePDF(POINT curpos,const RASTER *resist,PERCEPTIONW
 	switch(percwind->type) {
 	case CIRCULAR:
 		step=percwind->radius/ACCUMULATORRESOLUTION;
-		int i,j,index;
+		int i,j;
 		float tcos,tsin,ang,sum;
 		POINT tmppos;
 		double tmp;
 		
 		#ifdef USEOPENMP
-		#pragma omp parallel for firstprivate(step,resist,curpos,percwind) private(i,j,tcos,tsin,ang,sum,tmppos,tmp,index) shared(allinf,pdf)
+		#pragma omp parallel for firstprivate(step,resist,curpos,percwind) private(i,j,tcos,tsin,ang,sum,tmppos,tmp) shared(allinf,pdf)
 		#endif
 		for(i=0; i<ANGLERES; i++) {	// make a whole circle
 			ang=-PI+i*ANGLESTEP;

@@ -1,5 +1,5 @@
 Package: SiMRiv
-Version: 0.9.2
+Version: 1.0.0
 Date: 2017-07-24
 Title: Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks and Heterogeneous Landscapes
 Authors@R: c(person("Lorenzo", "Quaglietta", role = c("aut"), email = "lontrenzo@gmail.com")
@@ -7,8 +7,8 @@ Authors@R: c(person("Lorenzo", "Quaglietta", role = c("aut"), email = "lontrenzo
 		,person("Erida", "Gjini", role = c("ctb"), email = "egjini@igc.gulbenkian.pt")
 		)
 Depends: R (>= 1.8.0), raster
-Imports: methods, stats, sp, mco, parallel
-Suggests: adehabitatLT, rgeos
+Imports: methods, stats, sp, mco, parallel, rgdal
+Suggests: adehabitatLT, moveHMM, rgeos
 Description: Provides functions to generate and analyze individual-based spatially-explicit
   simulations of multi-state movements in heterogeneous landscapes, based on "resistance"
   rasters. Although originally conceived and designed to fill the gap of softwares simulating
@@ -23,8 +23,7 @@ Description: Provides functions to generate and analyze individual-based spatial
   hypotheses, or to build predictive, mechanistic movement models, among other things. The
   package should thus be relevant to explore a broad spectrum of ecological phenomena, such
   as those at the interface of animal behaviour, landscape, spatial and movement ecology,
-  disease and invasive species spread, and population dynamics. This is the first released
-  experimental version; do test before using in production.
+  disease and invasive species spread, and population dynamics.
 License: GPL (>= 2)
-URL: http://www.r-project.org, https://github.com/miguel-porto/SiMRiv
+URL: https://www.r-project.org, https://github.com/miguel-porto/SiMRiv
 BugReports: https://github.com/miguel-porto/SiMRiv
