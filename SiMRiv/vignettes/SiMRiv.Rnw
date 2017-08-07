@@ -47,20 +47,20 @@ library(SiMRiv)
 
 \section{Introduction}
 The study of animal movement behaviour, recently reframed in the 'Movement Ecology' paradigm (Nathan 2008), is key to a variety of fields including landscape ecology, species distribution modeling,
-and population size estimation among others (Turchin 1998; Nathan 2008; Royle et al 2014). A common feature in the modeling of animal movement data, used also in fields as varied as anthropology (Raichlen et al 2014), paleontology (Sims et al 2014), cell biology (Dickinson \& Tranquillo 1993), tumour angiogenesis (Plank \& Sleeman 2003), and molecular ecology (Hoban 2014),
-is the comparison between real and simulated, spatially-explicit, individual trajectories (Sims et al 2008; Humphries et al 2010; Viswanathan et al 2010; reviews in Patterson et al 2008, Schick et al 2008, Smouse et al 2010, and Hooten et al 2017). Despite the increasing availability of (GPS) telemetry data and of powerful statistical and modeling approaches for the study of movement,
+and population size estimation among others (Turchin 1998; Nathan 2008; Royle et al 2014). A common feature in the modeling of animal movement data (Sims et al 2008; Humphries et al 2010; Viswanathan et al 2010; reviews in Patterson et al 2008, Schick et al 2008, Smouse et al 2010, and Hooten et al 2017), used also in fields as varied as anthropology (Raichlen et al 2014), paleontology (Sims et al 2014), cell biology (Dickinson \& Tranquillo 1993), tumour angiogenesis (Plank \& Sleeman 2003), and molecular ecology (Hoban 2014),
+is the comparison between real and simulated, spatially-explicit, individual trajectories. Despite the increasing availability of (GPS) telemetry data and of powerful statistical and modeling approaches for the study of movement,
 lack of suitable analytical software and computational power still constrains our comprehension of animal movement patterns (Morales et al 2010; Calabrese et al 2016; Michelot et al 2016; Hooten et al 2017). 
 
 In particular, we note that while software for simulating individual trajectories of species that move without restrictions in the landscape (species moving in a bi-dimensional homogeneous space) is available (e.g., Calenge et al 2009; Beyer 2012012, used e.g. in Fortin et al 2005; Humphries et al. 2013; Michelot et al 2016), we are aware of no
 appropriate software for simulating spatially-explicit, individual movement trajectories of species inhabiting (or intensively using) linear or dendritic landscapes (e.g., trouts or otters in rivers, humans along roads) or somehow conditioned by landscape heterogeneity (e.g., species moving along corridors or avoiding certain habitat features). 
-This lack of software may at least partly explain why, while a number of studies focused on marine environments (e.g., Sims et al 2008; Humphries et al 2010; Viswanathan 2010; Reynolds 2014; Hussey et al 2015), movement ecology has been poorly investigated in freshwater linear landscapes (e.g., river networks), also called dendritic (Peterson et al 2013) - or highly structured (Sutherland et al 2014) - ecological networks (DENs). Knowledge on the movement ecology of freshwater aquatic and semiaquatic species is in fact particularly scant.
+This lack of software may at least partly explain why, while a number of studies focused on marine environments (e.g., Sims et al 2008; Humphries et al 2010; Viswanathan 2010; Reynolds 2014; Hussey et al 2015), movement ecology has been poorly investigated in freshwater linear landscapes (e.g., river networks), also called dendritic (DENs - Peterson et al 2013) - or highly structured (Sutherland et al 2014) - ecological networks. Knowledge on the movement ecology of freshwater aquatic and semiaquatic species is in fact particularly scant.
 
 SiMRiv was specifically conceived to allow simulating individual-based, spatially-explicit movements in river networks and heterogeneous landscapes, thus filling the above-highlighted gap of software simulating movements in DENs.
 More importantly, the software was thought and developed to be highly flexible, allowing to simulate trajectories of any species living in any landscape, irrespective of its complexity (including totally homogeneous landscapes), with precisely the same algorithm.
-It thus allows to develop realistic movement models using multi-state markov models, while taking into account environmental complexity.
+It thus allows to develop realistic mechanistic movement models within the multistate markov modeling framework (e.g., Morales et al 2004; McClintock et al 2012; Michelot et al 2016), while taking into account environmental complexity.
 
-In this document, we: (i) introduce how to prepare the data for the simulations; (ii) report the main functionalities of the software; (iii) introduce some examples of use of the software; and (iv) provide an overview on main software's potential applications, expected outcomes,
-and features we would like to improve or develop. We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology, in Nathan 2008, Codling et al 2008, Patterson et al 2008, Schick et al 2008, Smouse et al 2010), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its \href{http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf}{vignette}.
+In this document, we: (i) introduce how to prepare the data for the simulations; (ii) report the main functionalities of the software; (iii) introduce some examples of use of the software; and (iv) provide an overview on main software's features we would like to improve or develop.
+We assume that you are somehow familiar with the basic concepts of Movement Ecology (see reviews on this, as well as on the use of random walk models in Ecology, in Nathan 2008, Codling et al 2008, Patterson et al 2008, Schick et al 2008, Smouse et al 2010), as well as with the R language and environment. In case you need help for the 'raster' package, you may want to refer to its \href{http://cran.r-project.org/web/packages/raster/vignettes/Raster.pdf}{vignette}.
 This is a work in progress, \textbf{report of any bug or suggestion is warmly welcomed.}
 
 \section{Conducting basic simulations}
@@ -82,7 +82,7 @@ plot(sim.rw, type = "l", asp = 1, main = "Random walk")
 @
 
 \code{state.RW} is a shortcut function for defining a totally random movement state, with unit step length.
-Now let's try with a more interesting movement type, a simple Correlated Random Walk, where the direction taken in one step is correlated with the direction of the previous step.
+Now let's try with a more interesting movement type, a simple Correlated Random Walk (cf. Turchin 1998), where the direction taken in one step is correlated with the direction of the previous step.
 For this you have the shortcut function \code{state.CRW}, to which you must provide the amount of correlation, more precisely, the turning angle concentration parameter of the wrapped normal distribution (below we use 0.98).
 This parameter varies between [0, 1], being 0 no correlation (yielding a random walk state) and 1, full correlation (step direction does not change, it's always the same as the previous step).
 Obviously, \code{state.RW()} is a shortcut for \code{state.CRW(0)}.
@@ -115,7 +115,7 @@ c.rand.walker.15 <- species(state.CRW(0.98)) + 15
 @
 
 \section{Multi-state movement simulations}
-Multi-state movements require specifying the probabilities of transition between the movement states.
+Multi-state movements require specifying the probabilities of transition between the movement states (cf. Morales et al 2004).
 This transition matrix, which is a parameter you specify when defining the species, has an overwhelming importance in the final movement pattern.
 Formally, it is just a square matrix with all values in the range [0, 1], and whose rows must sum to one (but not columns).
 It should be read row-wise, that is, the cell at row 2 column 3 defines the probability of the individual changing from state \#2 to state \#3.
@@ -262,13 +262,13 @@ During simulations, at each step, the turning angles of the individuals will be 
 This parameter also has an overwhelming importance in the resulting movement patterns.
 A species with a wider perceptual range will be attracted to lower resistance areas, even if it has to cross high resistance areas, because it 'sees' farther.
 Conversely, a species with a small perceptual range will not 'see' those lower resistance areas, so it will be detained by high resistance areas.
-This can have important consequences, for example, when simulating amphibious species in a river: the size of the perceptual range will determine how likely the individuals will take overland shortcuts between river segments.
+This can have important consequences, for example, when simulating semiaquatic species in a river: the size of the perceptual range will determine how likely the individuals will take overland shortcuts between river segments.
 
 In order to allow more flexibility, the perceptual range is an attribute of each state (not of the species).
 For ease of use, the size of the perceptual range of a state can be set simply by multiplying the state by a number, for example \code{state.RW() * 1000} will define a random walk state with a perceptual range of 1000 m.
 If you want to set the same value for all the states of a species, you can directly multiply the species by a number, e.g. \code{levy.walker * 1500} will set the perceptual range of both states of the Lévy-like walker to 1500 m.
 
-In the next example, we simulate a Lévy-like walker in a riverscape, assuming an amphibious species, i.e. that moves mainly in water but may also walk overland if needed.
+In the next example, we simulate a Lévy-like walker in a riverscape, assuming a semiaquatic species, i.e. that moves mainly in water but may also walk overland if needed (e.g., an otter or a Pyrenean desman).
 This example also demonstrates how to set the starting coordinates to a random pixel with given resistance value(s).
 
 <<simriv-10, fig=TRUE , echo=TRUE, grdevice=my.Swd>>=
@@ -311,6 +311,7 @@ If you want to have simulated data which is comparable to real tracking data, yo
 \item Codling, E. A., Plank, M. J., \& Benhamou, S. (2008). Random walk models in biology. Journal of the Royal Society Interface, 5(25), 813-834.
 \item Dickinson, R.B. \& Tranquillo, R.T. (1993). Optimal estimation of cell movement indices from the statistical analysis of cell tracking data. AIChE Journal 39, 1995-2010.
 \item Fortin, D., Beyer, H.L., Boyce, M.S., Smith, D.W., Duchesne, T., \& Mao, J.S. (2005). Wolves influence elk movements: behavior shapes a trophic cascade in Yellowstone National Park. Ecology 86, 1320-1330.
+\item Hartig, F., Calabrese, J. M., Reineking, B., Wiegand, T., & Huth, A. (2011). Statistical inference for stochastic simulation models–theory and application. Ecology letters, 14(8), 816-827.
 \item Hoban, S. (2014). An overview of the utility of population simulation software in molecular ecology. Molecular ecology 23, 2383-2401.
 \item Hooten, M. B., Johnson, D. S., McClintock, B. T., \& Morales, J. M. (2017). Animal movement: statistical models for telemetry data. CRC Press.
 \item Humphries, N.E., Queiroz, N., Dyer, J.R.M., et al. (2010). Environmental context explains Lévy and Brownian movement patterns of marine predators. Nature 465, 1066-1069. doi:10.1038/nature09116.
@@ -318,6 +319,8 @@ If you want to have simulated data which is comparable to real tracking data, yo
 \item Hussey, N. E., Kessel, S. T., Aarestrup, K., Cooke, S. J., Cowley, P. D., Fisk, A. T., ... \& Flemming, J. E. M. (2015). Aquatic animal telemetry: a panoramic window into the underwater world. Science, 348(6240), 1255642.
 \item Lima, S. L., \& Zollner, P. A. (1996). Towards a behavioral ecology of ecological landscapes. Trends in Ecology \& Evolution, 11(3), 131-135.
 \item Michelot, T., Langrock, R., \& Patterson, T. A. (2016). moveHMM: An R package for the statistical modelling of animal movement data using hidden Markov models. Methods in Ecology and Evolution, 7(11), 1308-1315.
+\item McClintock, B.T., King, R., Thomas, L., Matthiopoulos, J., McConnell, B.J., & Morales, J.M. (2012). A general discrete‐time modeling framework for animal movement using multistate random walks. Ecological Monographs 82, 335-349.
+\item Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., & Fryxell, J. M. (2004). Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.
 \item Morales, J.M., Moorcroft, P.R., Matthiopoulos, J. et al. (2010). Building the bridge between animal movement and population dynamics. Phil. Trans. R. Soc. B 365, 2289-2301.
 \item Nathan, R. (2008). An emerging movement ecology paradigm. PNAS 105, 19050-19051.
 \item Patterson, T.A., Thomas, L., Wilcox, C., Ovaskainen, O., \& Matthiopoulos, J. (2008). State-space models of individual animal movement. Trends in ecology \& evolution 23, 87-94.
@@ -337,15 +340,14 @@ If you want to have simulated data which is comparable to real tracking data, yo
 
 \section{To do list and opportunities for collaborations}
 
-The software in its current version does not allow for:
-
 \begin{enumerate}
-\item spatial bias (e.g. simulate a biased random walk);
+\item spatial bias (the software in its current version does not allow to simulate, e.g., a biased random walk);
 \item separation between physical resistance and habitat suitability, which should have different effects on movement;
 \item simulations of multiple interacting individuals;
-\item improving current method for input parameter estimation (\code{adjustModel}) or assessing the applicability of other methods (cf. Michelot et al 2016)
+\item improving current method for input parameter estimation (\code{adjustModel}) or assessing the applicability of other methods (cf. Hartig et al 2011)
 \item other distributions for turning angles and steplength (currently, we use wrapped normal for the former and a fixed value for the latter);
 \end{enumerate}
+
 
 \textbf{We highly encourage interested programmers to join our project on} \href{https://github.com/miguel-porto/SiMRiv/}{GitHub} and contribute by improving and further extending the package.
 
