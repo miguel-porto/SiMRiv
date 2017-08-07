@@ -114,11 +114,11 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 			for(i=0, tmp2=0; i<ninds; i++, tmp2+=timespan) {	// tmp2 is just a relative pointer to output matrix
 // draw new state according to transition matrix
 				r = runif(0, MULTIPLIER-1);
-				for(k=0, s=(unsigned long)(curtrans[i][ind[i].curstate]*MULTIPLIER)
-					; k<=ind[i].nstates && r>=s
-					; k++, s+=(unsigned long)(curtrans[i][ind[i].curstate + k*ind[i].nstates]*MULTIPLIER)) {}
-				ind[i].curstate = k;
-
+				for(k=0, s=(unsigned long)(curtrans[i][ind[i].curstate] * MULTIPLIER)
+					; k < (ind[i].nstates - 1) && r >= s
+					; k++, s += (unsigned long)(curtrans[i][ind[i].curstate + k * ind[i].nstates] * MULTIPLIER)) {}
+				ind[i].curstate = k; //>= ind[i].nstates ? (ind[i].nstates - 1) : k;		// is this condition needed?
+				
 				tmpstate = &ind[i].states[ind[i].curstate];
 // rotate the 0-centered base PDF (the one calculated from the state's concentration parameter)
 // to center on the previous step angle
@@ -148,15 +148,16 @@ Rprintf("\n");
 for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmprotPDF[j]);
 Rprintf("\n");*/
 
-				curangtrans=ind[i].curang * ANGLESTEP - PI;
-				lengthmove=computeLengthMove(tmpstate->steplength, ind[i].curpos, resist, curangtrans);
-				if(lengthmove>0) {
-					ind[i].curpos.x+=cos(curangtrans) * lengthmove;
-					ind[i].curpos.y+=sin(curangtrans) * lengthmove;
+				curangtrans = ind[i].curang * ANGLESTEP - PI;
+//				Rprintf("%.3f %.3f %.3f | ", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y);
+				lengthmove = computeLengthMove(tmpstate->steplength, ind[i].curpos, resist, curangtrans);
+				if(lengthmove > 0) {
+					ind[i].curpos.x += cos(curangtrans) * lengthmove;
+					ind[i].curpos.y += sin(curangtrans) * lengthmove;
 				}
-				if(isnan(ind[i].curpos.x)) {
-					Rprintf("%f %f %f\n",ind[i].curpos.x,ind[i].curpos.y,lengthmove);
-					Rf_error("lkjh");
+				if(isnan(ind[i].curpos.x)) {	// this should never happen, but...
+					Rprintf("%f %f %f %f %f %f\n", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y, lengthmove, ind[i].curang, curangtrans);
+					Rf_error("Unexpected error, please report.");
 				}
 
 				tmp1=tmp2*3;	// this is the column offset of the current individual in the output matrix

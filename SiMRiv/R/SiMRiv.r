@@ -128,9 +128,12 @@ sampleMovement<-function(relocs, resolution = 1, resist = NULL) {
 	diffs=apply(relocs,2,diff)
 	steplengths=sqrt(apply(diffs^2,1,sum))
 	angles=atan2(diffs[,2],diffs[,1])
-	turnangles=diff(angles)
-	turnangles[turnangles>pi]=-2*pi+turnangles[turnangles>pi]
-	turnangles[turnangles<(-pi)]=2*pi+turnangles[turnangles<(-pi)]
+	turnangles = diff(angles)
+	nas = is.na(turnangles)
+	turnangles[nas] <- 0
+	turnangles[turnangles > pi] <- -2 * pi + turnangles[turnangles > pi]
+	turnangles[turnangles < -pi] <- 2 * pi + turnangles[turnangles < -pi]
+	turnangles[nas] <- NA
 	#hist(turnangles)
 	#plot(density(turnangles))
 	if(!is.null(resist)) {

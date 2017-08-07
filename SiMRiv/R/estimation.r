@@ -36,7 +36,7 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = NULL, window.si
 }
 
 speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperbound = 0.5) {
-	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl", "CRW.CRW.sl")), {
+	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl", "CRW.CRW.sl", "CRW.CRW.CRW.sl", "CRW.RW.Rest.sl")), {
 		f <- function(parameters) {
 			return(species(
 				state.CRW(parameters[1])
@@ -107,6 +107,34 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		attr(f, "upper.bounds") <- c(1, 1, rep(prob.upperbound, 2), rep(steplength, 2))
 		attr(f, "param.names") <- c("Turning angle correlation S1", "Turning angle correlation S2", "Prob. S1 -> S2", "Prob. S2 -> S1", "Step length S1", "Step length S2")
 		return(f)
+	}, {
+		f <- function(parameters) {
+			return(species(
+				(state.CRW(parameters[1]) + parameters[10]) + (state.CRW(parameters[2]) + parameters[11]) + (state.CRW(parameters[3]) + parameters[12])
+				, transitionMatrix(parameters[4], parameters[5], parameters[6], parameters[7], parameters[8], parameters[9])
+			) * perceptual.range)
+		}
+		attr(f, "npars") <- 12
+		attr(f, "lower.bounds") <- rep(0, 12)
+		attr(f, "upper.bounds") <- c(1, 1, 1, rep(prob.upperbound, 6), rep(steplength, 3))
+		attr(f, "param.names") <- c("Turning angle correlation S1", "Turning angle correlation S2", "Turning angle correlation S3"
+			, "Prob. S1 -> S2", "Prob. S1 -> S3", "Prob. S2 -> S1", "Prob. S2 -> S3", "Prob. S3 -> S1", "Prob. S3 -> S2"
+			, "Step length S1", "Step length S2", "Step length S3")
+		return(f)
+	}, {
+		f <- function(parameters) {
+			return(species(
+				(state.CRW(parameters[1]) + parameters[6]) + (state.RW() + parameters[7]) + state.Resting()
+				, transitionMatrix(parameters[2], 0, parameters[3], parameters[4], 0, parameters[5])
+			) * perceptual.range)
+		}
+		attr(f, "npars") <- 7
+		attr(f, "lower.bounds") <- rep(0, 7)
+		attr(f, "upper.bounds") <- c(1, rep(prob.upperbound, 4), rep(steplength, 2))
+		attr(f, "param.names") <- c("Turning angle correlation CRW"
+			, "Prob. CRW -> RW", "Prob. RW -> CRW", "Prob. RW -> Rest", "Prob. Rest -> RW"
+			, "Step length CRW", "Step length RW")
+		return(f)
 	}))
 }
 
@@ -125,6 +153,8 @@ adjustModel <- function(
 	, step.hist.range = c(0, 1)
 	, step.hist.log = FALSE
 	, nrepetitions = 1
+	, TA.variation = TRUE
+	, aggregate.objective.histograms = TRUE
 # GA options
 	, popsize = 100, generations = seq(5, 1000, by=5), mprob = 0.2
 	, parallel = is.null(resistance)	# if using a raster, parallel performance doesn't increase because it is loaded in all R processes
@@ -134,13 +164,17 @@ adjustModel <- function(
 	nsteps <- dim(realData)[1]
 # compute turning angles and step lengths of the real movement
 	reference <- sampleMovement(realData, resist = resistance)
+# in this case, use the variation in turning angles along a moving window as objectives
+	if(TA.variation) {
 # compute the SD of turning angles in a fixed-size juxtaposed moving window
-	a.var.ref <- angle.variation(reference, window.size = window.size)
+		a.var.ref <- angle.variation(reference, window.size = window.size)
 # make the (fixed-range) histogram of all the moving window SDs
 # the range of the histogram is 10% larger than observed range to account for stochasticity in simulations
-	increase <- (diff(range(a.var.ref)) * 0.1) / 2
-	range.varta <- range(a.var.ref) + c(-increase, increase)
-	hist.var.ref <- binCounts(a.var.ref, range.varta, nbins.hist[1])
+		increase <- (diff(range(a.var.ref)) * 0.1) / 2
+		range.varta <- range(a.var.ref) + c(-increase, increase)
+		hist.var.ref <- binCounts(a.var.ref, range.varta, nbins.hist[1])
+	} else # otherwise just use the plain old turning angle histogram
+		hist.var.ref <- binCounts(reference$stats[, "turningangles"], c(-pi, pi), nbins.hist[1], FALSE)
 # make the step length histogram	
 #	increase <- (diff(range(reference$stats[, "steplengths"])) * 0) / 2
 #	range.step <- range(reference$stats[, "steplengths"]) + c(-increase, increase)
@@ -164,28 +198,41 @@ adjustModel <- function(
 
 	if(!is.null(cl)) {	# GO PARALLEL
 		clusterCall(cl, function() library(SiMRiv))
-		clusterExport(cl, c("nrepetitions", "nbins.hist", "nsteps", "window.size"
-			, "range.varta", "range.step", "resolution", "species.model", "resistance", "coords", "start.resistance"
-			), envir = environment())
+		if(TA.variation) {
+			clusterExport(cl, c("nrepetitions", "nbins.hist", "nsteps", "range.varta", "window.size"
+				, "range.step", "resolution", "species.model", "resistance", "coords", "start.resistance"
+				), envir = environment())
+		} else {
+			clusterExport(cl, c("nrepetitions", "nbins.hist", "nsteps"
+				, "range.step", "resolution", "species.model", "resistance", "coords", "start.resistance"
+				), envir = environment())
+		}
 	
 		objective.function.par <- function(inp.mat, reference) {
+#			print(round(inp.mat,2))
 			crit <- parApply(cl, inp.mat, 1, function(inp.par, ref) {
 				sp.sim <- species.model(inp.par)
-	
+				
 				hist.mat <- matrix(ncol = nbins.hist[1], nrow = nrepetitions)
 				hist.step <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
 				if(nrepetitions == 1) {
 					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 					s <- sampleMovement(rel, resolution, resist = resistance)
-					a.var.sim <- angle.variation(s, window.size = window.size)
-					hist.var <- binCounts(a.var.sim, range.varta, nbins.hist[1])
+					if(TA.variation) {
+						a.var.sim <- angle.variation(s, window.size = window.size)
+						hist.var <- binCounts(a.var.sim, range.varta, nbins.hist[1])
+					} else 
+						hist.var <- binCounts(s$stats[, "turningangles"], c(-pi, pi), nbins.hist[1], FALSE)
 					hist.step <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 				} else {
 					for(i in 1:nrepetitions) {
 						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 						s <- sampleMovement(rel, resolution, resist = resistance)
-						a.var.sim <- angle.variation(s, window.size = window.size)
-						hist.mat[i, ] <- binCounts(a.var.sim, range.varta, nbins.hist[1])
+						if(TA.variation) {
+							a.var.sim <- angle.variation(s, window.size = window.size)
+							hist.mat[i, ] <- binCounts(a.var.sim, range.varta, nbins.hist[1])
+						} else
+							hist.mat[i, ] <- binCounts(s$stats[, "turningangles"], c(-pi, pi), nbins.hist[1], FALSE)
 						hist.step[i, ] <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 					}
 					hist.var <- apply(hist.mat, 2, mean)
@@ -213,17 +260,24 @@ adjustModel <- function(
 					#crit.sl <- abs(div1 - div2)
 				} else crit.sl <- NULL
 
-				crit <- c(crit.ta, crit.sl)
+				if(aggregate.objective.histograms)
+				# in this case we sum the absolute differences in each histogram bar to use as objectives
+					crit <- c(sum(crit.ta), sum(crit.sl))
+				else
+				# otherwise we use the bar-wise absolute differences as objectives
+					crit <- c(crit.ta, crit.sl)
 
 #				crit = c(mean(abs(hist.var - ref[[3]])), sd(abs(hist.var - ref[[3]])))
 				return(crit)
 			}, reference)
 			
-			if(trace) print(crit)
+			if(trace) print(round(crit, 1))
 			return(crit)
 		}
 
-		sol <- nsga2(objective.function.par, attr(species.model, "npars"), sum(nbins.hist) - 0, list(reference, a.var.ref, hist.var = hist.var.ref, hist.step = hist.step.ref)
+		sol <- nsga2(objective.function.par, attr(species.model, "npars")
+			, ifelse(aggregate.objective.histograms, 2, sum(nbins.hist))
+			, list(reference, hist.var = hist.var.ref, hist.step = hist.step.ref)
 			, generations = generations, popsize = popsize
 			, lower.bounds = attr(species.model, "lower.bounds")
 			, upper.bounds = attr(species.model, "upper.bounds")
@@ -231,27 +285,39 @@ adjustModel <- function(
 		)
 	} else {	# GO SINGLE CORE
 		objective.function = function(inp.par, ref) {
+			if(trace) {
+				cat("INP: ")
+				for(o in inp.par)
+					cat(sprintf("%5.2f ", o))
+				cat("\n")
+				flush.console()
+			}
+
 			sp.sim = species.model(inp.par)
-	
+
 			hist.mat = matrix(ncol = nbins.hist[1], nrow = nrepetitions)
 			hist.step <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
+
 			if(nrepetitions == 1) {
 				rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 				s = sampleMovement(rel, resolution, resist = resistance)
-				a.var.sim = angle.variation(s, window.size = window.size)
-				hist.var = binCounts(a.var.sim, range.varta, nbins.hist[1])
+#				a.var.sim = angle.variation(s, window.size = window.size)
+#				hist.var = binCounts(a.var.sim, range.varta, nbins.hist[1])
+				hist.var <- binCounts(s$stats[, "turningangles"], c(-pi, pi), nbins.hist[1], FALSE)
 				hist.step <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 			} else {
 				for(i in 1:nrepetitions) {
 					rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
 					s = sampleMovement(rel, resolution, resist = resistance)
-					a.var.sim = angle.variation(s, window.size = window.size)
-					hist.mat[i, ] = binCounts(a.var.sim, range.varta, nbins.hist[1])
+#					a.var.sim = angle.variation(s, window.size = window.size)
+#					hist.mat[i, ] = binCounts(a.var.sim, range.varta, nbins.hist[1])
+					hist.mat[i, ] <- binCounts(s$stats[, "turningangles"], c(-pi, pi), nbins.hist[1], FALSE)
 					hist.step[i, ] <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 				}
 				hist.var = apply(hist.mat, 2, mean)
 				hist.step <- apply(hist.step, 2, mean)
 			}
+
 			if(nbins.hist[1] == 0) {
 				crit <- abs(hist.step - ref[["hist.step"]])
 			} else if(nbins.hist[2] == 0) {
@@ -259,9 +325,10 @@ adjustModel <- function(
 			} else {
 				crit <- c(abs(hist.var - ref[["hist.var"]]), abs(hist.step - ref[["hist.step"]]))
 			}
-			
+
 		#	crit = sum(abs(hist.var - ref[[3]]))
 			if(trace) {
+				cat("OBJ: ")
 				for(o in crit)
 					cat(sprintf("%5.2f ", o))
 				cat("\n")
@@ -270,7 +337,7 @@ adjustModel <- function(
 			return(crit)
 		}
 		
-		sol <- nsga2(objective.function, attr(species.model, "npars"), sum(nbins.hist), list(reference, a.var.ref, hist.var = hist.var.ref, hist.step = hist.step.ref)
+		sol <- nsga2(objective.function, attr(species.model, "npars"), sum(nbins.hist), list(reference, hist.var = hist.var.ref, hist.step = hist.step.ref)
 			, generations = generations, popsize = popsize
 			, lower.bounds = attr(species.model, "lower.bounds")
 			, upper.bounds = attr(species.model, "upper.bounds")
@@ -287,7 +354,16 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 	generations <- attr(solutions, "generations")
 	
 	# some fancy colors and their semi-transparent counterparts
-	plot.colors = matrix(c("#000000", "#00000022", "#00ff00", "#00ff0022", "#ff0000", "#ff000022", "#ff7700", "#ff770022", "#00ffff", "#00ffff22", "#ff0077", "#ff007722"), ncol = 2, byrow = T)
+	plot.colors = matrix(
+		c("#000000", "#00000022"
+		, "#00bb00", "#00bb0022"
+		, "#ff0000", "#ff000022"
+		, "#ff9900", "#ff990022"
+		, "#0077ff", "#0077ff22"
+		, "#9900ff", "#99007722"), ncol = 2, byrow = T)
+	plot.lty = rep(c(1, 2), each = nrow(plot.colors))
+	plot.colors = rbind(plot.colors, plot.colors)	# duplicate
+	
 	# compute quantiles for plotting
 	quantiles <- sapply(solutions, function(x) {
 		apply(x$par[, , drop = F], 2, quantile, plot.quantiles)
@@ -308,14 +384,14 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 	the.others <- setdiff(1:attr(species.model, "npars"), coor.probs)
 	for(p in coor.probs) {		# correlation and probabilities are those parameters bounded by 1
 		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ])), border = NA, col = plot.colors[p, 2])
-		lines(generations, quantiles[2, p, ], lwd = lwd, col = plot.colors[p, 1])
+		lines(generations, quantiles[2, p, ], lwd = lwd, col = plot.colors[p, 1], lty = plot.lty[p])
 	}
 	# plot scale for step lengths (right axis)
 	plot.window(xlim = c(0, max(generations)), ylim = c(0, max(attr(species.model, "upper.bounds"))))
 	axis(4)
 	for(p in the.others) {		# step lengths are the last params
 		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ])), border = NA, col = plot.colors[p, 2])
-		lines(generations, quantiles[2, p, ], lwd = lwd, col = plot.colors[p, 1])
+		lines(generations, quantiles[2, p, ], lwd = lwd, col = plot.colors[p, 1], lty = plot.lty[p])
 	}
 	
 	title(xlab = c("Generation"))
@@ -326,7 +402,8 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 	if(show.legend) {
 		legend("bottomleft"#, xpd = T, inset = c(-0, -0.15)
 			, legend = attr(species.model, "param.names")
-			, lwd = lwd, col = plot.colors[1:4, 1], box.lwd = 0, bg = "#ffffff77")
+			, lwd = lwd, col = plot.colors[1:attr(species.model, "npars"), 1], lty = plot.lty[1:attr(species.model, "npars")]
+			, box.lwd = 0, bg = "#ffffff77")
 	}
 	return(invisible(quantiles))
 }
