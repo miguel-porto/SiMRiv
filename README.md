@@ -1,5 +1,5 @@
 # SiMRiv (R package)
-**Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks and Heterogeneous Landscapes in R.**
+**Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks, Homogeneous, and Heterogeneous Landscapes in R.**
 
 Available on [CRAN](https://cran.r-project.org/web/packages/SiMRiv/index.html), can be directly installed from within R.
 
