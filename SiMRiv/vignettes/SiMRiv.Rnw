@@ -311,7 +311,7 @@ If you want to have simulated data which is comparable to real tracking data, yo
 \item Codling, E. A., Plank, M. J., \& Benhamou, S. (2008). Random walk models in biology. Journal of the Royal Society Interface, 5(25), 813-834.
 \item Dickinson, R.B. \& Tranquillo, R.T. (1993). Optimal estimation of cell movement indices from the statistical analysis of cell tracking data. AIChE Journal 39, 1995-2010.
 \item Fortin, D., Beyer, H.L., Boyce, M.S., Smith, D.W., Duchesne, T., \& Mao, J.S. (2005). Wolves influence elk movements: behavior shapes a trophic cascade in Yellowstone National Park. Ecology 86, 1320-1330.
-\item Hartig, F., Calabrese, J. M., Reineking, B., Wiegand, T., & Huth, A. (2011). Statistical inference for stochastic simulation models–theory and application. Ecology letters, 14(8), 816-827.
+\item Hartig, F., Calabrese, J. M., Reineking, B., Wiegand, T., \& Huth, A. (2011). Statistical inference for stochastic simulation models-theory and application. Ecology letters, 14(8), 816-827.
 \item Hoban, S. (2014). An overview of the utility of population simulation software in molecular ecology. Molecular ecology 23, 2383-2401.
 \item Hooten, M. B., Johnson, D. S., McClintock, B. T., \& Morales, J. M. (2017). Animal movement: statistical models for telemetry data. CRC Press.
 \item Humphries, N.E., Queiroz, N., Dyer, J.R.M., et al. (2010). Environmental context explains Lévy and Brownian movement patterns of marine predators. Nature 465, 1066-1069. doi:10.1038/nature09116.
@@ -319,8 +319,8 @@ If you want to have simulated data which is comparable to real tracking data, yo
 \item Hussey, N. E., Kessel, S. T., Aarestrup, K., Cooke, S. J., Cowley, P. D., Fisk, A. T., ... \& Flemming, J. E. M. (2015). Aquatic animal telemetry: a panoramic window into the underwater world. Science, 348(6240), 1255642.
 \item Lima, S. L., \& Zollner, P. A. (1996). Towards a behavioral ecology of ecological landscapes. Trends in Ecology \& Evolution, 11(3), 131-135.
 \item Michelot, T., Langrock, R., \& Patterson, T. A. (2016). moveHMM: An R package for the statistical modelling of animal movement data using hidden Markov models. Methods in Ecology and Evolution, 7(11), 1308-1315.
-\item McClintock, B.T., King, R., Thomas, L., Matthiopoulos, J., McConnell, B.J., & Morales, J.M. (2012). A general discrete‐time modeling framework for animal movement using multistate random walks. Ecological Monographs 82, 335-349.
-\item Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., & Fryxell, J. M. (2004). Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.
+\item McClintock, B.T., King, R., Thomas, L., Matthiopoulos, J., McConnell, B.J., \& Morales, J.M. (2012). A general discrete-time modeling framework for animal movement using multistate random walks. Ecological Monographs 82, 335-349.
+\item Morales, J. M., Haydon, D. T., Frair, J., Holsinger, K. E., \& Fryxell, J. M. (2004). Extracting more out of relocation data: building movement models as mixtures of random walks. Ecology, 85(9), 2436-2445.
 \item Morales, J.M., Moorcroft, P.R., Matthiopoulos, J. et al. (2010). Building the bridge between animal movement and population dynamics. Phil. Trans. R. Soc. B 365, 2289-2301.
 \item Nathan, R. (2008). An emerging movement ecology paradigm. PNAS 105, 19050-19051.
 \item Patterson, T.A., Thomas, L., Wilcox, C., Ovaskainen, O., \& Matthiopoulos, J. (2008). State-space models of individual animal movement. Trends in ecology \& evolution 23, 87-94.
