@@ -6,10 +6,10 @@
 \packageTitle{SiMRiv}
 }
 \description{
-Provides functions to generate and analyze individual-based, spatially-explicit simulations of multi-state movements in heterogeneous
+Provides functions to generate and analyze individual-based, spatially-explicit simulations of multi-state movements in homogeneous or heterogeneous
 landscapes, based on "resistance" rasters. Although originally conceived and designed to simulate spatially-explicit
-trajectories of species constrained to linear, dendritic habitats (e.g., river networks), the simulation algorithm is built to be highly
-flexible and can be applied to any (aquatic, semi-aquatic or terrestrial) organism. Thus, the user will be able to use the package to
+trajectories of species constrained to linear habitats or dendritic ecological networks (e.g., river networks), the simulation algorithm is built to be highly
+flexible and can be applied to any (aquatic, semi-aquatic or terrestrial) organism, independently of the landscape in which it moves. Thus, the user will be able to use the package to
 simulate movements either in homogeneous landscapes, heterogeneous landscapes (e.g. semi-aquatic animal moving mainly along rivers but also using the matrix),
 or even in highly contrasted landscapes (e.g. fish in a river network). The algorithm and its input parameters are the same for all cases, so that
 results are comparable. Simulated trajectories can then be used as mechanistic null models (Moorcroft and Lewis 2006) to test e.g. for

@@ -1,6 +1,6 @@
 \name{simulate}
 \alias{simulate}
-\title{Simulate movements in river networks or heterogeneous landscapes}
+\title{Simulate movements in river networks, homogeneous, or heterogeneous landscapes}
 \description{
   Performs fast and spatially-explicit simulation of multi-state random movements (\cite{Morales et al. 2004, McClintock et al. 2012}) of individuals created with the function \code{\link{species}} in an optional landscape resistance raster.
 }
