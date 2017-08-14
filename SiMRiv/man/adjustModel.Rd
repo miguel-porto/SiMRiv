@@ -12,9 +12,11 @@
 \usage{
   adjustModel(realData, species.model, resolution = 10
     , resistance = NULL, coords = NULL, start.resistance = NULL
-    , nbins = 100, window.size = dim(reference$stats)[1]\%/\%nbins
-    , nbins.hist = c(3, 3), step.hist.range = c(0, 1)
-    , step.hist.log = FALSE, nrepetitions = 1
+    , nrepetitions = 6
+    , nbins.hist = if(aggregate.obj.hist) c(7, 7) else c(3, 3)
+    , step.hist.log = TRUE, TA.variation = FALSE, nlags = 100
+    , window.size = dim(reference$stats)[1]\%/\%nlags
+    , aggregate.obj.hist = TRUE, step.hist.range = c(0, 1)
     , popsize = 100, generations = seq(5, 1000, by=5), mprob = 0.2
     , parallel = is.null(resistance), trace = TRUE
   )
@@ -26,12 +28,14 @@
   \item{resistance}{the resistance raster to use in simulations during parameter approximation.}
   \item{coords}{the initial coordinates of the simulated individuals (only relevant if \code{resistance} is provided because the metrics used in optimization are spatially-agnostic).}
   \item{start.resistance}{the maximum value of resistance in which the individuals are allowed to start. Only used if \code{resistance} is provided and \code{coords} is not provided.}
-  \item{nbins}{the number of time lags within which the standard deviation of the turning angles will be computed during optimization. Ignored if \code{window.size} is provided.}
-  \item{window.size}{the size (in steps of the real sampling frequency) of the time lags within which the standard deviation of the turning angles will be computed during optimization. A different way of providing \code{nbins}. See details.}
-  \item{nbins.hist}{a vector with two positive integers defining the number of histogram bins for turning angle variation and step length histograms respectively. These bins will be used during optimization to compare simulated trajectories with the real trajectory to infer the quality of the "fit". Comparison is done bin-wise, which means that the more bins, the more detailed comparison is, the higher the quality of the solutions, but the more difficult it is to find them. The default \code{c(3, 3)} yields good results in general.}
-  \item{step.hist.range}{the quantiles used to define the range of the step length histogram computation. Used if the user wants to exclude outliers. The default is not to exclude outliers, thus \code{c(0, 1)}.}
-  \item{step.hist.log}{set to \code{TRUE} to use the histogram of the logarithm of the step lengths rather than of the raw values in the comparisons. Setting to \code{TRUE} usually results in more detail in the comparisons.}
   \item{nrepetitions}{the number of simulations conducted for each solution evaluation during optimization. If >1, the quality of the solutions is computed by comparing the averaged histograms across repetitions, with the real histograms.}
+  \item{nbins.hist}{a vector with two positive integers defining the number of histogram bins for turning angle and step length histograms respectively. These bins will be used during optimization to compare simulated trajectories with the real trajectory to infer the quality of the "fit".}
+  \item{step.hist.log}{set to \code{TRUE} to use the histogram of the logarithm of the step lengths rather than of the raw values in the comparisons. Setting to \code{TRUE} usually results in more detail in the comparisons.}
+  \item{TA.variation}{set to \code{TRUE} to use the histogram of the variation in turning angles along time lags, \code{FALSE} to use the global turning angle histogram. \code{FALSE} usually yields good results. See details.}
+  \item{nlags}{the number of time lags within which the standard deviation of the turning angles will be computed during optimization, if \code{TA.variation} is \code{TRUE}. Ignored if \code{TA.variation} is \code{FALSE} or if \code{window.size} is provided.}
+  \item{window.size}{the size (in steps of the real sampling frequency) of the time lags within which the standard deviation of the turning angles will be computed during optimization, if \code{TA.variation} is \code{TRUE}. A different way of providing \code{nlags}. See details.}
+  \item{aggregate.obj.hist}{if \code{FALSE}, comparison of histograms is done bin by bin (each bin absolute difference is an objective to minimize), if \code{TRUE} the absolute differences of the bins are summed in each histogram to a single number which is the objective being minimized (the overall absolute difference in each of the histograms).}
+  \item{step.hist.range}{the quantiles used to define the range of the step length histogram computation. Used if the user wants to exclude outliers. The default is not to exclude outliers, thus \code{c(0, 1)}.}
   \item{popsize}{number of solutions to optimize, to pass to \code{\link{nsga2}}}
   \item{generations}{number of algorithm generations to run, to pass to \code{\link{nsga2}}. The default is a vector, so that convergence of results can be assessed along generations.}
   \item{mprob}{mutation probability, to pass to \code{\link{nsga2}}}
@@ -42,23 +46,28 @@
   This function finds possible parameters for the simulation (solutions), so that the resulting movements are as similar as possible
   to the given real trajectory, in terms of their intrinsic properties measured by step lengths and variation in turning angles. The input parameter
   approximations are found using a multiobjective genetic algorithm (NSGA-II, \cite{Deb et al. 2002}). The algorithm minimizes a vector
-  of N objectives (\code{N=sum(nbins.hist)}) whose values are computed by the absolute differences between each pair of bins (real and simulated)
-  of two histograms: an histogram of the step lengths and an histogram of the standard deviation in turning angles computed
-  in a moving time window along each trajectory.
+  of N objectives (\code{N=sum(nbins.hist)} if \code{aggregate.obj.hist == FALSE}, \code{N=sum(nbins.hist > 0)} otherwise)
+  whose values are computed by the absolute differences between each pair of bins (real and simulated) of two histograms:
+  an histogram of the step lengths and an histogram of either the turning angles themselves (if \code{TA.variation == FALSE}), or of the
+  standard deviation in turning angles computed in a moving time window along each trajectory (if \code{TA.variation == TRUE}).
 
   SiMRiv simulations are intended to reproduce the fine-scale movement steps, unlike what is normally collected in field data.
   Hence, simulations should be conducted with a much higher time frequency than provided by the real data, which poses challenges for parameterization.
   This function incorporates this difference in the time scale during optimization (\code{resolution}), allowing the user
   to find the input parameters for simulations at a much higher frequency, which, when downsampled to the real data's time
   frequency, will present similar patterns. The higher the frequency, the more flexibility the model has to adjust to real data,
-  but the more difficult it is to find solutions due to the higher impact of stochasticity.
+  but the more possible solutions may exist to achieve the same result.
   
-  There are no limits to the number of parameters that can be approximated, but obviously, the higher the number, the more difficult convergence
-  is achieved. As in any other method, a compromise should be sought. The number of parameters to approximate is defined by the user by providing a
-  \code{\link{speciesModel}}. This defines how many states and which types of states are to be "fit" to the data. See \code{\link{speciesModel}} for details.
-  A good starting point is to provide a two-state species model, in which both states are Correlated Random Walks. This model involves the approximation
-  of 6 parameters and is sufficiently flexible for simulating a variety of movements, while not overly complex. Note that all complex models can
-  accomodate to simpler ones (i.e. the simpler models are special cases of the complex ones).
+  There are no limits to the number of parameters that can be approximated, but obviously, the higher the number, the larger the solution space, so,
+  in theory, the longer the algorithm has to run in order to converge.
+  The number of parameters to approximate is defined by the user by providing a \code{\link{speciesModel}}. This defines how many states and which types of states are to be "fit" to the data.
+  See \code{\link{speciesModel}} for details. Trials have shown that even when the number of parameters to approximate is high (e.g. 12 parameters
+  for "fitting" a 3-state movement model), the algorithm converges rapidly if the real movement suits such model.
+  However, as in any other method, a compromise should be sought. A good starting point is to provide a two-state species model,
+  in which both states are Correlated Random Walks. This model involves the approximation of 6 parameters and is sufficiently flexible for simulating a variety of movements, while not overly complex.
+  Note that all complex models can accomodate to simpler ones (i.e. the simpler models are special cases of the complex ones).
+  
+  To assess the convergence of the algorithm, an utility plotting function is provided, see the example below and \code{\link{generationPlot}} for details.
 }
 \note{
   This function is an experimental feature, here provided only to guide the user on how to parameterize the simulations. Care must be taken
@@ -71,7 +80,7 @@
   for easily plotting results.
 }
 \seealso{
-  \code{\link{simulate}}.
+  \code{\link{simulate}}, \code{\link{generationPlot}}.
 }
 \examples{
 \dontrun{

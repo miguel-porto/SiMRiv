@@ -40,15 +40,15 @@ setValidity("state",function(object) {
 })
  
 state.Resting<-function() {
-	return(state(0, steplen = 0, name = "Resting"))
+	return(state(0, steplen = 0, name = "Rest"))
 }
 
 state.RW<-function() {
-	return(state(0, steplen = 1, name = "Random Walk"))
+	return(state(0, steplen = 1, name = "RW"))
 }
 
 state.CRW<-function(correlation) {
-	return(state(correlation, steplen = 1, name = "Correlated Random Walk"))
+	return(state(correlation, steplen = 1, name = "CRW"))
 }
 
 .printState<-function(object) {
@@ -94,8 +94,8 @@ species<-function(states, trans = transitionMatrix(), name = "<unnamed>", resist
 	}
 	cat("\nState transition matrix\n")
 	print(round(object@transitionMatrix, 4))
-	cat("\nResistance map\n")
-	print(object@resistanceMap)
+	#cat("\nResistance map\n")
+	#print(object@resistanceMap)
 }
 
 setMethod("show", signature(object="species"), .printSpecies)

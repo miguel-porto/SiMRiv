@@ -6,13 +6,14 @@
 }
 \usage{
   generationPlot(solutions, species.model, plot.quantiles = c(0.10, 0.5, 0.90)
-    , show.legend = TRUE, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3), mgp = c(1.2, 0.2, 0)
-    , tcl = -0.25, ...)
+    , only.pareto = FALSE, show.legend = TRUE, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3)
+    , mgp = c(1.2, 0.2, 0), tcl = -0.25, ...)
 }
 \arguments{
   \item{solutions}{the result of \code{\link{adjustModel}}.}
   \item{species.model}{the species model that was adjusted and that was passed to \code{\link{adjustModel}}.}
   \item{plot.quantiles}{the three quantiles to plot. The middle is plotted as a solid line, the extremes define the shaded area.}
+  \item{only.pareto}{whether to display the quantiles only of the Pareto front (\code{TRUE}) or of all solutions (\code{FALSE}).}
   \item{show.legend}{whether to show a legend indicating the correspondence of colors - input parameters.}
   \item{lwd}{line width to be used to draw the middle quantile (usually the median).}
   \item{mar, mgp, tcl, ...}{arguments to pass to \code{\link{par}}.}
