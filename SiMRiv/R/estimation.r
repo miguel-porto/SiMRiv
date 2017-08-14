@@ -35,7 +35,7 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = NULL, window.si
 	return(hist.var.ref)
 }
 
-speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperbound = 0.5, max.concentrarion = 0.99) {
+speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperbound = 0.5, max.concentration = 0.99) {
 	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl", "CRW.CRW.sl", "CRW.CRW.CRW.sl", "CRW.RW.Rest.sl")), {
 		f <- function(parameters) {
 			return(species(
@@ -44,7 +44,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		}
 		attr(f, "npars") <- 1
 		attr(f, "lower.bounds") <- 0
-		attr(f, "upper.bounds") <- max.concentrarion
+		attr(f, "upper.bounds") <- max.concentration
 		attr(f, "param.names") <- "Turning angle correlation"
 		return(f)
 	}, {
@@ -56,7 +56,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		}
 		attr(f, "npars") <- 3
 		attr(f, "lower.bounds") <- c(0, rep(0, 2))
-		attr(f, "upper.bounds") <- c(max.concentrarion, rep(prob.upperbound, 2))
+		attr(f, "upper.bounds") <- c(max.concentration, rep(prob.upperbound, 2))
 		attr(f, "param.names") <- c("Turning angle correlation", "Prob. CRW -> RW", "Prob. RW -> CRW")
 		return(f)
 	}, {
@@ -68,7 +68,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		}
 		attr(f, "npars") <- 4
 		attr(f, "lower.bounds") <- c(0, 0, rep(0, 2))
-		attr(f, "upper.bounds") <- c(max.concentrarion, max.concentrarion, rep(prob.upperbound, 2))
+		attr(f, "upper.bounds") <- c(max.concentration, max.concentration, rep(prob.upperbound, 2))
 		attr(f, "param.names") <- c("Turning angle correlation state 1", "Turning angle correlation state 2", "Prob. st.1 -> st.2", "Prob. st.2 -> st.1")
 		return(f)
 	}, {
@@ -80,7 +80,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		}
 		attr(f, "npars") <- 2
 		attr(f, "lower.bounds") <- c(0, 1)
-		attr(f, "upper.bounds") <- c(max.concentrarion, perceptual.range)
+		attr(f, "upper.bounds") <- c(max.concentration, perceptual.range)
 		attr(f, "param.names") <- c("Turning angle correlation", "Perception window radius")
 		return(f)
 	}, {
@@ -92,7 +92,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		}
 		attr(f, "npars") <- 5
 		attr(f, "lower.bounds") <- c(0, rep(0, 4))
-		attr(f, "upper.bounds") <- c(max.concentrarion, rep(prob.upperbound, 2), rep(steplength, 2))
+		attr(f, "upper.bounds") <- c(max.concentration, rep(prob.upperbound, 2), rep(steplength, 2))
 		attr(f, "param.names") <- c("Turning angle correlation", "Prob. CRW -> RW", "Prob. RW -> CRW", "Step length RW", "Step length CRW")
 		return(f)
 	}, {
@@ -104,7 +104,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		}
 		attr(f, "npars") <- 6
 		attr(f, "lower.bounds") <- rep(0, 6)
-		attr(f, "upper.bounds") <- c(max.concentrarion, max.concentrarion, rep(prob.upperbound, 2), rep(steplength, 2))
+		attr(f, "upper.bounds") <- c(max.concentration, max.concentration, rep(prob.upperbound, 2), rep(steplength, 2))
 		attr(f, "param.names") <- c("Turning angle correlation S1", "Turning angle correlation S2", "Prob. S1 -> S2", "Prob. S2 -> S1", "Step length S1", "Step length S2")
 		return(f)
 	}, {
@@ -116,7 +116,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		}
 		attr(f, "npars") <- 12
 		attr(f, "lower.bounds") <- rep(0, 12)
-		attr(f, "upper.bounds") <- c(rep(max.concentrarion, 3), rep(prob.upperbound, 6), rep(steplength, 3))
+		attr(f, "upper.bounds") <- c(rep(max.concentration, 3), rep(prob.upperbound, 6), rep(steplength, 3))
 		attr(f, "param.names") <- c("Turning angle correlation S1", "Turning angle correlation S2", "Turning angle correlation S3"
 			, "Prob. S1 -> S2", "Prob. S1 -> S3", "Prob. S2 -> S1", "Prob. S2 -> S3", "Prob. S3 -> S1", "Prob. S3 -> S2"
 			, "Step length S1", "Step length S2", "Step length S3")
@@ -130,7 +130,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		}
 		attr(f, "npars") <- 7
 		attr(f, "lower.bounds") <- rep(0, 7)
-		attr(f, "upper.bounds") <- c(max.concentrarion, rep(prob.upperbound, 4), rep(steplength, 2))
+		attr(f, "upper.bounds") <- c(max.concentration, rep(prob.upperbound, 4), rep(steplength, 2))
 		attr(f, "param.names") <- c("Turning angle correlation CRW"
 			, "Prob. CRW -> RW", "Prob. RW -> CRW", "Prob. RW -> Rest", "Prob. Rest -> RW"
 			, "Step length CRW", "Step length RW")
