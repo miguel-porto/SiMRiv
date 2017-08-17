@@ -1,5 +1,5 @@
 // FIXME: some bug with OMP in i386 architecture...
-#define USEOPENMP
+//#define USEOPENMP
 #ifdef USEOPENMP
 #include <omp.h>
 #endif

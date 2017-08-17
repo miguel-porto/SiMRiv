@@ -46,7 +46,7 @@
   This function finds possible parameters for the simulation (solutions), so that the resulting movements are as similar as possible
   to the given real trajectory, in terms of their intrinsic properties measured by step lengths and variation in turning angles. The input parameter
   approximations are found using a multiobjective genetic algorithm (NSGA-II, \cite{Deb et al. 2002}). The algorithm minimizes a vector
-  of N objectives (\code{N=sum(nbins.hist)} if \code{aggregate.obj.hist == FALSE}, \code{N=sum(nbins.hist > 0)} otherwise)
+  of N objectives (N=sum(nbins.hist) if aggregate.obj.hist == FALSE, N=sum(nbins.hist > 0) otherwise)
   whose values are computed by the absolute differences between each pair of bins (real and simulated) of two histograms:
   an histogram of the step lengths and an histogram of either the turning angles themselves (if \code{TA.variation == FALSE}), or of the
   standard deviation in turning angles computed in a moving time window along each trajectory (if \code{TA.variation == TRUE}).
@@ -127,15 +127,17 @@ species.model <- speciesModel("CRW.CRW.sl", steplength = max.step.length)
 
 ## now run optimization
 
-sol <- adjustModel(real.data, species.model, resol = 20, window = 10, nbins.hist = c(3, 3)
-	, step.hist.log = TRUE)
+sol <- adjustModel(real.data, species.model, resol = 20, window = 10
+	, nbins.hist = c(3, 3), step.hist.log = TRUE)
 
-## After finishing, we can extract the input parameters of the optimized solutions
-## (100 by default) in the last generation (generation 1000 by default):
+## After finishing, we can extract the input parameters of the optimized
+## solutions (100 by default) in the last generation (generation 1000
+## by default):
 
 pars <- sol[[length(sol)]]$par
 
-## now we can take the optimized solutions and reconstruct species based on them:
+## now we can take the optimized solutions and reconstruct species
+## based on them:
 
 optimized.species <- apply(pars, 1, species.model)
 

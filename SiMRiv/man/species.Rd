@@ -5,7 +5,8 @@
   Creates a species, characterized by one or more behavioral states, to be simulated with function \code{\link{simulate}}.
 }
 \usage{
-  species(states, trans = transitionMatrix(), name = "<unnamed>", resistanceMap = NULL)
+  species(states, trans = transitionMatrix(), name = "<unnamed>"
+    , resistanceMap = NULL)
 }
 \arguments{
   \item{states}{a list of \code{state}s characterizing the behavior of the species, or a single \code{state}, for simple movements}

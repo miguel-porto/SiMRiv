@@ -5,8 +5,9 @@
   Plots the evolution of the optimized solutions (sets of input parameters) along the \code{\link{adjustModel}} algorithm's generations.
 }
 \usage{
-  generationPlot(solutions, species.model, plot.quantiles = c(0.10, 0.5, 0.90)
-    , only.pareto = FALSE, show.legend = TRUE, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3)
+  generationPlot(solutions, species.model
+    , plot.quantiles = c(0.10, 0.5, 0.90), only.pareto = FALSE
+    , show.legend = TRUE, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3)
     , mgp = c(1.2, 0.2, 0), tcl = -0.25, ...)
 }
 \arguments{

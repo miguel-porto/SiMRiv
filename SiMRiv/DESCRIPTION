@@ -1,6 +1,6 @@
 Package: SiMRiv
 Version: 1.0.1
-Date: 2017-07-24
+Date: 2017-08-17
 Title: Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks, Homogeneous, and Heterogeneous Landscapes
 Authors@R: c(person("Lorenzo", "Quaglietta", role = c("aut"), email = "lontrenzo@gmail.com")
 		,person("Miguel", "Porto", role = c("aut", "cre"), email = "mpbertolo@gmail.com")
@@ -19,10 +19,11 @@ Description: Provides functions to generate and analyze individual-based spatial
   mainly along rivers but also using the matrix), or even in highly contrasted landscapes
   (e.g. fish in a river network). The algorithm and its input parameters are the same for all
   cases, so that results are comparable. Simulated trajectories can then be used as mechanistic
-  null models to test e.g. for species site fidelity and other 'Movement Ecology' hypotheses, or
-  for other predictive purposes. The package should thus be relevant to explore a broad spectrum
-  of ecological phenomena, such as those at the interface of animal behaviour, landscape, spatial
-  and movement ecology, disease and invasive species spread, and population dynamics.
+  null models to test e.g. for species site fidelity and other 'Movement Ecology' hypotheses
+  (Nathan et al. 2008, <DOI:10.1073/pnas.0800375105>), or for other predictive purposes.
+  The package should thus be relevant to explore a broad spectrum of ecological phenomena, such as those at the interface
+  of animal behaviour, landscape, spatial and movement ecology, disease and invasive species spread, and population dynamics.
 License: GPL (>= 2)
 URL: https://www.r-project.org, https://github.com/miguel-porto/SiMRiv
 BugReports: https://github.com/miguel-porto/SiMRiv
+
