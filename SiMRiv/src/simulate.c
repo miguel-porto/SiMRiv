@@ -110,7 +110,8 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 			for(i=0; i<ninds; i++)
 				curtrans[i] = ind[i].transitionmatrix;	// for now, constant transition matrix
 
-// LOOP FOR EACH INDIVIDUAL			
+// LOOP FOR EACH INDIVIDUAL
+// TODO: we can parallelize this if we just want a batch of non-interacting simulations
 			for(i=0, tmp2=0; i<ninds; i++, tmp2+=timespan) {	// tmp2 is just a relative pointer to output matrix
 // draw new state according to transition matrix
 				r = runif(0, MULTIPLIER-1);
