@@ -145,7 +145,7 @@ adjustModel <- function(
 # simulation parameters
 	, resistance = NULL
 	, coords = NULL
-	, start.resistance = NULL
+	, angles = NULL
 # fitness function parameters
 	, nrepetitions = 6
 	, nbins.hist = if(aggregate.obj.hist) c(7, 7) else c(3, 3)
@@ -202,21 +202,20 @@ adjustModel <- function(
 		clusterCall(cl, function() library(SiMRiv))
 		if(TA.variation) {
 			clusterExport(cl, c("nrepetitions", "nbins.hist", "nsteps", "range.varta", "window.size"
-				, "range.step", "resolution", "species.model", "resistance", "coords", "start.resistance"
+				, "range.step", "resolution", "species.model", "resistance", "coords", "angles"
 				), envir = environment())
 		} else {
 			clusterExport(cl, c("nrepetitions", "nbins.hist", "nsteps"
-				, "range.step", "resolution", "species.model", "resistance", "coords", "start.resistance"
+				, "range.step", "resolution", "species.model", "resistance", "coords", "angles"
 				), envir = environment())
 		}
 	
 		objective.function.par <- function(inp.mat, reference) {
-#			print(round(inp.mat,2))
 			crit <- parApply(cl, inp.mat, 1, function(inp.par, ref) {
 				sp.sim <- species.model(inp.par)
 				
 				if(nrepetitions == 1) {
-					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
+					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles)
 					s <- sampleMovement(rel, resolution, resist = resistance)
 					if(TA.variation) {
 						a.var.sim <- angle.variation(s, window.size = window.size)
@@ -228,7 +227,7 @@ adjustModel <- function(
 					hist.mat <- matrix(ncol = nbins.hist[1], nrow = nrepetitions)
 					hist.step.mat <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
 					for(i in 1:nrepetitions) {
-						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
+						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles)
 						s <- sampleMovement(rel, resolution, resist = resistance)
 						if(TA.variation) {
 							a.var.sim <- angle.variation(s, window.size = window.size)
@@ -256,7 +255,7 @@ adjustModel <- function(
 					crit.sl <- NULL
 
 				if(aggregate.obj.hist) {
-				# in this case we sum the absolute differences in each histogram bar to use as objectives
+# in this case we sum the absolute differences in each histogram bar to use as objectives
 					if(is.null(crit.ta))
 						crit <- c("SL.diff" = sum(crit.sl))
 					else if(is.null(crit.sl))
@@ -264,7 +263,7 @@ adjustModel <- function(
 					else
 						crit <- c("TA.diff" = sum(crit.ta), "SL.diff" = sum(crit.sl))
 				} else
-				# otherwise we use the bar-wise absolute differences as objectives
+# otherwise we use the bar-wise absolute differences as objectives
 					crit <- c(crit.ta, crit.sl)
 
 				return(crit)
@@ -276,14 +275,14 @@ adjustModel <- function(
 
 		sol <- nsga2(objective.function.par, attr(species.model, "npars")
 			, ifelse(aggregate.obj.hist, sum(nbins.hist > 0), sum(nbins.hist))
-			, list(reference, hist.ta = hist.ta.ref, hist.step = hist.step.ref)
+			, list(hist.ta = hist.ta.ref, hist.step = hist.step.ref)	# the histograms of real data to compare simulations with
 			, generations = generations, popsize = popsize
 			, lower.bounds = attr(species.model, "lower.bounds")
 			, upper.bounds = attr(species.model, "upper.bounds")
 			, vectorized = TRUE, mprob = mprob
 		)
 	} else {	# GO SINGLE CORE
-		objective.function = function(inp.par, ref) {
+		objective.function = function(inp.par, ref) {	# see comments on the objective function above
 			if(trace) {
 				cat("INP: ")
 				for(o in inp.par)
@@ -295,7 +294,7 @@ adjustModel <- function(
 			sp.sim = species.model(inp.par)
 
 			if(nrepetitions == 1) {
-				rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
+				rel = simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles)
 				s = sampleMovement(rel, resolution, resist = resistance)
 				if(TA.variation) {
 					a.var.sim <- angle.variation(s, window.size = window.size)
@@ -309,7 +308,7 @@ adjustModel <- function(
 				hist.step.mat <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
 		
 				for(i in 1:nrepetitions) {
-					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, start.resistance = start.resistance)
+					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles)
 					s <- sampleMovement(rel, resolution, resist = resistance)
 					if(TA.variation) {
 						a.var.sim <- angle.variation(s, window.size = window.size)
@@ -357,7 +356,7 @@ adjustModel <- function(
 
 		sol <- nsga2(objective.function, attr(species.model, "npars")
 			, ifelse(aggregate.obj.hist, sum(nbins.hist > 0), sum(nbins.hist))
-			, list(reference, hist.ta = hist.ta.ref, hist.step = hist.step.ref)
+			, list(hist.ta = hist.ta.ref, hist.step = hist.step.ref)
 			, generations = generations, popsize = popsize
 			, lower.bounds = attr(species.model, "lower.bounds")
 			, upper.bounds = attr(species.model, "upper.bounds")

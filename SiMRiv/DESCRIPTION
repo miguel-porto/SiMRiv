@@ -1,5 +1,5 @@
 Package: SiMRiv
-Version: 1.0.1
+Version: 1.0.2
 Date: 2017-08-17
 Title: Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks, Homogeneous, and Heterogeneous Landscapes
 Authors@R: c(person("Lorenzo", "Quaglietta", role = c("aut"), email = "lontrenzo@gmail.com")
