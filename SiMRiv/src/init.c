@@ -2,7 +2,7 @@
 #include <R_ext/Rdynload.h>
 
 static const R_CallMethodDef callMethods[]  = {
-  {"_simulate_individuals", (DL_FUNC) &_simulate_individuals, 6},
+  {"_simulate_individuals", (DL_FUNC) &_simulate_individuals, 7},
   {"stepRasterAccumulator", (DL_FUNC) &stepRasterAccumulator, 3},
   {NULL, NULL, 0}
 };

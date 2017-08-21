@@ -1,16 +1,9 @@
 // FIXME: some bug with OMP in i386 architecture...
-//#define USEOPENMP
-#ifdef USEOPENMP
 #include <omp.h>
-#endif
 #include "SiMRiv.h"
 SEXP rho;
 
-SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir) {
-	#ifdef USEOPENMP
-	omp_set_num_threads(omp_get_num_procs ( ));
-//	Rprintf("Using multicore processing with %d threads.\n",omp_get_num_procs ( ));
-	#endif
+SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir, SEXP _parallel) {
 	rho=envir;
 	RASTER *resist = NULL;
 	GetRNGstate();
@@ -23,10 +16,11 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 	int timespan = INTEGER_POINTER(_timespan)[0], *start = INTEGER_POINTER(_starting_positions);
 	double *angles = NULL;
 	double *prelocs;
-	unsigned int ninds=LENGTH(_individuals),i,j,k,time,tmp1,tmp2;
+	unsigned int ninds=LENGTH(_individuals),i,j,k;
 	SEXP relocs,tmp3,tmp4;
 	const char *tmp5;
 	float curangtrans;
+	bool parallel = LOGICAL_POINTER(_parallel)[0];
 	
 	if(_angles != R_NilValue)
 		angles = NUMERIC_POINTER(_angles);
@@ -80,6 +74,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 
 // START SIMULATION
 	{
+		unsigned int tmp1, tmp2, time;
 		PDF tmpPDF, tmprotPDF;
 		CDF tmpMultCDF;
 		double **curtrans = malloc(sizeof(double*) * ninds);
@@ -106,68 +101,131 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 ** MAIN TIME LOOP
 ***************************************/
 // NOTE: time is unitless for now
-		for(time=0; time<timespan; time++) {
-			for(i=0; i<ninds; i++)
-				curtrans[i] = ind[i].transitionmatrix;	// for now, constant transition matrix
 
-// LOOP FOR EACH INDIVIDUAL
-// TODO: we can parallelize this if we just want a batch of non-interacting simulations
-			for(i=0, tmp2=0; i<ninds; i++, tmp2+=timespan) {	// tmp2 is just a relative pointer to output matrix
+		if(parallel) {
+			#pragma omp parallel for private(r, k, s, tmp1, tmp2, time, tmpstate, tmprotPDF, tmpPDF, j, tmpMultCDF, curangtrans, lengthmove) firstprivate(curtrans)
+			for(i=0; i<ninds; i++) {
+				tmp2 = i * timespan;
+				curtrans[i] = ind[i].transitionmatrix;	// for now, constant transition matrix
+				for(time=0; time<timespan; time++) {
 // draw new state according to transition matrix
-				r = runif(0, MULTIPLIER-1);
-				for(k=0, s=(unsigned long)(curtrans[i][ind[i].curstate] * MULTIPLIER)
-					; k < (ind[i].nstates - 1) && r >= s
-					; k++, s += (unsigned long)(curtrans[i][ind[i].curstate + k * ind[i].nstates] * MULTIPLIER)) {}
-				ind[i].curstate = k; //>= ind[i].nstates ? (ind[i].nstates - 1) : k;		// is this condition needed?
-				
-				tmpstate = &ind[i].states[ind[i].curstate];
+					r = runif(0, MULTIPLIER-1);
+					for(k=0, s=(unsigned long)(curtrans[i][ind[i].curstate] * MULTIPLIER)
+						; k < (ind[i].nstates - 1) && r >= s
+						; k++, s += (unsigned long)(curtrans[i][ind[i].curstate + k * ind[i].nstates] * MULTIPLIER)) {}
+					ind[i].curstate = k; //>= ind[i].nstates ? (ind[i].nstates - 1) : k;		// is this condition needed?
+
+					tmpstate = &ind[i].states[ind[i].curstate];
+
 // rotate the 0-centered base PDF (the one calculated from the state's concentration parameter)
 // to center on the previous step angle
-				rotatePDF(tmpstate->scaledPDF, tmprotPDF, ind[i].curang-ANGLECENTER);
+					rotatePDF(tmpstate->scaledPDF, tmprotPDF, ind[i].curang - ANGLECENTER);
+				
 // compute the empirical resistance PDF around the current position
-				computeEmpiricalResistancePDF(ind[i].curpos, resist, &tmpstate->pwind, tmpPDF);
-				if(tmpPDF[0]!=-1) {		// resistance is heterogeneous
+					computeEmpiricalResistancePDF(ind[i].curpos, resist, &tmpstate->pwind, tmpPDF);
+
+					if(tmpPDF[0] != -1) {		// resistance is heterogeneous
 // multiply rotated base PDF by empirical PDF and compute cumulative PDF directly
-					for(j=1, tmpMultCDF[0] = (unsigned long)(tmprotPDF[0] * tmpPDF[0] * MULTIPLIER); j<ANGLERES; j++)
-						tmpMultCDF[j] = tmpMultCDF[j-1] + (long)(tmprotPDF[j] * tmpPDF[j] * MULTIPLIER);
+						for(j=1, tmpMultCDF[0] = (unsigned long)(tmprotPDF[0] * tmpPDF[0] * MULTIPLIER); j<ANGLERES; j++)
+							tmpMultCDF[j] = tmpMultCDF[j-1] + (long)(tmprotPDF[j] * tmpPDF[j] * MULTIPLIER);
 
 // TODO what to do when the desired direction is facing towards an infinite resistance area and there is no overlap of PDFs? keep trying, or abort step?
-					if(tmpMultCDF[ANGLERES-1] == 0)
-						ind[i].curang = drawRandomAngle(NULL);	// here we just draw a uniform random angle
-					else
+						if(tmpMultCDF[ANGLERES-1] == 0)
+							ind[i].curang = drawRandomAngle(NULL);	// here we just draw a uniform random angle
+						else
 // draw random angle based on compound PDF (resistance + correlated components)
-						ind[i].curang = drawRandomAngle(tmpMultCDF);
+							ind[i].curang = drawRandomAngle(tmpMultCDF);
 
-				} else {	// ignore resistance when resistance is equal in all directions
-					for(j=1, tmpMultCDF[0]=(unsigned long)(tmprotPDF[0]*MULTIPLIER); j<ANGLERES; j++)
-						tmpMultCDF[j] = tmpMultCDF[j-1] + (unsigned long)(tmprotPDF[j]*MULTIPLIER);
+					} else {	// ignore resistance when resistance is equal in all directions
+						for(j=1, tmpMultCDF[0]=(unsigned long)(tmprotPDF[0]*MULTIPLIER); j<ANGLERES; j++)
+							tmpMultCDF[j] = tmpMultCDF[j-1] + (unsigned long)(tmprotPDF[j]*MULTIPLIER);
 // draw random angle based on base PDF
-					ind[i].curang = drawRandomAngle(tmpMultCDF);
-				}
-/*for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmpstate->scaledPDF[j]);
-Rprintf("\n");
-for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmprotPDF[j]);
-Rprintf("\n");*/
+						ind[i].curang = drawRandomAngle(tmpMultCDF);
+					}
 
-				curangtrans = ind[i].curang * ANGLESTEP - PI;
-//				Rprintf("%.3f %.3f %.3f | ", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y);
-				lengthmove = computeLengthMove(tmpstate->steplength, ind[i].curpos, resist, curangtrans);
-				if(lengthmove > 0) {
-					ind[i].curpos.x += cos(curangtrans) * lengthmove;
-					ind[i].curpos.y += sin(curangtrans) * lengthmove;
-				}
-				if(isnan(ind[i].curpos.x)) {	// this should never happen, but...
-					Rprintf("%f %f %f %f %f %f\n", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y, lengthmove, ind[i].curang, curangtrans);
-					Rf_error("Unexpected error, please report.");
-				}
+					curangtrans = ind[i].curang * ANGLESTEP - PI;
+	//				Rprintf("%.3f %.3f %.3f | ", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y);
+					lengthmove = computeLengthMove(tmpstate->steplength, ind[i].curpos, resist, curangtrans);
+					if(lengthmove > 0) {
+						ind[i].curpos.x += cos(curangtrans) * lengthmove;
+						ind[i].curpos.y += sin(curangtrans) * lengthmove;
+					}
+					
+					if(isnan(ind[i].curpos.x)) {	// this should never happen, but...
+						Rprintf("%f %f %f %f %f %f\n", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y, lengthmove, ind[i].curang, curangtrans);
+						Rf_error("Unexpected error, please report.");
+					}
 
-				tmp1=tmp2*3;	// this is the column offset of the current individual in the output matrix
-				prelocs[tmp1 + time]=ind[i].curpos.x;
-				prelocs[tmp1 + timespan + time]=ind[i].curpos.y;
-				prelocs[tmp1 + timespan + timespan + time]=ind[i].curstate;
+					tmp1 = tmp2 * 3;	// this is the column offset of the current individual in the output matrix
+					prelocs[tmp1 + time] = ind[i].curpos.x;
+					prelocs[tmp1 + timespan + time] = ind[i].curpos.y;
+					prelocs[tmp1 + timespan + timespan + time] = ind[i].curstate;
+				}
 			}
-		}
-		
+			
+		} else {
+			for(time=0; time<timespan; time++) {
+				for(i=0; i<ninds; i++)
+					curtrans[i] = ind[i].transitionmatrix;	// for now, constant transition matrix
+
+	// LOOP FOR EACH INDIVIDUAL
+	// TODO: we can parallelize this if we just want a batch of non-interacting simulations
+				for(i=0, tmp2=0; i<ninds; i++, tmp2+=timespan) {	// tmp2 is just a relative pointer to output matrix
+	// draw new state according to transition matrix
+					r = runif(0, MULTIPLIER-1);
+					for(k=0, s=(unsigned long)(curtrans[i][ind[i].curstate] * MULTIPLIER)
+						; k < (ind[i].nstates - 1) && r >= s
+						; k++, s += (unsigned long)(curtrans[i][ind[i].curstate + k * ind[i].nstates] * MULTIPLIER)) {}
+					ind[i].curstate = k; //>= ind[i].nstates ? (ind[i].nstates - 1) : k;		// is this condition needed?
+				
+					tmpstate = &ind[i].states[ind[i].curstate];
+	// rotate the 0-centered base PDF (the one calculated from the state's concentration parameter)
+	// to center on the previous step angle
+					rotatePDF(tmpstate->scaledPDF, tmprotPDF, ind[i].curang-ANGLECENTER);
+	// compute the empirical resistance PDF around the current position
+					computeEmpiricalResistancePDF(ind[i].curpos, resist, &tmpstate->pwind, tmpPDF);
+					if(tmpPDF[0]!=-1) {		// resistance is heterogeneous
+	// multiply rotated base PDF by empirical PDF and compute cumulative PDF directly
+						for(j=1, tmpMultCDF[0] = (unsigned long)(tmprotPDF[0] * tmpPDF[0] * MULTIPLIER); j<ANGLERES; j++)
+							tmpMultCDF[j] = tmpMultCDF[j-1] + (long)(tmprotPDF[j] * tmpPDF[j] * MULTIPLIER);
+
+	// TODO what to do when the desired direction is facing towards an infinite resistance area and there is no overlap of PDFs? keep trying, or abort step?
+						if(tmpMultCDF[ANGLERES-1] == 0)
+							ind[i].curang = drawRandomAngle(NULL);	// here we just draw a uniform random angle
+						else
+	// draw random angle based on compound PDF (resistance + correlated components)
+							ind[i].curang = drawRandomAngle(tmpMultCDF);
+
+					} else {	// ignore resistance when resistance is equal in all directions
+						for(j=1, tmpMultCDF[0]=(unsigned long)(tmprotPDF[0]*MULTIPLIER); j<ANGLERES; j++)
+							tmpMultCDF[j] = tmpMultCDF[j-1] + (unsigned long)(tmprotPDF[j]*MULTIPLIER);
+	// draw random angle based on base PDF
+						ind[i].curang = drawRandomAngle(tmpMultCDF);
+					}
+	/*for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmpstate->scaledPDF[j]);
+	Rprintf("\n");
+	for(j=0;j<ANGLERES;j+=1) Rprintf("%.01f ",tmprotPDF[j]);
+	Rprintf("\n");*/
+
+					curangtrans = ind[i].curang * ANGLESTEP - PI;
+	//				Rprintf("%.3f %.3f %.3f | ", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y);
+					lengthmove = computeLengthMove(tmpstate->steplength, ind[i].curpos, resist, curangtrans);
+					if(lengthmove > 0) {
+						ind[i].curpos.x += cos(curangtrans) * lengthmove;
+						ind[i].curpos.y += sin(curangtrans) * lengthmove;
+					}
+					if(isnan(ind[i].curpos.x)) {	// this should never happen, but...
+						Rprintf("%f %f %f %f %f %f\n", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y, lengthmove, ind[i].curang, curangtrans);
+						Rf_error("Unexpected error, please report.");
+					}
+
+					tmp1=tmp2*3;	// this is the column offset of the current individual in the output matrix
+					prelocs[tmp1 + time]=ind[i].curpos.x;
+					prelocs[tmp1 + timespan + time]=ind[i].curpos.y;
+					prelocs[tmp1 + timespan + timespan + time]=ind[i].curstate;
+				}
+			}	// time loop
+		}	// if(parallel)
 		free(curtrans);
 	}
 	
@@ -305,9 +363,6 @@ void computeEmpiricalResistancePDF(POINT curpos,const RASTER *resist,PERCEPTIONW
 		POINT tmppos;
 		double tmp;
 		
-		#ifdef USEOPENMP
-		#pragma omp parallel for firstprivate(step,resist,curpos,percwind) private(i,j,tcos,tsin,ang,sum,tmppos,tmp) shared(allinf,pdf)
-		#endif
 		for(i=0; i<ANGLERES; i++) {	// make a whole circle
 			ang=-PI+i*ANGLESTEP;
 			tmppos=curpos;
@@ -335,19 +390,12 @@ void computeEmpiricalResistancePDF(POINT curpos,const RASTER *resist,PERCEPTIONW
 		
 	case GAUSSIAN:
 		step=percwind->radius/ACCUMULATORRESOLUTION;	// TODO is this adequate in the gaussian?
-		#ifdef USEOPENMP
-		#pragma omp parallel
-		#endif
 		{
-//			Rprintf("num threads: %d\n",omp_get_num_threads());
 			int i,j;
 			float tcos,tsin,ang,sum;
 			POINT tmppos;
 			double tmp;
 			
-			#ifdef USEOPENMP
-			#pragma omp for
-			#endif
 			for(i=0;i<ANGLERES;i++) {	// make a whole circle
 				ang=-PI+i*ANGLESTEP;
 				tmppos=curpos;
