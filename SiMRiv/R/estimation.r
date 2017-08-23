@@ -184,93 +184,75 @@ adjustModel <- function(
 	range.step <- quantile(reference$stats[, "steplengths"], probs = step.hist.range)
 	hist.step.ref <- binCounts(reference$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
 
-	cl <- NULL
 	cat("Real data:", nsteps,", Simulating", nsteps * resolution,"steps @ res", resolution,"\n")
 #	cat("Time window size for computing turning angle variation:", window.size, "\n")
 	
-	if(inherits(parallel, "cluster")) {
-		cl <- parallel
-	} else if(inherits(parallel, "logical")) {
-		if(parallel) {
-			cl <- makeCluster(detectCores() - 1)
-		}
-	} else if(inherits(parallel, "numeric")) {
-		cl <- makeCluster(parallel)
-	}
-
-	if(!is.null(cl)) {	# GO PARALLEL
-		clusterCall(cl, function() library(SiMRiv))
-		if(TA.variation) {
-			clusterExport(cl, c("nrepetitions", "nbins.hist", "nsteps", "range.varta", "window.size"
-				, "range.step", "resolution", "species.model", "resistance", "coords", "angles"
-				), envir = environment())
-		} else {
-			clusterExport(cl, c("nrepetitions", "nbins.hist", "nsteps"
-				, "range.step", "resolution", "species.model", "resistance", "coords", "angles"
-				), envir = environment())
-		}
-	
+	if(parallel == TRUE) {	# GO PARALLEL	
 		objective.function.par <- function(inp.mat, reference) {
-			crit <- parApply(cl, inp.mat, 1, function(inp.par, ref) {
-				sp.sim <- species.model(inp.par)
-				
-				if(nrepetitions == 1) {
-					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles)
-					s <- sampleMovement(rel, resolution, resist = resistance)
+			crit.mat <- matrix(nrow = ifelse(aggregate.obj.hist, sum(nbins.hist > 0), sum(nbins.hist)), ncol = nrow(inp.mat))
+			sp.sim <- apply(inp.mat, 1, species.model)
+			s <- list()
+			
+			if(nrepetitions == 1) {
+				rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles, parallel = TRUE)
+				for(i in 1:length(sp.sim)) {
+					s <- sampleMovement(rel[, ((i-1) * 3 + 1):((i-1) * 3 + 3)], resolution, resist = resistance)
 					if(TA.variation) {
 						a.var.sim <- angle.variation(s, window.size = window.size)
 						hist.ta <- binCounts(a.var.sim, range.varta, nbins.hist[1])
 					} else 
 						hist.ta <- binCounts(s$stats[, "turningangles"], c(-pi, pi), nbins.hist[1], FALSE)
 					hist.step <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
-				} else {
-					hist.mat <- matrix(ncol = nbins.hist[1], nrow = nrepetitions)
-					hist.step.mat <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
-					for(i in 1:nrepetitions) {
-						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles)
-						s <- sampleMovement(rel, resolution, resist = resistance)
-						if(TA.variation) {
-							a.var.sim <- angle.variation(s, window.size = window.size)
-							hist.mat[i, ] <- binCounts(a.var.sim, range.varta, nbins.hist[1])
-						} else
-							hist.mat[i, ] <- binCounts(s$stats[, "turningangles"], c(-pi, pi), nbins.hist[1], FALSE)
-						hist.step.mat[i, ] <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
-					}
-					hist.ta <- apply(hist.mat, 2, mean)
-					hist.step <- apply(hist.step.mat, 2, mean)
-				}
-				
-				if(nbins.hist[1] > 0)
-					crit.ta <- abs(log(hist.ta + 1) - log(ref[["hist.ta"]] + 1))
-				else
-					crit.ta <- NULL
-				
-				if(nbins.hist[2] > 0) {
-# We put a log here. This does make a difference when objectives are aggregated because
-# a difference of 1 between 2 and 3 should be given more weight than a difference of 1
-# between 20 and 21. If objectives are not aggregated, to log or not log is irrelevant.
-# Bins with small values are usually determinant in the final movement pattern.
-					crit.sl <- abs(log(hist.step + 1) - log(ref[["hist.step"]] + 1))
-				} else
-					crit.sl <- NULL
 
-				if(aggregate.obj.hist) {
-# in this case we sum the absolute differences in each histogram bar to use as objectives
-					if(is.null(crit.ta))
-						crit <- c("SL.diff" = sum(crit.sl))
-					else if(is.null(crit.sl))
-						crit <- c("TA.diff" = sum(crit.ta))
+					if(nbins.hist[1] > 0)
+						crit.ta <- abs(log(hist.ta + 1) - log(reference[["hist.ta"]] + 1))
 					else
-						crit <- c("TA.diff" = sum(crit.ta), "SL.diff" = sum(crit.sl))
-				} else
-# otherwise we use the bar-wise absolute differences as objectives
-					crit <- c(crit.ta, crit.sl)
-
-				return(crit)
-			}, reference)
+						crit.ta <- NULL
 			
-			if(trace) print(round(crit, 1))
-			return(crit)
+					if(nbins.hist[2] > 0) {
+		# We put a log here. This does make a difference when objectives are aggregated because
+		# a difference of 1 between 2 and 3 should be given more weight than a difference of 1
+		# between 20 and 21. If objectives are not aggregated, to log or not log is irrelevant.
+		# Bins with small values are usually determinant in the final movement pattern.
+						crit.sl <- abs(log(hist.step + 1) - log(reference[["hist.step"]] + 1))
+					} else
+						crit.sl <- NULL
+
+					if(aggregate.obj.hist) {
+		# in this case we sum the absolute differences in each histogram bar to use as objectives
+						if(is.null(crit.ta))
+							crit.mat[, i] <- c("SL.diff" = sum(crit.sl))
+						else if(is.null(crit.sl))
+							crit.mat[, i] <- c("TA.diff" = sum(crit.ta))
+						else
+							crit.mat[, i] <- c("TA.diff" = sum(crit.ta), "SL.diff" = sum(crit.sl))
+					} else
+		# otherwise we use the bar-wise absolute differences as objectives
+						crit.mat[, i] <- c(crit.ta, crit.sl)
+
+
+				}
+			} else {
+				hist.mat <- matrix(ncol = nbins.hist[1], nrow = nrepetitions)
+				hist.step.mat <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
+				for(i in 1:nrepetitions) {
+					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles, parallel = TRUE)
+					s <- sampleMovement(rel, resolution, resist = resistance)
+					if(TA.variation) {
+						a.var.sim <- angle.variation(s, window.size = window.size)
+						hist.mat[i, ] <- binCounts(a.var.sim, range.varta, nbins.hist[1])
+					} else
+						hist.mat[i, ] <- binCounts(s$stats[, "turningangles"], c(-pi, pi), nbins.hist[1], FALSE)
+					hist.step.mat[i, ] <- binCounts(s$stats[, "steplengths"], range.step, nbins.hist[2], step.hist.log)
+				}
+				hist.ta <- apply(hist.mat, 2, mean)
+				hist.step <- apply(hist.step.mat, 2, mean)
+			}
+			
+
+			
+			if(trace) print(round(crit.mat, 1))
+			return(crit.mat)
 		}
 
 		sol <- nsga2(objective.function.par, attr(species.model, "npars")

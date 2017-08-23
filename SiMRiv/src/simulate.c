@@ -3,7 +3,7 @@
 #include "SiMRiv.h"
 SEXP rho;
 
-SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir, SEXP _parallel) {
+SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir, SEXP _parallel, SEXP _nrepetitions) {
 	rho=envir;
 	RASTER *resist = NULL;
 	GetRNGstate();
@@ -14,6 +14,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 	}
 	
 	int timespan = INTEGER_POINTER(_timespan)[0], *start = INTEGER_POINTER(_starting_positions);
+	int nrepetitions = INTEGER_POINTER(_nrepetitions)[0];
 	double *angles = NULL;
 	double *prelocs;
 	unsigned int ninds=LENGTH(_individuals),i,j,k;
@@ -24,11 +25,14 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 	
 	if(_angles != R_NilValue)
 		angles = NUMERIC_POINTER(_angles);
+	
+	if(parallel && ninds > 1 && nrepetitions > 1) Rf_error("If more than one individual is supplied, number of repetitions must be 1.");
 
 // pointers to individual data
 	INDIVIDUAL *ind=malloc(sizeof(INDIVIDUAL)*ninds);
+	//INDIVIDUAL ind[500];
 	
-	PROTECT(relocs=allocMatrix(REALSXP,timespan,3*ninds));	// output is a matrix with columns x,y,state appended for each individual
+	PROTECT(relocs=allocMatrix(REALSXP, timespan, 3 * (nrepetitions > 1 ? nrepetitions : ninds)));	// output is a matrix with columns x,y,state appended for each individual
 	prelocs=NUMERIC_POINTER(relocs);
 	
 // get pointers to individual, species and state data
@@ -77,7 +81,6 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 		unsigned int tmp1, tmp2, time;
 		PDF tmpPDF, tmprotPDF;
 		CDF tmpMultCDF;
-		double **curtrans = malloc(sizeof(double*) * ninds);
 		unsigned long r, s, k;
 		float lengthmove;
 		STATE *tmpstate;
@@ -103,26 +106,46 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 // NOTE: time is unitless for now
 
 		if(parallel) {
-			#pragma omp parallel for private(r, k, s, tmp1, tmp2, time, tmpstate, tmprotPDF, tmpPDF, j, tmpMultCDF, curangtrans, lengthmove) firstprivate(curtrans)
-			for(i=0; i<ninds; i++) {
-				tmp2 = i * timespan;
-				curtrans[i] = ind[i].transitionmatrix;	// for now, constant transition matrix
+			int curind, curtime, curstate, curindaddr;
+			float curang;
+			POINT curpos;
+			double curtrans[100];
+			int tmsize;
+			const long indcolsize = timespan * 3;
+			double *colX, *colY, *colS;
+			int niterations = nrepetitions > 1 ? nrepetitions : ninds;
+			
+			#pragma omp parallel for private(curindaddr, colX, colY, colS, r, k, s, tmp1, tmp2, time, tmpstate, tmprotPDF, tmpPDF, j, tmpMultCDF, curangtrans, lengthmove, curind, curtime, curstate, curang, curpos, curtrans, tmsize) num_threads(8)
+			for(curind=0; curind<niterations; curind++) {
+				colX = &prelocs[curind * indcolsize];
+				colY = &prelocs[curind * indcolsize + timespan];
+				colS = &prelocs[curind * indcolsize + timespan * 2];
+				curindaddr = nrepetitions > 1 ? 0 : curind;
+/*#pragma omp critical
+Rprintf("%d-%d ", curind, ninds);*/
+				tmsize = ind[curindaddr].nstates * ind[curindaddr].nstates;
+				for(int z=0; z<tmsize; z++)
+					curtrans[z] = ind[curindaddr].transitionmatrix[z];	// for now, constant transition matrix
+				curang = 0;	// TODO
+				curpos.x = 0;
+				curpos.y = 0;
+				curstate = 0;
 				for(time=0; time<timespan; time++) {
 // draw new state according to transition matrix
 					r = runif(0, MULTIPLIER-1);
-					for(k=0, s=(unsigned long)(curtrans[i][ind[i].curstate] * MULTIPLIER)
-						; k < (ind[i].nstates - 1) && r >= s
-						; k++, s += (unsigned long)(curtrans[i][ind[i].curstate + k * ind[i].nstates] * MULTIPLIER)) {}
-					ind[i].curstate = k; //>= ind[i].nstates ? (ind[i].nstates - 1) : k;		// is this condition needed?
+					for(k=0, s=(unsigned long)(curtrans[curstate] * MULTIPLIER)
+						; k < (ind[curindaddr].nstates - 1) && r >= s
+						; k++, s += (unsigned long)(curtrans[curstate + k * ind[curindaddr].nstates] * MULTIPLIER)) {}
+					curstate = k; //>= ind[i].nstates ? (ind[i].nstates - 1) : k;		// is this condition needed?
 
-					tmpstate = &ind[i].states[ind[i].curstate];
+					tmpstate = &ind[curindaddr].states[curstate];
 
 // rotate the 0-centered base PDF (the one calculated from the state's concentration parameter)
 // to center on the previous step angle
-					rotatePDF(tmpstate->scaledPDF, tmprotPDF, ind[i].curang - ANGLECENTER);
-				
+					rotatePDF(tmpstate->scaledPDF, tmprotPDF, curang - ANGLECENTER);
+
 // compute the empirical resistance PDF around the current position
-					computeEmpiricalResistancePDF(ind[i].curpos, resist, &tmpstate->pwind, tmpPDF);
+					computeEmpiricalResistancePDF(curpos, resist, &tmpstate->pwind, tmpPDF);
 
 					if(tmpPDF[0] != -1) {		// resistance is heterogeneous
 // multiply rotated base PDF by empirical PDF and compute cumulative PDF directly
@@ -131,39 +154,50 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 
 // TODO what to do when the desired direction is facing towards an infinite resistance area and there is no overlap of PDFs? keep trying, or abort step?
 						if(tmpMultCDF[ANGLERES-1] == 0)
-							ind[i].curang = drawRandomAngle(NULL);	// here we just draw a uniform random angle
+							curang = drawRandomAngle(NULL);	// here we just draw a uniform random angle
 						else
 // draw random angle based on compound PDF (resistance + correlated components)
-							ind[i].curang = drawRandomAngle(tmpMultCDF);
+							curang = drawRandomAngle(tmpMultCDF);
 
 					} else {	// ignore resistance when resistance is equal in all directions
 						for(j=1, tmpMultCDF[0]=(unsigned long)(tmprotPDF[0]*MULTIPLIER); j<ANGLERES; j++)
 							tmpMultCDF[j] = tmpMultCDF[j-1] + (unsigned long)(tmprotPDF[j]*MULTIPLIER);
 // draw random angle based on base PDF
-						ind[i].curang = drawRandomAngle(tmpMultCDF);
+						curang = drawRandomAngle(tmpMultCDF);
 					}
 
-					curangtrans = ind[i].curang * ANGLESTEP - PI;
+					curangtrans = curang * ANGLESTEP - PI;
 	//				Rprintf("%.3f %.3f %.3f | ", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y);
-					lengthmove = computeLengthMove(tmpstate->steplength, ind[i].curpos, resist, curangtrans);
+					lengthmove = computeLengthMove(tmpstate->steplength, curpos, resist, curangtrans);
 					if(lengthmove > 0) {
-						ind[i].curpos.x += cos(curangtrans) * lengthmove;
-						ind[i].curpos.y += sin(curangtrans) * lengthmove;
+						curpos.x += cos(curangtrans) * lengthmove;
+						curpos.y += sin(curangtrans) * lengthmove;
 					}
 					
-					if(isnan(ind[i].curpos.x)) {	// this should never happen, but...
-						Rprintf("%f %f %f %f %f %f\n", tmpstate->steplength, ind[i].curpos.x, ind[i].curpos.y, lengthmove, ind[i].curang, curangtrans);
+					if(isnan(curpos.x)) {	// this should never happen, but...
+						Rprintf("%f %f %f %f %f %f\n", tmpstate->steplength, curpos.x, curpos.y, lengthmove, curang, curangtrans);
 						Rf_error("Unexpected error, please report.");
 					}
 
-					tmp1 = tmp2 * 3;	// this is the column offset of the current individual in the output matrix
-					prelocs[tmp1 + time] = ind[i].curpos.x;
-					prelocs[tmp1 + timespan + time] = ind[i].curpos.y;
-					prelocs[tmp1 + timespan + timespan + time] = ind[i].curstate;
+					*colX = curpos.x;
+					*colY = curpos.y;
+					*colS = curstate;
+					
+					colX++;
+					colY++;
+					colS++;
+/*
+					tmp1 = curind * timespan * 3;	// this is the column offset of the current individual in the output matrix
+
+					prelocs[tmp1 + curtime] = curpos.x;
+					prelocs[tmp1 + timespan + curtime] = curpos.y;
+					prelocs[tmp1 + timespan + timespan + curtime] = curstate;
+					*/
 				}
 			}
 			
 		} else {
+			double **curtrans = malloc(sizeof(double*) * ninds);
 			for(time=0; time<timespan; time++) {
 				for(i=0; i<ninds; i++)
 					curtrans[i] = ind[i].transitionmatrix;	// for now, constant transition matrix
@@ -225,8 +259,8 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 					prelocs[tmp1 + timespan + timespan + time]=ind[i].curstate;
 				}
 			}	// time loop
+			free(curtrans);
 		}	// if(parallel)
-		free(curtrans);
 	}
 	
 	PutRNGstate();
@@ -433,7 +467,7 @@ void computeEmpiricalResistancePDF(POINT curpos,const RASTER *resist,PERCEPTIONW
 /**
 	Shifts the PDF by offset
 */
-void rotatePDF(PDF pdf,PDF out,float ang) {
+void rotatePDF(PDF pdf,PDF out,float ang) {return;
 //	int offset=((int)(ang*(ANGLERES-1)/(2*PI))) % (ANGLERES-1),i,j;
 //	int offset=(int)lroundf(ang*ANGLERES/(2*PI)+0.5) +1 ,i,j;	//% ANGLERES
 	int offset=ANGLERES-ang,j,i;

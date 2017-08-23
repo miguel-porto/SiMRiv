@@ -55,7 +55,7 @@ inline float circNormalTerm(float ang,float var,int k) {
 	return((1/sqrt(var * 2 * PI)) * exp(-( (ang + 2 * PI * (float)k)*(ang + 2 * PI * (float)k) )/(2 * var)));
 }
 
-SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir, SEXP _parallel);
+SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir, SEXP _parallel, SEXP _nrepetitions);
 SEXP stepRasterAccumulator(SEXP relocs,SEXP _resist,SEXP envir);
 void circNormal(float rho,float* out,float* scaledout);
 float drawRandomAngle(unsigned long *pdf);
