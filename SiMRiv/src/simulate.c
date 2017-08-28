@@ -1,4 +1,3 @@
-// FIXME: some bug with OMP in i386 architecture...
 #include <omp.h>
 #include "SiMRiv.h"
 SEXP rho;
@@ -6,7 +5,7 @@ SEXP rho;
 SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir, SEXP _parallel, SEXP _nrepetitions) {
 	rho=envir;
 	RASTER *resist = NULL;
-	GetRNGstate();
+	GetRNGstate();	// FIXME: RNG is not thread safe! We cannot parallelize like this! We must generate random numbers before parallel simulations.
 	
 	if(_resist != R_NilValue) {
 		resist = openRaster(_resist,rho);
@@ -30,7 +29,6 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 
 // pointers to individual data
 	INDIVIDUAL *ind=malloc(sizeof(INDIVIDUAL)*ninds);
-	//INDIVIDUAL ind[500];
 	
 	PROTECT(relocs=allocMatrix(REALSXP, timespan, 3 * (nrepetitions > 1 ? nrepetitions : ninds)));	// output is a matrix with columns x,y,state appended for each individual
 	prelocs=NUMERIC_POINTER(relocs);
@@ -126,10 +124,10 @@ Rprintf("%d-%d ", curind, ninds);*/
 				tmsize = ind[curindaddr].nstates * ind[curindaddr].nstates;
 				for(int z=0; z<tmsize; z++)
 					curtrans[z] = ind[curindaddr].transitionmatrix[z];	// for now, constant transition matrix
-				curang = 0;	// TODO
-				curpos.x = 0;
-				curpos.y = 0;
-				curstate = 0;
+				curang = ind[curindaddr].curang;
+				curpos.x = ind[curindaddr].curpos.x;
+				curpos.y = ind[curindaddr].curpos.y;
+				curstate = ind[curindaddr].curstate;
 				for(time=0; time<timespan; time++) {
 // draw new state according to transition matrix
 					r = runif(0, MULTIPLIER-1);

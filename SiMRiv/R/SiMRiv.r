@@ -51,16 +51,28 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 	}
 	
 	if(!is.null(angles)) {
-		if(length(angles) != length(individuals)) stop("angles must be a numeric vector of initial directions in radians, the same length of individuals")
+		if(length(angles) != length(individuals)) {
+			if(length(angles) > 1) {
+				stop("angles must be a numeric vector of initial directions in radians, the same length of individuals, or of only one element, which will be used for all individuals.")
+			} else {
+				angles <- rep(angles, length(individuals))
+			}
+		}
 		angles = (-angles + pi/2) %% (2*pi)
 	}
 
-	if(dim(coords)[1] != length(individuals)) stop("The number of rows in the 'coords' matrix must be the same as the number of individuals")
+	if(dim(coords)[1] != length(individuals)) {
+		if(dim(coords)[1] > 1) {
+			stop("The number of rows in the 'coords' matrix must be the same as the number of individuals, or only one for all individuals")
+		} else {
+			coords <- matrix(rep(coords, each = length(individuals)), nrow = length(individuals))
+		}
+	}
 		
 	for(i in 1:length(individuals)) {
 		if(!inherits(individuals[[i]],"species")) stop("individuals must be a list of species class")
 	}
-	
+
 	.Call(SR__simulate_individuals, individuals, coords, as.integer(time), angles, resist, new.env(), parallel, as.integer(nrepetitions))
 }
 
