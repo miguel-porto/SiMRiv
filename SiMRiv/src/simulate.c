@@ -58,7 +58,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 				ind[i].states[j].pwind.type=CIRCULAR;
 			else if(strcmp(tmp5,"gaussian")==0)
 				ind[i].states[j].pwind.type=GAUSSIAN;
-			else error("Invalid perception window type.");
+			else error("Invalid perceptual range type.");
 			
 			// let's create a lookup table for perception window weights!
 			if(ind[i].states[j].pwind.type==GAUSSIAN) {
@@ -376,7 +376,7 @@ void computeEmpiricalResistancePDF(POINT curpos,const RASTER *resist,PERCEPTIONW
 		
 	default:
 		Rprintf("PW: %d\n", (int)percwind->type);
-		error("Perception window type not implemented yet");
+		error("Perceptual range type not implemented yet");
 		break;
 	}
 	if(allinf) pdf[0]=-1;

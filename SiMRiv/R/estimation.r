@@ -81,7 +81,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		attr(f, "npars") <- 2
 		attr(f, "lower.bounds") <- c(0, 1)
 		attr(f, "upper.bounds") <- c(max.concentration, perceptual.range)
-		attr(f, "param.names") <- c("Turning angle correlation", "Perception window radius")
+		attr(f, "param.names") <- c("Turning angle correlation", "Perceptual range radius")
 		return(f)
 	}, {
 		f <- function(parameters) {

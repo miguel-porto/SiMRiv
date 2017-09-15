@@ -13,9 +13,9 @@ perceptualRange<-function(type = "circular", radius) {
 
 .printPercWind <- function(object) {
 	switch(pmatch(object@type,c("circular","gaussian"),nomatch=3),{
-		cat("Circular perception window with radius =",object@parameters[1],"\n")
+		cat("Circular perceptual range with radius =",object@parameters[1],"\n")
 	},{
-		cat("Gaussian perception window with sigma =",object@parameters[1],"\n")
+		cat("Gaussian perceptual range with sigma =",object@parameters[1],"\n")
 	})	
 }
 
