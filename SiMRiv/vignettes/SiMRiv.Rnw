@@ -341,7 +341,7 @@ If you want to have simulated data which is comparable to real tracking data, yo
 \section{To do list and opportunities for collaborations}
 
 \begin{enumerate}
-\item spatial bias (the software in its current version does not allow to simulate, e.g., a biased random walk);
+\item spatial bias (although it is possible to condition movements based on resistance, the software in its current version does not allow a more standard formulation of the spatial bias, e.g. Turchin 1998; McClintock et al. 2012 - i.e. to simulate a biased random, or correlated random, walk);
 \item separation between physical resistance and habitat suitability, which should have different effects on movement;
 \item simulations of multiple interacting individuals;
 \item improving current method for input parameter estimation (\code{adjustModel}) or assessing the applicability of other methods (cf. Hartig et al 2011)
