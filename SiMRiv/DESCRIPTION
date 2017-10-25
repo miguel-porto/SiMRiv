@@ -8,7 +8,7 @@ Authors@R: c(person("Lorenzo", "Quaglietta", role = c("aut"), email = "lontrenzo
 		)
 Depends: R (>= 1.8.0), raster
 Imports: methods, stats, sp, mco, parallel, rgdal
-Suggests: adehabitatLT, moveHMM, rgeos
+Suggests: adehabitatLT, moveHMM, rgeos, testthat
 Description: Provides functions to generate and analyze individual-based spatially-explicit
   simulations of multi-state movements in heterogeneous landscapes, based on "resistance"
   rasters. Although originally conceived and designed to simulate spatially-explicit trajectories
