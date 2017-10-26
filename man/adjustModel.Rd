@@ -127,7 +127,7 @@ species.model <- speciesModel("CRW.CRW.sl", steplength = max.step.length)
 
 ## now run optimization
 
-sol <- adjustModel(real.data, species.model, resol = 20, window = 10
+sol <- adjustModel(real.data, species.model, resol = 20
 	, nbins.hist = c(3, 3), step.hist.log = TRUE)
 
 ## After finishing, we can extract the input parameters of the optimized

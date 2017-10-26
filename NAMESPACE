@@ -5,10 +5,11 @@ importFrom("sp", "proj4string")
 importFrom("utils", "flush.console")
 importFrom("graphics", "axis", "box", "legend", "mtext", "par",
 	"plot.new", "plot.window", "polygon", "title")
-import(raster)
-import(mco)
-import(parallel)
-import(rgdal)
+importFrom("parallel", "makeCluster", "detectCores", "clusterCall"
+	, "clusterExport", "parApply", "stopCluster")
+importFrom("raster", "shapefile", "raster", "extent", "rasterize"
+	, "cellStats", "xyFromCell", "values")
+importFrom("mco", "nsga2")
 
 export(perceptualRange)
 export(state)

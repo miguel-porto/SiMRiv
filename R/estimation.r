@@ -2,7 +2,7 @@ angle.variation <- function(relocs, nlags = 100, window.size = dim(relocs$stats)
 	ta <- relocs$stats[, 2]
 	sda <- numeric(length(ta) %/% window.size)
 
-	for(i in 1:length(sda)) {
+	for(i in seq_along(sda)) {
 		sda[i] <- sd(ta[((i - 1) * window.size + 1) : (i * window.size)])
 	}
 	return(sda)
@@ -20,7 +20,7 @@ binCounts <- function(data, range, nbins, log = FALSE) {
 	tr <- table(inter)
 	tra <- rep(0, nbins)
 #	names(tra) <- 1:nbins
-	names(tra) <- paste(round(bins[1:nbins]), "-", round(bins[2:(nbins+1)]), sep="")
+	names(tra) <- paste(round(bins[seq_len(nbins)]), "-", round(bins[2:(nbins + 1)]), sep="")
 	tra[as.numeric(names(tr))] <- tr
 	return(tra)
 }
@@ -35,8 +35,10 @@ computeVariationHistogram <- function(relocs, nbins = 7, range = NULL, window.si
 	return(hist.var.ref)
 }
 
-speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperbound = 0.5, max.concentration = 0.99) {
-	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl", "CRW.CRW.sl", "CRW.CRW.CRW.sl", "CRW.RW.Rest.sl")), {
+speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperbound = 0.5
+	, max.concentration = 0.99) {
+	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw", "RW.CRW.sl", "CRW.CRW.sl"
+		, "CRW.CRW.CRW.sl", "CRW.RW.Rest.sl")), {
 		f <- function(parameters) {
 			return(species(
 				state.CRW(parameters[1])
@@ -69,10 +71,12 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		attr(f, "npars") <- 4
 		attr(f, "lower.bounds") <- c(0, 0, rep(0, 2))
 		attr(f, "upper.bounds") <- c(max.concentration, max.concentration, rep(prob.upperbound, 2))
-		attr(f, "param.names") <- c("Turning angle correlation state 1", "Turning angle correlation state 2", "Prob. st.1 -> st.2", "Prob. st.2 -> st.1")
+		attr(f, "param.names") <- c("Turning angle correlation state 1", "Turning angle correlation state 2"
+			, "Prob. st.1 -> st.2", "Prob. st.2 -> st.1")
 		return(f)
 	}, {
-		if(perceptual.range <= 1) stop("You must provide the maximum allowable perceptual range size, e.g. perceptual.range = 500")
+		if(perceptual.range <= 1)
+			stop("You must provide the maximum allowable perceptual range size, e.g. perceptual.range = 500")
 		f <- function(parameters) {
 			return(species(
 				state.CRW(parameters[1])
@@ -93,7 +97,8 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		attr(f, "npars") <- 5
 		attr(f, "lower.bounds") <- c(0, rep(0, 4))
 		attr(f, "upper.bounds") <- c(max.concentration, rep(prob.upperbound, 2), rep(steplength, 2))
-		attr(f, "param.names") <- c("Turning angle correlation", "Prob. CRW -> RW", "Prob. RW -> CRW", "Step length RW", "Step length CRW")
+		attr(f, "param.names") <- c("Turning angle correlation", "Prob. CRW -> RW", "Prob. RW -> CRW"
+			, "Step length RW", "Step length CRW")
 		return(f)
 	}, {
 		f <- function(parameters) {
@@ -105,12 +110,14 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1, prob.upperb
 		attr(f, "npars") <- 6
 		attr(f, "lower.bounds") <- rep(0, 6)
 		attr(f, "upper.bounds") <- c(max.concentration, max.concentration, rep(prob.upperbound, 2), rep(steplength, 2))
-		attr(f, "param.names") <- c("Turning angle correlation S1", "Turning angle correlation S2", "Prob. S1 -> S2", "Prob. S2 -> S1", "Step length S1", "Step length S2")
+		attr(f, "param.names") <- c("Turning angle correlation S1", "Turning angle correlation S2"
+			, "Prob. S1 -> S2", "Prob. S2 -> S1", "Step length S1", "Step length S2")
 		return(f)
 	}, {
 		f <- function(parameters) {
 			return(species(
-				(state.CRW(parameters[1]) + parameters[10]) + (state.CRW(parameters[2]) + parameters[11]) + (state.CRW(parameters[3]) + parameters[12])
+				(state.CRW(parameters[1]) + parameters[10]) + (state.CRW(parameters[2]) + parameters[11])
+					+ (state.CRW(parameters[3]) + parameters[12])
 				, transitionMatrix(parameters[4], parameters[5], parameters[6], parameters[7], parameters[8], parameters[9])
 			) * perceptual.range)
 		}
@@ -226,7 +233,7 @@ adjustModel <- function(
 				} else {
 					hist.mat <- matrix(ncol = nbins.hist[1], nrow = nrepetitions)
 					hist.step.mat <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
-					for(i in 1:nrepetitions) {
+					for(i in seq_len(nrepetitions)) {
 						rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles)
 						s <- sampleMovement(rel, resolution, resist = resistance)
 						if(TA.variation) {
@@ -307,7 +314,7 @@ adjustModel <- function(
 				hist.ta.mat <- matrix(ncol = nbins.hist[1], nrow = nrepetitions)
 				hist.step.mat <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
 		
-				for(i in 1:nrepetitions) {
+				for(i in seq_len(nrepetitions)) {
 					rel <- simulate(sp.sim, nsteps * resolution, resist = resistance, coords = coords, angles = angles)
 					s <- sampleMovement(rel, resolution, resist = resistance)
 					if(TA.variation) {
@@ -369,8 +376,9 @@ adjustModel <- function(
 	return(sol)
 }
 
-generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.5, 0.90), only.pareto = FALSE, show.legend = TRUE
-	, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3), mgp = c(1.2, 0.2, 0), tcl = -0.25, ...) {
+generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.5, 0.90)
+	, only.pareto = FALSE, show.legend = TRUE, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3)
+	, mgp = c(1.2, 0.2, 0), tcl = -0.25, ...) {
 
 	generations <- attr(solutions, "generations")
 	
@@ -387,20 +395,20 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 	
 	# compute quantiles for plotting
 	if(only.pareto) {
-		quantiles <- sapply(solutions, function(x) {
-			apply(x$par[x$pareto, , drop = F], 2, quantile, plot.quantiles)
-		})
+		quantiles <- vapply(solutions, function(x) {
+			apply(x$par[x$pareto, , drop = FALSE], 2, quantile, plot.quantiles)
+		}, matrix(0, nrow=3, ncol=attr(species.model, "npars")))
 	} else {
-		quantiles <- sapply(solutions, function(x) {
-			apply(x$par[, , drop = F], 2, quantile, plot.quantiles)
-		})
+		quantiles <- vapply(solutions, function(x) {
+			apply(x$par[, , drop = FALSE], 2, quantile, plot.quantiles)
+		}, matrix(0, nrow=3, ncol=attr(species.model, "npars")))
 	}
-	dim(quantiles) <- c(3, attr(species.model, "npars"), length(generations))
+
 	dimnames(quantiles) <- list(
 		quantile = plot.quantiles
-		, parameter = 1:attr(species.model, "npars")
+		, parameter = seq_len(attr(species.model, "npars"))
 		, generation = generations)
-	
+
 	par(mar = mar, mgp = mgp, tcl = tcl, ...)
 	plot.new()
 	# plot scale for correlation and probabilites (left axis)
@@ -408,16 +416,18 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 	axis(1)
 	axis(2)
 	coor.probs <- which(attr(species.model, "upper.bounds") <= 1)	# TODO: better way to tell apart the types of parameters
-	the.others <- setdiff(1:attr(species.model, "npars"), coor.probs)
+	the.others <- setdiff(seq_len(attr(species.model, "npars")), coor.probs)
 	for(p in coor.probs) {		# correlation and probabilities are those parameters bounded by 1
-		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ])), border = NA, col = plot.colors[p, 2])
+		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ]))
+			, border = NA, col = plot.colors[p, 2])
 		lines(generations, quantiles[2, p, ], lwd = lwd, col = plot.colors[p, 1], lty = plot.lty[p])
 	}
 	# plot scale for step lengths (right axis)
 	plot.window(xlim = c(0, max(generations)), ylim = c(0, max(attr(species.model, "upper.bounds"))))
 	axis(4)
 	for(p in the.others) {		# step lengths are the last params
-		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ])), border = NA, col = plot.colors[p, 2])
+		polygon(c(generations, rev(generations)), c(quantiles[1, p, ], rev(quantiles[3, p, ]))
+			, border = NA, col = plot.colors[p, 2])
 		lines(generations, quantiles[2, p, ], lwd = lwd, col = plot.colors[p, 1], lty = plot.lty[p])
 	}
 	
@@ -429,7 +439,8 @@ generationPlot <- function(solutions, species.model, plot.quantiles = c(0.10, 0.
 	if(show.legend) {
 		legend("bottomleft"#, xpd = T, inset = c(-0, -0.15)
 			, legend = attr(species.model, "param.names")
-			, lwd = lwd, col = plot.colors[1:attr(species.model, "npars"), 1], lty = plot.lty[1:attr(species.model, "npars")]
+			, lwd = lwd, col = plot.colors[seq_len(attr(species.model, "npars")), 1]
+			, lty = plot.lty[seq_len(attr(species.model, "npars"))]
 			, box.lwd = 0, bg = "#ffffff77")
 	}
 	return(invisible(quantiles))

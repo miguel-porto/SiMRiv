@@ -39,7 +39,6 @@ test_that("Transitions behave normally, unbiased", {
 	# test that the time spent in each state is similar, for equal probabilities
 	RW.CRW <- species(state.RW() + state.CRW(0.95), transitionMatrix(0.1, 0.1))
 	s <- simulate(RW.CRW, 10000)
-	chisq.test(table(s[, 3]))
 
 # this value is the 99 percentile of the difference that occurred over 5000 unbiased state
 # transitions for this transition matrix with equal probabilities. The code for generating unbiased
