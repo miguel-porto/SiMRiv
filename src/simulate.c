@@ -17,7 +17,6 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 	
 	if(_resist != R_NilValue) {
 		resist = openRaster(_resist,rho);
-//		rasterRes=NUMERIC_POINTER(getRasterRes(_resist,rho))[0];	// TODO handle cases when there is more than one raster (minimum resolution!)
 	}
 	
 	int timespan = INTEGER_POINTER(_timespan)[0], *start = INTEGER_POINTER(_starting_positions);
