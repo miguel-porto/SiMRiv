@@ -1,4 +1,4 @@
-# SiMRiv (R package) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/SiMRiv)](https://cran.r-project.org/package=SiMRiv) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) [![Downloads](http://cranlogs.r-pkg.org/badges/SiMRiv)](https://cran.r-project.org/package=SiMRiv) [![Travis-CI Build Status](https://travis-ci.org/bmcclintock/momentuHMM.svg)](https://travis-ci.org/miguel-porto/SiMRiv.svg?branch=devel)
+# SiMRiv (R package) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/SiMRiv)](https://cran.r-project.org/package=SiMRiv) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) [![Downloads](http://cranlogs.r-pkg.org/badges/SiMRiv)](https://cran.r-project.org/package=SiMRiv) [![Travis-CI Build Status](https://travis-ci.org/miguel-porto/SiMRiv.svg?branch=devel)](https://travis-ci.org/miguel-porto/SiMRiv.svg?branch=devel)
 
 **Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks, Homogeneous, and Heterogeneous Landscapes in R.**
 
