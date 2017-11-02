@@ -109,7 +109,8 @@ setValidity("species", function(object) {
 	states <- object@states
 	if(!(inherits(states, "list"))) return("States must be a list of states")
 	for(i in seq_along(states)) {
-		if(!inherits(states[[i]], "state")) return("States must be a list of states")
+		if(!inherits(states[[i]], "state"))
+			return("States must be a list of states")
 	}
 	if(dim(trans)[1] != dim(trans)[2]) return("Transition matrix must be square")
 	if(length(states) != dim(trans)[1])

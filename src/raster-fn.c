@@ -1,7 +1,7 @@
 #include "SiMRiv.h"
 
-/*
-	A couple of functions imported from the raster package
+/**
+* A couple of functions imported from the raster package
 */
 SEXP getRasterExtent(SEXP raster,SEXP rho) {
 	SEXP ans,s,t;
@@ -56,29 +56,31 @@ SEXP getRasterValues(SEXP raster,SEXP rho) {
 }
 
 /*
-	Import a raster and prepare it for fast use
-	WARNING: this function intentionally leaves one SEXP protected
+* Import a raster and prepare it for fast use
+* WARNING: this function intentionally leaves one SEXP protected
 */
-RASTER *openRaster(SEXP raster,SEXP rho) {
-	RASTER *out=malloc(sizeof(RASTER));
-	SEXP dim,extent;
-	out->pvalues=getRasterValues(raster,rho);	// this will not be unprotected, to avoid having to copy the values to a new variable
+RASTER *openRaster(SEXP raster, SEXP rho) {
+	RASTER *out = malloc(sizeof(RASTER));
+	SEXP dim, extent;
+// this will not be unprotected, to avoid having to copy the values to a new
+// variable
+	out->pvalues = getRasterValues(raster, rho);
 	R_PreserveObject(out->pvalues);
-	out->values=NUMERIC_POINTER(out->pvalues);
+	out->values = NUMERIC_POINTER(out->pvalues);
 
-	PROTECT(dim=getRasterDim(raster,rho));
-	PROTECT(extent=getRasterExtent(raster,rho));
-	out->nrows=NUMERIC_POINTER(dim)[0];
-	out->ncols=NUMERIC_POINTER(dim)[1];
-	out->xmin=NUMERIC_POINTER(GET_SLOT(extent,SCALARCHAR("xmin")))[0];
-	out->ymin=NUMERIC_POINTER(GET_SLOT(extent,SCALARCHAR("ymin")))[0];
-	out->xmax=NUMERIC_POINTER(GET_SLOT(extent,SCALARCHAR("xmax")))[0];
-	out->ymax=NUMERIC_POINTER(GET_SLOT(extent,SCALARCHAR("ymax")))[0];
-	out->width=out->xmax-out->xmin;
-	out->height=out->ymax-out->ymin;
-	out->xscale=(float)out->ncols/out->width;
-	out->yscale=(float)out->nrows/out->height;
-	out->ncells=LENGTH(out->pvalues);
+	PROTECT(dim = getRasterDim(raster, rho));
+	PROTECT(extent = getRasterExtent(raster, rho));
+	out->nrows = NUMERIC_POINTER(dim)[0];
+	out->ncols = NUMERIC_POINTER(dim)[1];
+	out->xmin = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("xmin")))[0];
+	out->ymin = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("ymin")))[0];
+	out->xmax = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("xmax")))[0];
+	out->ymax = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("ymax")))[0];
+	out->width = out->xmax - out->xmin;
+	out->height = out->ymax - out->ymin;
+	out->xscale = (float) out->ncols / out->width;
+	out->yscale = (float) out->nrows / out->height;
+	out->ncells = LENGTH(out->pvalues);
 	
 	UNPROTECT(2);
 	return out;
@@ -92,20 +94,26 @@ void closeRaster(RASTER *raster) {
 /*
 * Fast extraction of raster values at a given coordinate
 */
-inline double extractRasterValue(const RASTER *raster,float x,float y) {
-	if(x<raster->xmin || y<raster->ymin || x>=raster->xmax || y>=raster->ymax) return NA_REAL;
-	int index = (int)((raster->ymax-y)*raster->yscale) * raster->ncols + (int)((x-raster->xmin)*raster->xscale);
+inline double extractRasterValue(const RASTER *raster, float x, float y) {
+	if(x < raster->xmin || y < raster->ymin || x >= raster->xmax
+		|| y >= raster->ymax) return NA_REAL;
+	int index = (int) ((raster->ymax - y) * raster->yscale) * raster->ncols
+		+ (int) ((x - raster->xmin) * raster->xscale);
 	if(index >= raster->ncells) return NA_REAL;
 	return raster->values[index];
 }
 
 /*
-* Fast extraction of raster values at a given coordinate, guaranteed not to return NaN
+* Fast extraction of raster values at a given coordinate
+* guaranteed not to return NaN
 */
 inline double extractRasterValueNoNaN(const RASTER *raster,float x,float y) {
-	if(x<raster->xmin || y<raster->ymin || x>=raster->xmax || y>=raster->ymax) return 1;
-	int index = (int)((raster->ymax-y)*raster->yscale) * raster->ncols + (int)((x-raster->xmin)*raster->xscale);
+	if(x < raster->xmin || y < raster->ymin || x >= raster->xmax
+		|| y >= raster->ymax) return 1;
+	int index = (int) ((raster->ymax - y) * raster->yscale) * raster->ncols
+		+ (int) ((x - raster->xmin) * raster->xscale);
 	if(index >= raster->ncells) return 1;
-	double tmp=raster->values[index];
+	double tmp = raster->values[index];
 	return isnan(tmp) ? 1 : tmp;
 }
+
