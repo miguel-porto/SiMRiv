@@ -6,10 +6,14 @@
 #include "SiMRiv.h"
 SEXP rho;
 
-SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir) {
+/**
+* Main simulation function
+*/
+SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions
+	, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir) {
+	
 	#ifdef USEOPENMP
 	omp_set_num_threads(omp_get_num_procs ( ));
-//	Rprintf("Using multicore processing with %d threads.\n",omp_get_num_procs ( ));
 	#endif
 	rho=envir;
 	RASTER *resist = NULL;
@@ -19,11 +23,12 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 		resist = openRaster(_resist,rho);
 	}
 	
-	int timespan = INTEGER_POINTER(_timespan)[0], *start = INTEGER_POINTER(_starting_positions);
+	int timespan = INTEGER_POINTER(_timespan)[0]
+		, *start = INTEGER_POINTER(_starting_positions);
 	double *angles = NULL;
 	double *prelocs;
-	unsigned int ninds=LENGTH(_individuals),i,j,k,time,tmp1,tmp2;
-	SEXP relocs,tmp3,tmp4;
+	unsigned int ninds = LENGTH(_individuals), i, j, k, time, tmp1, tmp2;
+	SEXP relocs, tmp3, tmp4;
 	const char *tmp5;
 	float curangtrans;
 	
@@ -31,50 +36,49 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 		angles = NUMERIC_POINTER(_angles);
 
 // pointers to individual data
-	INDIVIDUAL *ind=malloc(sizeof(INDIVIDUAL)*ninds);
+	INDIVIDUAL *ind = malloc(sizeof(INDIVIDUAL) * ninds);
 	
-	PROTECT(relocs=allocMatrix(REALSXP,timespan,3*ninds));	// output is a matrix with columns x,y,state appended for each individual
+// output is a matrix with columns x,y,state appended for each individual	
+	PROTECT(relocs = allocMatrix(REALSXP, timespan, 3 * ninds));
 	prelocs=NUMERIC_POINTER(relocs);
 	
-// get pointers to individual, species and state data
-	for(i=0;i<ninds;i++) {
-		//tmp=VECTOR_ELT(_individuals,i);
-		//ind[i].pspecies=GET_SLOT(tmp,SCALARCHAR("species"));
-		ind[i].pspecies=VECTOR_ELT(_individuals,i);
-		ind[i].transitionmatrix=NUMERIC_POINTER(GET_SLOT(ind[i].pspecies,SCALARCHAR("transitionMatrix")));
-		ind[i].nstates=LENGTH(GET_SLOT(ind[i].pspecies,SCALARCHAR("states")));
-//		printf("NStates %d\n",ind[i].nstates);
-		ind[i].states=malloc(sizeof(STATE)*ind[i].nstates);		
-		for(j=0;j<ind[i].nstates;j++) {
-			tmp3=VECTOR_ELT(GET_SLOT(ind[i].pspecies,SCALARCHAR("states")),j);
-			ind[i].states[j].taconc=NUMERIC_POINTER(GET_SLOT(tmp3,SCALARCHAR("turningAngleConcentration")))[0];
-			ind[i].states[j].steplength=NUMERIC_POINTER(GET_SLOT(tmp3,SCALARCHAR("stepLength")))[0];
-			//ind[i].states[j].stubb=NUMERIC_POINTER(GET_SLOT(tmp3,SCALARCHAR("stubb")))[0];
-			tmp4=GET_SLOT(tmp3,SCALARCHAR("perceptualRange"));
-			ind[i].states[j].pwind.radius=NUMERIC_POINTER(GET_SLOT(tmp4,SCALARCHAR("parameters")))[0];
-			tmp5=CHAR(STRING_ELT(GET_SLOT(tmp4,SCALARCHAR("type")),0));
-			if(strcmp(tmp5,"circular")==0)
-				ind[i].states[j].pwind.type=CIRCULAR;
-			else if(strcmp(tmp5,"gaussian")==0)
-				ind[i].states[j].pwind.type=GAUSSIAN;
+// get pointers to individual and state data
+	for(i = 0; i < ninds; i++) {
+		ind[i].pspecies = VECTOR_ELT(_individuals, i);
+		ind[i].transitionmatrix = NUMERIC_POINTER(GET_SLOT(ind[i].pspecies
+			, SCALARCHAR("transitionMatrix")));
+		ind[i].nstates = LENGTH(GET_SLOT(ind[i].pspecies, SCALARCHAR("states")));
+		ind[i].states = malloc(sizeof(STATE) * ind[i].nstates);		
+// pointers for each state data
+		for(j = 0; j < ind[i].nstates; j++) {
+			tmp3 = VECTOR_ELT(GET_SLOT(ind[i].pspecies, SCALARCHAR("states")), j);
+			ind[i].states[j].taconc = NUMERIC_POINTER(GET_SLOT(tmp3
+				, SCALARCHAR("turningAngleConcentration")))[0];
+			ind[i].states[j].steplength = NUMERIC_POINTER(GET_SLOT(tmp3
+				, SCALARCHAR("stepLength")))[0];
+			tmp4 = GET_SLOT(tmp3, SCALARCHAR("perceptualRange"));
+			ind[i].states[j].pwind.radius = NUMERIC_POINTER(GET_SLOT(tmp4
+				, SCALARCHAR("parameters")))[0];
+			tmp5 = CHAR(STRING_ELT(GET_SLOT(tmp4, SCALARCHAR("type")), 0));
+			if(strcmp(tmp5, "circular") == 0)
+				ind[i].states[j].pwind.type = CIRCULAR;
+			else if(strcmp(tmp5,"gaussian") == 0)
+				ind[i].states[j].pwind.type = GAUSSIAN;
 			else error("Invalid perceptual range type.");
 			
-			// let's create a lookup table for perception window weights!
-			if(ind[i].states[j].pwind.type==GAUSSIAN) {
-				float pwsigma=ind[i].states[j].pwind.radius;
-				ind[i].states[j].pwind.radius=(int)ceil(ind[i].states[j].pwind.radius*4);	// NOTE: radius is taken as sigma and increased 4 times
-				ind[i].states[j].pwind.weights=calloc(ind[i].states[j].pwind.radius+1,sizeof(float));
-				for(k=0;k<ind[i].states[j].pwind.radius;k++) {
-					ind[i].states[j].pwind.weights[k]=exp(-(double)k*k/(2*pwsigma*pwsigma));
-					//Rprintf("%f ",ind[i].states[j].pwind.weights[k]);
+// let's create a lookup table for perception window weights!
+			if(ind[i].states[j].pwind.type == GAUSSIAN) {
+				float pwsigma = ind[i].states[j].pwind.radius;
+				// NOTE: radius is taken as sigma and increased 4 times
+				ind[i].states[j].pwind.radius = (int) ceil(ind[i].states[j].pwind.radius * 4);
+				ind[i].states[j].pwind.weights =
+					calloc(ind[i].states[j].pwind.radius + 1, sizeof(float));
+				for(k = 0; k < ind[i].states[j].pwind.radius; k++) {
+					ind[i].states[j].pwind.weights[k] =
+						exp(-(double) k * k / (2 * pwsigma * pwsigma));
 				}
 			}
-
-//			if(ind[i].states[j].steplength>0 && minimumRes>ind[i].states[j].steplength) minimumRes=ind[i].states[j].steplength;
 		}
-		
-//for(j=0;j<ind[i].nstates*ind[i].nstates;j++) {Rprintf("%d ",ind[i].transitionmatrix[j]);}
-//Rprintf("sp: %s\n",STRING_VALUE(GET_SLOT(ind[i].pspecies,SCALARCHAR("name"))));
 	}
 
 // START SIMULATION
@@ -86,18 +90,27 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 		float lengthmove;
 		STATE *tmpstate;
 // assign initial states, angles and starting positions
-		for(i=0; i<ninds; i++) {
+		for(i = 0; i < ninds; i++) {
 			ind[i].curpos.x = start[i];
 			ind[i].curpos.y = start[i + ninds];
-			ind[i].curstate = runif(0, ind[i].nstates - 1);	// random initial state
-			ind[i].curang = angles ? (ISNAN(angles[i]) ? drawRandomAngle(NULL) : ((angles[i] + PI) / ANGLESTEP)) : drawRandomAngle(NULL);		// uniform random angle
+// random initial state
+			ind[i].curstate = runif(0, ind[i].nstates - 1);
+// uniform random angle if angle not provided
+			ind[i].curang = angles ? (ISNAN(angles[i]) ? drawRandomAngle(NULL)
+				: ((angles[i] + PI) / ANGLESTEP)) : drawRandomAngle(NULL);
 // initialize states
-			for(j=0; j<ind[i].nstates; j++) {
-// compute base circular PDFs for all states of all individuals (centered on 0), with given concentration
-				circNormal(ind[i].states[j].taconc, ind[i].states[j].basePDF, ind[i].states[j].scaledPDF);
+			for(j = 0; j < ind[i].nstates; j++) {
+// compute base circular PDFs for all states of all individuals (centered on 0),
+// with given concentration
+				circNormal(ind[i].states[j].taconc, ind[i].states[j].basePDF
+					, ind[i].states[j].scaledPDF);
 // compute the respective cumulative circular PDFs
-				for(k=1, ind[i].states[j].cumPDF[0] = (long)(ind[i].states[j].basePDF[0]*MULTIPLIER); k<ANGLERES; k++) {
-					ind[i].states[j].cumPDF[k] = ind[i].states[j].cumPDF[k-1]+(long)(ind[i].states[j].basePDF[k]*MULTIPLIER);
+				for(k = 1, ind[i].states[j].cumPDF[0] =
+					(long)(ind[i].states[j].basePDF[0] * MULTIPLIER)
+					; k < ANGLERES; k++) {
+					ind[i].states[j].cumPDF[k] =
+						ind[i].states[j].cumPDF[k - 1]
+						+ (long) (ind[i].states[j].basePDF[k] * MULTIPLIER);
 				}
 			}
 		}
@@ -105,6 +118,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions, SEXP _ti
 ** MAIN TIME LOOP
 ***************************************/
 // NOTE: time is unitless for now
+// TODO clean below
 		for(time=0; time<timespan; time++) {
 			for(i=0; i<ninds; i++)
 				curtrans[i] = ind[i].transitionmatrix;	// for now, constant transition matrix
