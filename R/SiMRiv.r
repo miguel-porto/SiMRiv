@@ -1,6 +1,7 @@
-simulate <- function(individuals, time, coords = NULL, states = NULL, resist = NULL
-	, angles = NULL, start.resistance) {
-	# TODO: different resistance raster for each individual, using the species' resistanceMap
+simulate <- function(individuals, time, coords = NULL, states = NULL
+	, resist = NULL, angles = NULL, start.resistance) {
+# TODO: different resistance raster for each individual,
+# using the species' resistanceMap
 	if(mode(time) != "numeric") stop("time must be numeric")
 
 	if(!(inherits(individuals, "list"))) {
@@ -24,7 +25,7 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 				as.integer(rep(0, length(individuals)))
 				, as.integer(rep(0, length(individuals)))
 			)
-			# warning("No starting coordinates and no raster given: starting positions set to (0,0)")
+# warning("No starting coordinates and no raster given: starting positions set to (0,0)")
 		} else {
 			if(missing(start.resistance) || is.null(start.resistance)) {
 				e <- extent(resist)
@@ -58,15 +59,19 @@ simulate <- function(individuals, time, coords = NULL, states = NULL, resist = N
 		stop("The number of rows in the 'coords' matrix must be the same as the number of individuals")
 		
 	for(i in seq_along(individuals)) {
-		if(!inherits(individuals[[i]], "species")) stop("individuals must be a list of species class")
+		if(!inherits(individuals[[i]], "species"))
+			stop("individuals must be a list of species class")
 	}
 	
 	.Call(SR__simulate_individuals, individuals, coords, as.integer(time), angles, resist, new.env())
 }
 
 resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
-	, field = NA, background = 1, buffer = NA, margin = 0, mapvalues = NA, extend = TRUE, ...) {
-	if(missing(baseRaster) && missing(res)) stop("Either raster resolution or a base raster must be given")
+	, field = NA, background = 1, buffer = NA, margin = 0, mapvalues = NA
+	, extend = TRUE, ...) {
+
+	if(missing(baseRaster) && missing(res))
+		stop("Either raster resolution or a base raster must be given")
 	if(inherits(shp, "character")) {
 		l <- shapefile(shp)
 	} else {
@@ -80,7 +85,8 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 	}
 
 	if(missing(baseRaster)) {
-		er <- raster(ext = extent(b) + margin, crs = proj4string(l), resolution = res)
+		er <- raster(ext = extent(b) + margin, crs = proj4string(l)
+			, resolution = res)
 	} else {
 		if(extend) {
 			er <- extend(baseRaster, extent(b) + margin, value = background)
@@ -90,10 +96,12 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 	}
 	
 	if(binary) {
-		r <- rasterize(b, er, background = 1, field = 0, update = !missing(baseRaster))
+		r <- rasterize(b, er, background = 1, field = 0
+			, update = !missing(baseRaster))
 	} else {
 		if(inherits(field, "numeric")) {
-			r <- rasterize(b, er, field = field, background = background, update = !missing(baseRaster), ...)
+			r <- rasterize(b, er, field = field, background = background
+				, update = !missing(baseRaster), ...)
 		} else {
 			if(all(is.na(mapvalues))) {
 				if(!inherits(b@data[, field], "numeric"))
@@ -101,9 +109,11 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 				tmp <- b@data[, field]
 				tmp[is.na(tmp)] <- background
 				b@data[, field] <- tmp
-				r <- rasterize(b, er, field = field, background = background, update = !missing(baseRaster), ...)
+				r <- rasterize(b, er, field = field, background = background
+					, update = !missing(baseRaster), ...)
 			} else {
-				if(!inherits(mapvalues, "numeric")) stop("mapvalues must be a named numeric vector in the interval [0, 1]")
+				if(!inherits(mapvalues, "numeric"))
+					stop("mapvalues must be a named numeric vector in the interval [0, 1]")
 				empty <- names(mapvalues) == ""
 				if(any(empty)) {
 					emptyvalue <- mapvalues[empty]
@@ -117,7 +127,8 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 					tmp[is.na(tmp)] <- background
 				}
 				b@data[, field] <- tmp
-				r <- rasterize(b, er, field = field, background = background, update = !missing(baseRaster), ...)
+				r <- rasterize(b, er, field = field, background = background
+					, update = !missing(baseRaster), ...)
 			}
 		}
 	}

@@ -1,7 +1,9 @@
 setClass("perceptualRange", slots=c("type"="character", "parameters"="numeric"))
-setClass("state", slots=c("turningAngleConcentration"="numeric", "perceptualRange"="perceptualRange"
-	, "stepLength"="numeric", "name"="character"))
-setClass("species", slots=c("name"="character", "transitionMatrix"="matrix", "states"="list", "resistanceMap"="ANY"))
+setClass("state", slots=c("turningAngleConcentration"="numeric"
+	, "perceptualRange"="perceptualRange", "stepLength"="numeric"
+	, "name"="character"))
+setClass("species", slots=c("name"="character", "transitionMatrix"="matrix"
+	, "states"="list", "resistanceMap"="ANY"))
 
 setMethod("+", signature(e1 = "species"), function(e1, e2) {
 	for(i in seq_along(e1@states)) {
