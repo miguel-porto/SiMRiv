@@ -141,7 +141,7 @@ plot(sim.lw, type = "l", asp = 1, main = "Lévy-like walker")
 The same logic applies to any number of states, but obviously, the transition matrix quickly gets large. See \code{help(transitionMatrix)} for details.
 
 \section{Parameterizing the simulation}
-In the current version, we provide an experimental method for numerically approximating simulation input parameters from real trajectory data,
+In the current version, we provide a method for numerically approximating simulation input parameters from real trajectory data,
 using an heuristic optimization.
 This is done with the function \code{adjustModel}. This function numerically finds combinations of input parameters that minimize
 the differences between simulated trajectories and the real trajectory. See the working example in \code{help(adjustModel)}.
