@@ -38,7 +38,7 @@ my.Swd2.off <- function() {
 library(SiMRiv)
 @
 
-\title{'SiMRiv'\\(version \Sexpr{version$Version})\\An R package for simulation and analysis of spatially-explicit individual multi-state (animal) movements in any landscape}
+\title{'SiMRiv'\\(version \Sexpr{version$Version})\\An R package for simulation and analysis of spatially-explicit individual multistate (animal) movements in any landscape}
 
 \author{Miguel Porto, Lorenzo Quaglietta}
 \maketitle
