@@ -12,7 +12,6 @@
 # Figs. 3 & 4 take about 10 minutes to run in 8 cores                           #
 #################################################################################
 
-library(SiMRiv)
 library(ks)			# 2D kernel density
 library(parallel)	# for parallel lapply
 

@@ -8,7 +8,6 @@
 #                                                                              #
 ################################################################################
 
-library(SiMRiv)
 library(adehabitatLT)	# for Lévy walk simulation
 library(moveHMM)		# for moveHMM simulation
 library(TeachingDemos)	# for subplots inside plot
