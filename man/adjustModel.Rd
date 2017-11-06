@@ -11,7 +11,7 @@
 }
 \usage{
   adjustModel(realData, species.model, resolution = 10
-    , resistance = NULL, coords = NULL, start.resistance = NULL
+    , resistance = NULL, coords = NULL, angles = NULL
     , nrepetitions = 6
     , nbins.hist = if(aggregate.obj.hist) c(7, 7) else c(3, 3)
     , step.hist.log = TRUE, TA.variation = FALSE, nlags = 100
@@ -27,7 +27,7 @@
   \item{resolution}{the desired time frequency of the simulations for which parameters will be approximated, as a fraction of the real data, i.e. a value of 20 will simulate movements at a 20-fold higher frequency than real data.}
   \item{resistance}{the resistance raster to use in simulations during parameter approximation.}
   \item{coords}{the initial coordinates of the simulated individuals (only relevant if \code{resistance} is provided because the metrics used in optimization are spatially-agnostic).}
-  \item{start.resistance}{the maximum value of resistance in which the individuals are allowed to start. Only used if \code{resistance} is provided and \code{coords} is not provided.}
+  \item{angles}{the initial angle to which the individual is facing in that start of all simulations (only relevant if \code{resistance} is provided because the metrics used in optimization are spatially-agnostic).}
   \item{nrepetitions}{the number of simulations conducted for each solution evaluation during optimization. If >1, the quality of the solutions is computed by comparing the averaged histograms across repetitions, with the real histograms.}
   \item{nbins.hist}{a vector with two positive integers defining the number of histogram bins for turning angle and step length histograms respectively. These bins will be used during optimization to compare simulated trajectories with the real trajectory to infer the quality of the "fit".}
   \item{step.hist.log}{set to \code{TRUE} to use the histogram of the logarithm of the step lengths rather than of the raw values in the comparisons. Setting to \code{TRUE} usually results in more detail in the comparisons.}
@@ -127,7 +127,7 @@ species.model <- speciesModel("CRW.CRW.sl", steplength = max.step.length)
 
 ## now run optimization
 
-sol <- adjustModel(real.data, species.model, resol = 20, window = 10
+sol <- adjustModel(real.data, species.model, resol = 20
 	, nbins.hist = c(3, 3), step.hist.log = TRUE)
 
 ## After finishing, we can extract the input parameters of the optimized

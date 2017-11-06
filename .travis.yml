@@ -1,0 +1,9 @@
+dist: trusty
+language: r
+sudo: false
+cache: packages
+addons:
+  apt:
+    packages:
+      - libgdal-dev
+      - libproj-dev

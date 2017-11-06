@@ -2,7 +2,9 @@
 #include <Rdefines.h>
 #include <Rinternals.h>
 
-/* get the list element named str, or return NULL */
+/**
+* Get the list element named str, or return NULL
+*/
 SEXP getListElement(SEXP list, const char *str) {
 	SEXP elmt = R_NilValue, names = getAttrib(list, R_NamesSymbol);
 

@@ -1,6 +1,6 @@
 # SiMRiv (R package) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/SiMRiv)](https://cran.r-project.org/package=SiMRiv) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) [![Downloads](http://cranlogs.r-pkg.org/badges/SiMRiv)](https://cran.r-project.org/package=SiMRiv) [![Travis-CI Build Status](https://travis-ci.org/miguel-porto/SiMRiv.svg?branch=devel)](https://travis-ci.org/miguel-porto/SiMRiv)
 
-**Individual-Based, Spatially-Explicit Simulation and Analysis of Multi-State Movements in River Networks, Homogeneous, and Heterogeneous Landscapes in R.**
+**Individual-based simulation of multistate movements in rivers, heterogeneous and homogeneous spaces incorporating local landscape bias, in R.**
 
 Available on [CRAN](https://cran.r-project.org/web/packages/SiMRiv/index.html), can be directly installed from within R.
 
@@ -12,6 +12,4 @@ or even in highly contrasted landscapes (e.g. fish in a river network). The algo
 Simulated trajectories can then be used as null models to test e.g. for species site fidelity (Powell 2000) and other movement ecology hypotheses (Nathan et al. 2008)
 or to build predictive, mechanistic movement models (Moorcroft and Lewis 2006), among other things. The package should thus be relevant to explore a broad spectrum of
 ecological phenomena, such as those at the interface of animal behaviour, landscape, spatial and movement ecology, disease and invasive species spread, and population dynamics.
-
-This is the first released experimental version; do test before using in production.
 
