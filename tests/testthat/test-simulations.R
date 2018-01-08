@@ -38,12 +38,16 @@ test_that("Random walk is not biased", {
 test_that("Transitions behave normally, unbiased", {
 	# test that the time spent in each state is similar, for equal probabilities
 	RW.CRW <- species(state.RW() + state.CRW(0.95), transitionMatrix(0.1, 0.1))
-	s <- simulate(RW.CRW, 10000)
+	s1 <- simulate(RW.CRW, 10000)
+	s2 <- simulate(RW.CRW, 10000)
 
-# this value is the 99 percentile of the difference that occurred over 5000 unbiased state
+# this value 777 is the 99 percentile of the difference that occurred over 5000 unbiased state
 # transitions for this transition matrix with equal probabilities. The code for generating unbiased
 # transitions is commented below
-	expect_lt(abs(diff(table(s[, 3]))), 777)
+# we relaxed the test because it failed in 1% of cases just by chance.
+# this was the original test: expect_lt(abs(diff(table(s[, 3]))), 777)
+
+	expect_true(abs(diff(table(s1[, 3]))) < 777 || abs(diff(table(s2[, 3]))) < 777)
 	
 #	difference <- numeric(5000)
 #	for(n in 1:5000) {
