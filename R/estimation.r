@@ -403,7 +403,7 @@ adjustModel <- function(
 	if(!is.null(cl)) stopCluster(cl)
 	attr(sol, "generations") <- generations
 	attr(sol, "species.model") <- species.model
-	return(sol)
+	return(sortSolutionParameters(sol))
 }
 
 ## A convenience function to plot the evolution of the algorithm and assess convergence
@@ -528,20 +528,20 @@ binCounts <- function(data, range, nbins, log = FALSE) {
 # This function sorts the parameters of a population of solutions such that
 # the states will be arranged with a decreasing order turning angle concentration
 sortSolutionParameters <- function(solutions) {
+	spmodel <- attr(solutions, "species.model")
 	if(inherits(solutions, "nsga2")) {
-		return(sortSolutionParametersSingleGeneration(solutions))
+		return(sortSolutionParametersSingleGeneration(solutions, spmodel))
 	} else if(inherits(solutions, "nsga2.collection")) {
 		return(
-			lapply(solutions, sortSolutionParametersSingleGeneration)
+			lapply(solutions, sortSolutionParametersSingleGeneration, spmodel)
 		)
 	} else
 		stop("Expecting an object of class nsga2")
 }
 
-sortSolutionParametersSingleGeneration <- function(solutions) {
+sortSolutionParametersSingleGeneration <- function(solutions, spmodel) {
 	if(!inherits(solutions, "nsga2")) stop("Expecting an object of class nsga2")
 	
-	spmodel <- attr(solutions, "species.model")
 	types <- attr(spmodel, "param.types")
 	npars <- attr(spmodel, "npars")
 	correls <- grep("^TA", types)
