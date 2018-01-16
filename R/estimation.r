@@ -26,7 +26,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 		attr(f, "npars") <- 2
 		attr(f, "lower.bounds") <- rep(0, 2)
 		attr(f, "upper.bounds") <- c(max.concentration, steplength)
-		attr(f, "param.names") <- "Turning angle concentration", "Step length"
+		attr(f, "param.names") <- c("Turning angle concentration", "Step length")
 		attr(f, "param.types") <- c("TA1", "SL1")
 		return(f)
 	}, {
