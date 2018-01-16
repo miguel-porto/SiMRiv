@@ -27,4 +27,4 @@ export(adjustModel)
 export(speciesModel)
 export(generationPlot)
 export(binCounts)
-export(sortSolutionParameters)
+
