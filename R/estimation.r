@@ -4,7 +4,7 @@
 speciesModel <- function(type, perceptual.range = 0, steplength = 1
 	, prob.upperbound = 0.5, max.concentration = 0.99) {
 	
-	return(switch(pmatch(type, c("CRW", "RW.CRW", "CRW.CRW", "CRW.pw"
+	return(switch(pmatch(type, c("CRW", "CRW.sl", "RW.CRW", "CRW.CRW", "CRW.pw"
 		, "RW.CRW.sl", "CRW.CRW.sl", "CRW.CRW.CRW.sl", "CRW.RW.Rest.sl")), {
 		f <- function(parameters) {
 			return(species(
@@ -16,6 +16,18 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 		attr(f, "upper.bounds") <- max.concentration
 		attr(f, "param.names") <- "Turning angle concentration"
 		attr(f, "param.types") <- c("TA1")
+		return(f)
+	}, {
+		f <- function(parameters) {
+			return(species(
+				state.CRW(parameters[1])
+			) * perceptual.range + parameters[2])
+		}
+		attr(f, "npars") <- 2
+		attr(f, "lower.bounds") <- rep(0, 2)
+		attr(f, "upper.bounds") <- c(max.concentration, steplength)
+		attr(f, "param.names") <- "Turning angle concentration", "Step length"
+		attr(f, "param.types") <- c("TA1", "SL1")
 		return(f)
 	}, {
 		f <- function(parameters) {
@@ -42,7 +54,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 		attr(f, "lower.bounds") <- c(0, 0, rep(0, 2))
 		attr(f, "upper.bounds") <- c(max.concentration, max.concentration, rep(prob.upperbound, 2))
 		attr(f, "param.names") <- c("Turning angle concentration S1"
-			, "Turning angle concentrarion S2", "Prob. S1 -> S2"
+			, "Turning angle concentration S2", "Prob. S1 -> S2"
 			, "Prob. S2 -> S1")
 		attr(f, "param.types") <- c("TA1", "TA2", "12", "21")
 		return(f)
@@ -88,7 +100,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 		attr(f, "lower.bounds") <- rep(0, 6)
 		attr(f, "upper.bounds") <- c(max.concentration, max.concentration
 			, rep(prob.upperbound, 2), rep(steplength, 2))
-		attr(f, "param.names") <- c("Turning angle concentrarion S1"
+		attr(f, "param.names") <- c("Turning angle concentration S1"
 			, "Turning angle concentration S2", "Prob. S1 -> S2", "Prob. S2 -> S1"
 			, "Step length S1", "Step length S2")
 		attr(f, "param.types") <- c("TA1", "TA2", "12", "21", "SL1", "SL2")
