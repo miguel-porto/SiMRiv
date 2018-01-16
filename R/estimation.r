@@ -547,7 +547,7 @@ sortSolutionParametersSingleGeneration <- function(solutions) {
 	correls <- grep("^TA", types)
 	if(length(correls) > 9) stop("A maximum of 9 states is supported")
 
-	tmp <- t(apply(solutions$par[1:6,], 1, function(sol) {
+	tmp <- t(apply(solutions$par, 1, function(sol) {
 		map <- order(sol[correls], decreasing=TRUE)
 		newtypes <- types
 		newtypes <- chartr(paste(seq_along(map), collapse=""), paste(map, collapse=""), newtypes)
