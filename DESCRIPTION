@@ -1,5 +1,5 @@
 Package: SiMRiv
-Version: 1.0.2
+Version: 1.0.3
 Date: 2017-11-06
 Title: Simulating Multistate Movements in River/Heterogeneous Landscapes
 Authors@R: c(person("Lorenzo", "Quaglietta", role = c("aut"), email = "lontrenzo@gmail.com")
