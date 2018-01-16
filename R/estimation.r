@@ -525,3 +525,36 @@ binCounts <- function(data, range, nbins, log = FALSE) {
 	return(tra)
 }
 
+# This function sorts the parameters of a population of solutions such that
+# the states will be arranged with a decreasing order turning angle concentration
+sortSolutionParameters <- function(solutions) {
+	if(inherits(solutions, "nsga2")) {
+		return(sortSolutionParametersSingleGeneration(solutions))
+	} else if(inherits(solutions, "nsga2.collection")) {
+		return(
+			lapply(solutions, sortSolutionParametersSingleGeneration)
+		)
+	} else
+		stop("Expecting an object of class nsga2")
+}
+
+sortSolutionParametersSingleGeneration <- function(solutions) {
+	if(!inherits(solutions, "nsga2")) stop("Expecting an object of class nsga2")
+	
+	spmodel <- attr(solutions, "species.model")
+	types <- attr(spmodel, "param.types")
+	npars <- attr(spmodel, "npars")
+	correls <- grep("^TA", types)
+	if(length(correls) > 9) stop("A maximum of 9 states is supported")
+
+	tmp <- t(apply(solutions$par[1:6,], 1, function(sol) {
+		map <- order(sol[correls], decreasing=TRUE)
+		newtypes <- types
+		newtypes <- chartr(paste(seq_along(map), collapse=""), paste(map, collapse=""), newtypes)
+		neworder <- match(newtypes, types)
+		return(sol[neworder])
+	}))
+	solutions$par <- tmp
+	return(solutions)
+}
+
