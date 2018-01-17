@@ -13,8 +13,8 @@
   adjustModel(realData, species.model, resolution = 10
     , resistance = NULL, coords = NULL, angles = NULL
     , nrepetitions = 6
-    , nbins.hist = if(aggregate.obj.hist) c(7, 7) else c(3, 3)
-    , step.hist.log = TRUE, TA.variation = FALSE, nlags = 100
+    , nbins.hist = if(aggregate.obj.hist) c(7, 7, 0) else c(3, 3, 0)
+    , step.hist.log = TRUE, nlags = 100
     , window.size = dim(reference$stats)[1]\%/\%nlags
     , aggregate.obj.hist = TRUE, step.hist.range = c(0, 1)
     , popsize = 100, generations = seq(5, 1000, by=5), mprob = 0.2
@@ -29,11 +29,10 @@
   \item{coords}{the initial coordinates of the simulated individuals (only relevant if \code{resistance} is provided because the metrics used in optimization are spatially-agnostic).}
   \item{angles}{the initial angle to which the individual is facing in that start of all simulations (only relevant if \code{resistance} is provided because the metrics used in optimization are spatially-agnostic).}
   \item{nrepetitions}{the number of simulations conducted for each solution evaluation during optimization. If >1, the quality of the solutions is computed by comparing the averaged histograms across repetitions, with the real histograms.}
-  \item{nbins.hist}{a vector with two positive integers defining the number of histogram bins for turning angle and step length histograms respectively. These bins will be used during optimization to compare simulated trajectories with the real trajectory to infer the quality of the "fit".}
+  \item{nbins.hist}{a vector with three positive integers defining the number of histogram bins for turning angle histograms, step length histograms and turning angle variation histograms. These bins will be used during optimization to compare simulated trajectories with the real trajectory to infer the quality of the "fit".}
   \item{step.hist.log}{set to \code{TRUE} to use the histogram of the logarithm of the step lengths rather than of the raw values in the comparisons. Setting to \code{TRUE} usually results in more detail in the comparisons.}
-  \item{TA.variation}{set to \code{TRUE} to use the histogram of the variation in turning angles along time lags, \code{FALSE} to use the global turning angle histogram. \code{FALSE} usually yields good results. See details.}
-  \item{nlags}{the number of time lags within which the standard deviation of the turning angles will be computed during optimization, if \code{TA.variation} is \code{TRUE}. Ignored if \code{TA.variation} is \code{FALSE} or if \code{window.size} is provided.}
-  \item{window.size}{the size (in steps of the real sampling frequency) of the time lags within which the standard deviation of the turning angles will be computed during optimization, if \code{TA.variation} is \code{TRUE}. A different way of providing \code{nlags}. See details.}
+  \item{nlags}{the number of time lags within which the standard deviation of the turning angles will be computed during optimization, if \code{nbins.hist[3] > 0}. Ignored if \code{nbins.hist[3] == 0} or if \code{window.size} is provided.}
+  \item{window.size}{the size (in steps of the real sampling frequency) of the time lags within which the standard deviation of the turning angles will be computed during optimization, if \code{nbins.hist[3] > 0}. A different way of providing \code{nlags}. See details.}
   \item{aggregate.obj.hist}{if \code{FALSE}, comparison of histograms is done bin by bin (each bin absolute difference is an objective to minimize), if \code{TRUE} the absolute differences of the bins are summed in each histogram to a single number which is the objective being minimized (the overall absolute difference in each of the histograms).}
   \item{step.hist.range}{the quantiles used to define the range of the step length histogram computation. Used if the user wants to exclude outliers. The default is not to exclude outliers, thus \code{c(0, 1)}.}
   \item{popsize}{number of solutions to optimize, to pass to \code{\link{nsga2}}}
@@ -47,9 +46,11 @@
   to the given real trajectory, in terms of their intrinsic properties measured by step lengths and variation in turning angles. The input parameter
   approximations are found using a multiobjective genetic algorithm (NSGA-II, \cite{Deb et al. 2002}). The algorithm minimizes a vector
   of N objectives (N=sum(nbins.hist) if aggregate.obj.hist == FALSE, N=sum(nbins.hist > 0) otherwise)
-  whose values are computed by the absolute differences between each pair of bins (real and simulated) of two histograms:
-  an histogram of the step lengths and an histogram of either the turning angles themselves (if \code{TA.variation == FALSE}), or of the
-  standard deviation in turning angles computed in a moving time window along each trajectory (if \code{TA.variation == TRUE}).
+  whose values are computed by the absolute differences between each pair of bins (real and simulated) of up to three histograms:
+  an histogram of the step lengths, an histogram of turning angles and/or and histogram of the standard deviation in turning angles
+  computed in a moving time window along each trajectory. Using either of these histograms (and the respective number of bins) is
+  specified in the parameter \code{nbins.hist}, which has three elements, one for each histogram. A value of 0 tells the function
+  not to use that corresponding histogram.
 
   SiMRiv simulations are intended to reproduce the fine-scale movement steps, unlike what is normally collected in field data.
   Hence, simulations should be conducted with a much higher time frequency than provided by the real data, which poses challenges for parameterization.

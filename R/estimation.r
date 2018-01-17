@@ -247,7 +247,7 @@ adjustModel <- function(
 					hist.sl <- binCounts(s$stats[, "steplengths"], range.step
 						, nbins.hist[2], step.hist.log)
 				} else {
-					hist.mat <- matrix(ncol = nbins.hist[1], nrow = nrepetitions)
+					hist.ta.mat <- matrix(ncol = nbins.hist[1], nrow = nrepetitions)
 					hist.sl.mat <- matrix(ncol = nbins.hist[2], nrow = nrepetitions)
 					hist.tv.mat <- matrix(ncol = nbins.hist[3], nrow = nrepetitions)
 					for(i in seq_len(nrepetitions)) {
@@ -260,12 +260,12 @@ adjustModel <- function(
 							hist.tv.mat[i, ] <- binCounts(a.var.sim, range.varta
 								, nbins.hist[3])
 						}
-						hist.mat[i, ] <- binCounts(s$stats[, "turningangles"]
+						hist.ta.mat[i, ] <- binCounts(s$stats[, "turningangles"]
 							, c(-pi, pi), nbins.hist[1], FALSE)
 						hist.sl.mat[i, ] <- binCounts(s$stats[, "steplengths"]
 							, range.step, nbins.hist[2], step.hist.log)
 					}
-					hist.ta <- apply(hist.mat, 2, mean)
+					hist.ta <- apply(hist.ta.mat, 2, mean)
 					hist.sl <- apply(hist.sl.mat, 2, mean)
 					hist.tv <- apply(hist.tv.mat, 2, mean)
 				}
