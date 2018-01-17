@@ -293,9 +293,9 @@ adjustModel <- function(
 				if(aggregate.obj.hist) {
 # in this case we sum the absolute differences in each histogram bar to use as
 # objectives
-					crit <- c("TA.diff" = sum(crit.ta)
-						, "SL.diff" = sum(crit.sl)
-						, "TV.diff" = sum(crit.tv)
+					crit <- c("TA.diff" = if(is.null(crit.ta)) NULL else sum(crit.ta)
+						, "SL.diff" = if(is.null(crit.sl)) NULL else sum(crit.sl)
+						, "TV.diff" = if(is.null(crit.tv)) NULL else sum(crit.tv)
 					)
 				} else
 # otherwise we use the bar-wise absolute differences as objectives
@@ -388,10 +388,10 @@ adjustModel <- function(
 			if(aggregate.obj.hist) {
 # in this case we sum the absolute differences in each histogram bar to use
 # as objectives
-				crit <- c("TA.diff" = sum(crit.ta)
-					, "SL.diff" = sum(crit.sl)
-					, "TV.diff" = sum(crit.tv)
-				)
+					crit <- c("TA.diff" = if(is.null(crit.ta)) NULL else sum(crit.ta)
+						, "SL.diff" = if(is.null(crit.sl)) NULL else sum(crit.sl)
+						, "TV.diff" = if(is.null(crit.tv)) NULL else sum(crit.tv)
+					)
 			} else
 # otherwise we use the bar-wise absolute differences as objectives
 				crit <- c(crit.ta, crit.sl, crit.tv)
