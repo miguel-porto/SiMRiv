@@ -424,7 +424,7 @@ adjustModel <- function(
 }
 
 ## A convenience function to plot the evolution of the algorithm and assess convergence
-generationPlot <- function(solutions, species.model
+generationPlot <- function(solutions, species.model = attr(solutions, "species.model")
 	, plot.quantiles = c(0.10, 0.5, 0.90), only.pareto = FALSE
 	, show.legend = TRUE, lwd = 1.5, mar = c(2.3, 2.3, 0.2, 2.3)
 	, mgp = c(1.2, 0.2, 0), tcl = -0.25, ...) {
@@ -545,13 +545,14 @@ binCounts <- function(data, range, nbins, log = FALSE) {
 # This function sorts the parameters of a population of solutions such that
 # the states will be arranged with a decreasing order turning angle concentration
 sortSolutionParameters <- function(solutions) {
+	attrs <- attributes(solutions)
 	spmodel <- attr(solutions, "species.model")
 	if(inherits(solutions, "nsga2")) {
 		return(sortSolutionParametersSingleGeneration(solutions, spmodel))
 	} else if(inherits(solutions, "nsga2.collection")) {
-		return(
-			lapply(solutions, sortSolutionParametersSingleGeneration, spmodel)
-		)
+		out <- lapply(solutions, sortSolutionParametersSingleGeneration, spmodel)
+		attributes(out) <- attrs
+		return(out)
 	} else
 		stop("Expecting an object of class nsga2")
 }
