@@ -304,6 +304,10 @@ adjustModel <- function(
 				return(crit)
 			}, reference)
 			
+			if(is.null(dim(crit))) {
+				dim(crit) <- c(1, length(crit))
+			}
+			
 			if(trace) print(round(crit, 1))
 			return(crit)
 		}
