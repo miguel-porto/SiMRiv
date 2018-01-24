@@ -8,16 +8,16 @@
   Defines a behavioral state to be used when creating \code{\link{species}}.
 }
 \usage{
-  state(correlation, pwind = perceptualRange("circular", 0)
+  state(concentration, pwind = perceptualRange("circular", 0)
     , steplen = 1, name = "")
   state.Resting()    # still state
   state.RW()         # uniform random walk (brownian motion),
                      # independent of resistance
-  state.CRW(correlation)  # correlated random walk,
+  state.CRW(concentration)  # correlated random walk,
                           # independent of resistance
 }
 \arguments{
-  \item{correlation}{turning angle concentration, a value between 0 (uniform distribution resulting in random walk) and 1 (only one value possible resulting in a straight line path)}
+  \item{concentration}{turning angle concentration, a value between 0 (uniform distribution resulting in random walk) and 1 (only one value possible resulting in a straight line path)}
   \item{pwind}{a \code{\link{perceptualRange}} definition}
   \item{steplen}{the base (maximum) step length of this state in map units. Note that the actual step length depends on the resistance in each step.}
   \item{name}{the name of the state}
