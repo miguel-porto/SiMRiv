@@ -26,7 +26,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 		attr(f, "npars") <- 2
 		attr(f, "lower.bounds") <- rep(0, 2)
 		attr(f, "upper.bounds") <- c(max.concentration, steplength)
-		attr(f, "param.names") <- c("Turning angle concentration", "Step length")
+		attr(f, "param.names") <- c("Turning angle concentration", "Max step length")
 		attr(f, "param.types") <- c("TA1", "SL1")
 		return(f)
 	}, {
@@ -84,8 +84,8 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 		attr(f, "lower.bounds") <- c(0, rep(0, 4))
 		attr(f, "upper.bounds") <- c(max.concentration, rep(prob.upperbound, 2), rep(steplength, 2))
 		attr(f, "param.names") <- c("Turning angle concentration"
-			, "Prob. CRW -> RW", "Prob. RW -> CRW", "Step length RW"
-			, "Step length CRW")
+			, "Prob. CRW -> RW", "Prob. RW -> CRW", "Max step length RW"
+			, "Max step length CRW")
 		attr(f, "param.types") <- c("TA1", "12", "21", "SL2", "SL1")
 		return(f)
 	}, {
@@ -102,7 +102,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 			, rep(prob.upperbound, 2), rep(steplength, 2))
 		attr(f, "param.names") <- c("Turning angle concentration S1"
 			, "Turning angle concentration S2", "Prob. S1 -> S2", "Prob. S2 -> S1"
-			, "Step length S1", "Step length S2")
+			, "Max step length S1", "Max step length S2")
 		attr(f, "param.types") <- c("TA1", "TA2", "12", "21", "SL1", "SL2")
 		return(f)
 	}, {
@@ -123,7 +123,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 			, "Turning angle concentration S2", "Turning angle concentration S3"
 			, "Prob. S1 -> S2", "Prob. S1 -> S3", "Prob. S2 -> S1"
 			, "Prob. S2 -> S3", "Prob. S3 -> S1", "Prob. S3 -> S2"
-			, "Step length S1", "Step length S2", "Step length S3")
+			, "Max step length S1", "Max step length S2", "Max step length S3")
 		attr(f, "param.types") <- c("TA1", "TA2", "TA3", "12", "13", "21", "23"
 			, "31", "32", "SL1", "SL2", "SL3")
 		return(f)
@@ -142,7 +142,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 			, rep(steplength, 2))
 		attr(f, "param.names") <- c("Turning angle concentration CRW"
 			, "Prob. CRW -> RW", "Prob. RW -> CRW", "Prob. RW -> Rest"
-			, "Prob. Rest -> RW", "Step length CRW", "Step length RW")
+			, "Prob. Rest -> RW", "Max step length CRW", "Max step length RW")
 		attr(f, "param.types") <- c("TA1", "12", "21", "23", "32", "SL1", "SL2")
 		return(f)
 	}))

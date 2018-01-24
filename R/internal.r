@@ -25,14 +25,14 @@ setMethod("show", signature(object="perceptualRange"), .printPercWind)
 setMethod("print", signature(x="perceptualRange"), function(x) show(x))
 
 # steplen is assumed to be in the same units of the coordinates! Usually meters.
-state <- function(correlation, pwind = perceptualRange("circular", 0)
+state <- function(concentration, pwind = perceptualRange("circular", 0)
 	, steplen = 1, name = "") {
 
-	if(correlation == 1) correlation <- 0.99999
-	if(correlation == 0) correlation <- 0.00001
+	if(concentration == 1) concentration <- 0.99999
+	if(concentration == 0) concentration <- 0.00001
 	
 	return(new("state"
-		, turningAngleConcentration=correlation
+		, turningAngleConcentration=concentration
 		, perceptualRange=pwind
 		, stepLength=steplen
 		, name=name ))
@@ -53,8 +53,8 @@ state.RW <- function() {
 	return(state(0, steplen = 1, name = "RW"))
 }
 
-state.CRW <- function(correlation) {
-	return(state(correlation, steplen = 1, name = "CRW"))
+state.CRW <- function(concentration) {
+	return(state(concentration, steplen = 1, name = "CRW"))
 }
 
 .printState <- function(object) {
@@ -64,7 +64,7 @@ state.CRW <- function(correlation) {
 		cat("State",object@name,"with\n\t")
 	}
 	show(object@perceptualRange)
-	cat("\tStep length =", object@stepLength
+	cat("\tMax step length =", object@stepLength
 		, "\n\tTurning angle concentration =", object@turningAngleConcentration
 		, "\n")
 }
