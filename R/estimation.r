@@ -5,7 +5,7 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 	, prob.upperbound = 0.5, max.concentration = 0.99) {
 	
 	return(switch(pmatch(type, c("CRW", "CRW.sl", "RW.CRW", "CRW.CRW", "CRW.pw"
-		, "RW.CRW.sl", "CRW.CRW.sl", "CRW.CRW.CRW.sl", "CRW.RW.Rest.sl")), {
+		, "RW.CRW.sl", "CRW.CRW.sl", "CRW.CRW.CRW.sl", "CRW.CRW.CRW.sl.symm", "CRW.RW.Rest.sl")), {
 		f <- function(parameters) {
 			return(species(
 				state.CRW(parameters[1])
@@ -126,6 +126,27 @@ speciesModel <- function(type, perceptual.range = 0, steplength = 1
 			, "Max step length S1", "Max step length S2", "Max step length S3")
 		attr(f, "param.types") <- c("TA1", "TA2", "TA3", "12", "13", "21", "23"
 			, "31", "32", "SL1", "SL2", "SL3")
+		return(f)
+	}, {
+		f <- function(parameters) {
+			return(species(
+				(state.CRW(parameters[1]) + parameters[7])
+					+ (state.CRW(parameters[2]) + parameters[8])
+					+ (state.CRW(parameters[3]) + parameters[9])
+				, transitionMatrix(parameters[4], parameters[5], parameters[4]
+					, parameters[6], parameters[5], parameters[6])
+			) * perceptual.range)
+		}
+		attr(f, "npars") <- 9
+		attr(f, "lower.bounds") <- rep(0, 9)
+		attr(f, "upper.bounds") <- c(rep(max.concentration, 3)
+			, rep(prob.upperbound, 3), rep(steplength, 3))
+		attr(f, "param.names") <- c("Turning angle concentration S1"
+			, "Turning angle concentration S2", "Turning angle concentration S3"
+			, "Prob. S1 <-> S2", "Prob. S1 <-> S3", "Prob. S2 <-> S3"
+			, "Max step length S1", "Max step length S2", "Max step length S3")
+		attr(f, "param.types") <- c("TA1", "TA2", "TA3", "12", "13", "23"
+			, "SL1", "SL2", "SL3")
 		return(f)
 	}, {
 		f <- function(parameters) {
@@ -569,10 +590,13 @@ sortSolutionParametersSingleGeneration <- function(solutions, spmodel) {
 	correls <- grep("^TA", types)
 	if(length(correls) > 9) stop("A maximum of 9 states is supported")
 
+	types <- vapply(types, function(xi) paste(sort(strsplit(xi, NULL)[[1]]), collapse=""), "")
+
 	tmp <- t(apply(solutions$par, 1, function(sol) {
 		map <- order(sol[correls], decreasing=TRUE)
 		newtypes <- types
 		newtypes <- chartr(paste(seq_along(map), collapse=""), paste(map, collapse=""), newtypes)
+		newtypes <- vapply(newtypes, function(xi) paste(sort(strsplit(xi, NULL)[[1]]), collapse=""), "")
 		neworder <- match(newtypes, types)
 		return(sol[neworder])
 	}))
