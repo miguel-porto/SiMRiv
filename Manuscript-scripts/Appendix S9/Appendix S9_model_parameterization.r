@@ -1,6 +1,6 @@
 ################################################################################
 #         EXAMPLES OF INPUT PARAMETER APPROXIMATION FROM REAL DATASETS         #
-# This script produces the plots presented in Appendix S2 of the paper         #
+# This script produces the plots presented in Appendix S3 & S4 of the paper    #
 #------------------------------------------------------------------------------#
 # IMPORTANT NOTE: Run it with the command source('filename'),                  #
 # NOT with copy/paste!                                                         #
@@ -12,19 +12,8 @@ library(adehabitatLT)	# for Lévy walk simulation
 library(moveHMM)		# for moveHMM simulation
 library(TeachingDemos)	# for subplots inside plot
 
-# number of generations to run optimization algorithm
-# NOTE: we don't need 1000 generations here, as the algorithm generally converges
-# faster. You can reduce this to e.g. 500
-generations <- seq(5, 1000, by = 5)
 # number of times each candidate solution is simulated to compute average fitness
 nrepetitions <- 6
-# simulate at 50 times higher frequency than real data
-downsample <- 50
-# use 7-bin histograms for turning angle and step length ditributions during
-# optimization, for solution fitness evaluation
-nbins.hist <- c(7, 7, 0)
-# use the logarithm of the step lengths for computing the histograms above
-log.step.length <- TRUE
 
 # Just a custom function to plot trajectories and their histograms of turning
 # angles and step lengths inset at the corners
@@ -38,7 +27,6 @@ movementplot <- function(relocs, downsample = 1, nbins = c(4, 5)
 			plot(relocs, type = "l", asp = 1, axes = FALSE)
 		} else {
 			plot(relocs, type="l", asp=1, col="#aaaaaa", axes = FALSE)
-#			points(relocs, col=c("#aaaaaa", "red", "blue")[relocs[, 3] + 1], pch=19, cex=0.1)
 			lines(relocs.st$relocs, lwd=0.5)
 		}
 	} else {
@@ -82,6 +70,18 @@ switch(menu(c(
 	"Optimization convergence plots with real and simulated data"
 	, "Validation plots (ability to recover true parameter values after downsampling)"
 )), {
+	# number of generations to run optimization algorithm
+	# NOTE: we don't need 1000 generations here, as the algorithm generally converges
+	# faster. You can reduce this to e.g. 500
+	generations <- seq(5, 1000, by = 5)
+	# simulate at 50 times higher frequency than real data
+	downsample <- 50
+	# use 7-bin histograms for turning angle and step length ditributions during
+	# optimization, for solution fitness evaluation
+	nbins.hist <- c(7, 7, 0)
+	# use the logarithm of the step lengths for computing the histograms above
+	log.step.length <- TRUE
+
 	switch(menu(c(
 		"Elk data (Morales et al., 2004)"
 		, "moveHMM simulation"
@@ -180,8 +180,8 @@ switch(menu(c(
 	# NOTE: because the optimization algorithm is not yet fully optimized for speed,
 	# running this procedure takes about 22 h! The code is provided just to illustrate
 	# how to do it.
-		if(!file.exists("Appendix S10_otter-realdata.rdata")) {
-			stop("Can't find data file.\n************************************************\nPlease copy 'Appendix S10_otter-realdata.rdata' to the folder\n", getwd())
+		if(!file.exists("Appendix S9_otter-realdata.rdata")) {
+			stop("Can't find data file.\n************************************************\nPlease copy 'Appendix S9_otter-realdata.rdata' to the folder\n", getwd())
 		}
 	
 		cat("NOTE: this options takes >20 hours to run, see script comments.")
@@ -191,7 +191,7 @@ switch(menu(c(
 	# equally well with 50	
 		downsample <- 25
 	
-		load("Appendix S10_otter-realdata.rdata")
+		load("Appendix S9_otter-realdata.rdata")
 		filename <- "otter"
 		tmp <- sampleMovement(real.data)
 		max.step.length <- (max(tmp$stat[, "steplengths"]) / downsample) * 2
@@ -222,7 +222,7 @@ switch(menu(c(
 			, resistance = resistance, coords = startCoord
 			, resol = downsample, generations = generations
 			, nrepetitions = nrepetitions, nbins.hist = nbins.hist
-			, step.hist.log = log.step.length, trace = TRUE, TA.variation = FALSE
+			, step.hist.log = log.step.length, trace = TRUE
 			, aggregate = TRUE)
 	})
 	# ... And that's all it takes to approximate parameters from real data.
@@ -319,9 +319,12 @@ switch(menu(c(
 	# Is the optimization able to recover true parameters after a 1:50 downsampling?
 	downsample <- 50
 
-	# Use 5-bin histograms for turning angle distributions and 12-bin histograms
+	# Use 5-bin histograms for turning angle distributions and 8-bin histograms
 	# for step length ditributions during optimization, for solution fitness evaluation
 	nbins.hist <- c(5, 8, 0)
+	
+	# use the logarithm of the step lengths for computing the histograms above
+	log.step.length <- TRUE
 	
 	# define simulation parameters that we'll use for validation
 	# one state CRW, two state RW-CRW and three state RW-CRW-CRW
@@ -340,7 +343,7 @@ switch(menu(c(
 	# note that the performance of the optimization in recovering the true parameters
 	# depends on the particular trajectory that was used as "real data". Hence, multiple
 	# runs may produce different validation plots.
-	for(sp in seq_along(species.models)[3]) {
+	for(sp in seq_along(species.models)) {
 		smodel <- species.models[sp]
 		truepars <- simulation.parameters[[sp]]
 		

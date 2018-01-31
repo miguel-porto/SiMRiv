@@ -9,7 +9,7 @@
 # Either place this rdata file in the default working directory, or use setwd() #
 # to set a working directory.                                                   #
 #                                                                               #
-# Figs. 3 & 4 take about 10 minutes to run in 8 cores                           #
+# Figs. 2 & S2 take about 10 minutes to run in 8 cores                          #
 #################################################################################
 
 library(ks)			# 2D kernel density
@@ -24,8 +24,8 @@ step.length <- 10
 # number of cores to use in parallel simulations; adjust as necessary
 n.cores <- 8
 
-if(!file.exists("Appendix S9_resistance-rasters.rdata")) {
-	stop("Can't find data file.\n************************************************\nPlease copy 'Appendix S9_resistance-rasters.rdata' to the folder\n", getwd())
+if(!file.exists("Appendix S8_resistance-rasters.rdata")) {
+	stop("Can't find data file.\n************************************************\nPlease copy 'Appendix S8_resistance-rasters.rdata' to the folder\n", getwd())
 }
 
 ##  Load rasters corresponding to how different animals might see the landscape:
@@ -35,7 +35,7 @@ if(!file.exists("Appendix S9_resistance-rasters.rdata")) {
 #   more often in forested areas. e.g. otter
 # - aquatic animal: Moves exclusively in water. e.g. fish
 
-load("Appendix S9_resistance-rasters.rdata")
+load("Appendix S8_resistance-rasters.rdata")
 # this is a list with 3 elements: terr, amph, fish, corresponding to the
 # descriptions above
 
@@ -119,14 +119,14 @@ plot.relocs <- function(resist, relocs, n.rep = NA , xlim = NA, ylim = NA
 
 ## START MENU
 choice <- menu(c(
-	"Fig.3 - Influence of landscape"
-	, "Fig.4 - Influence of perceptual range"
-	, "Fig.2 - Basic plots"
+	"Fig.2 - Influence of landscape"
+	, "Fig.S2 - Influence of perceptual range"
+	, "Fig.1 - Basic plots"
 	, "Just plot last run"
 ))
 
 switch(choice , {
-	output.filename <- "Figure-3-influence-landscape"
+	output.filename <- "Figure-2-influence-landscape"
 	simulated.rasters <- rasters
 	# create species
 	levy.walker <- species((state.RW() * 100) + (state.CRW(0.95) * 500)
@@ -173,7 +173,7 @@ switch(choice , {
 	)
 
 }, {
-	output.filename <- "Figure-4-influence-percep-range"
+	output.filename <- "Figure-S2-influence-percep-range"
 	species <- lapply(c(5000, 2000, 500), function(pr) {
 		species(list(
 			state(0, perceptualRange("cir", pr), step.length)
@@ -245,7 +245,7 @@ switch(choice , {
 	relocs <- mapply(my.simulate, simulated.rasters, n.rep, species
 		, list(c(691391, 4629949)), SIMPLIFY = FALSE)
 	
-	tiff("Figure-2-basic-illustration.tif", width = 10 * 2, height = 10 * 2
+	tiff("Figure-1-basic-illustration.tif", width = 10 * 2, height = 10 * 2
 		, unit = "cm", comp = "lzw", res = 1000)
 	par(mar = c(0.1, 0.1, 2.5, 0.1))
 	layout(matrix(c(seq_along(relocs)), nrow = 2, byrow = TRUE))
@@ -266,7 +266,7 @@ switch(choice , {
 })
 
 
-## Make Fig.3 & 4, and the full res plots in appendix
+## Make Fig.2 & S2, and the full res plots (not shown)
 if(choice %in% c(1, 2)) {
 	cat("Computing kernel densities...\n"); flush.console()
 	if(n.rep > 1) {
