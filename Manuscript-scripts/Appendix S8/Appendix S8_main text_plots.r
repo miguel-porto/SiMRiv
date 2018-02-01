@@ -1,16 +1,16 @@
-#################################################################################
-#  This script produces the plots of figures 2-4 presented in the main text     #
-# of the paper                                                                  #
-#-------------------------------------------------------------------------------#
-# IMPORTANT NOTE: Run it with the command source('filename'), v                 #
-# NOT with copy/paste! In Windows, just drag the file to the R window.			#
-#                                                                               #
-# This script must have access to the data file 'resistance-rasters.rdata'.     #
-# Either place this rdata file in the default working directory, or use setwd() #
-# to set a working directory.                                                   #
-#                                                                               #
-# Figs. 2 & S2 take about 10 minutes to run in 8 cores                          #
-#################################################################################
+###################################################################################
+#  This script produces the plots of figures 1, 2 & S2 presented in the main text #
+# of the paper                                                                    #
+#---------------------------------------------------------------------------------#
+# IMPORTANT NOTE: Run it with the command source('filename'), v                   #
+# NOT with copy/paste! In Windows, just drag the file to the R window.			  #
+#                                                                                 #
+# This script must have access to the data file 'resistance-rasters.rdata'.       #
+# Either place this rdata file in the default working directory, or use setwd()   #
+# to set a working directory.                                                     #
+#                                                                                 #
+# Figs. 2 & S2 take about 10 minutes to run in 8 cores                            #
+###################################################################################
 
 library(ks)			# 2D kernel density
 library(parallel)	# for parallel lapply
