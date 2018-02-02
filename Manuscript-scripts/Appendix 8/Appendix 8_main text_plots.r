@@ -1,5 +1,5 @@
 ###################################################################################
-#  This script produces the plots of figures 1, 2 & S2 presented in the main text #
+#  This script produces the plots of figures 1, 2 & A2 presented in the main text #
 # of the paper                                                                    #
 #---------------------------------------------------------------------------------#
 # IMPORTANT NOTE: Run it with the command source('filename'), v                   #
@@ -9,7 +9,7 @@
 # Either place this rdata file in the default working directory, or use setwd()   #
 # to set a working directory.                                                     #
 #                                                                                 #
-# Figs. 2 & S2 take about 10 minutes to run in 8 cores                            #
+# Figs. 2 & A2 take about 10 minutes to run in 8 cores                            #
 ###################################################################################
 
 library(ks)			# 2D kernel density
@@ -24,8 +24,8 @@ step.length <- 10
 # number of cores to use in parallel simulations; adjust as necessary
 n.cores <- 8
 
-if(!file.exists("Appendix S8_resistance-rasters.rdata")) {
-	stop("Can't find data file.\n************************************************\nPlease copy 'Appendix S8_resistance-rasters.rdata' to the folder\n", getwd())
+if(!file.exists("Appendix 8_resistance-rasters.rdata")) {
+	stop("Can't find data file.\n************************************************\nPlease copy 'Appendix 8_resistance-rasters.rdata' to the folder\n", getwd())
 }
 
 ##  Load rasters corresponding to how different animals might see the landscape:
@@ -35,7 +35,7 @@ if(!file.exists("Appendix S8_resistance-rasters.rdata")) {
 #   more often in forested areas. e.g. otter
 # - aquatic animal: Moves exclusively in water. e.g. fish
 
-load("Appendix S8_resistance-rasters.rdata")
+load("Appendix 8_resistance-rasters.rdata")
 # this is a list with 3 elements: terr, amph, fish, corresponding to the
 # descriptions above
 
@@ -120,7 +120,7 @@ plot.relocs <- function(resist, relocs, n.rep = NA , xlim = NA, ylim = NA
 ## START MENU
 choice <- menu(c(
 	"Fig.2 - Influence of landscape"
-	, "Fig.S2 - Influence of perceptual range"
+	, "Fig.A2 - Influence of perceptual range"
 	, "Fig.1 - Basic plots"
 	, "Just plot last run"
 ))
@@ -173,7 +173,7 @@ switch(choice , {
 	)
 
 }, {
-	output.filename <- "Figure-S2-influence-percep-range"
+	output.filename <- "Figure-A2-influence-percep-range"
 	species <- lapply(c(5000, 2000, 500), function(pr) {
 		species(list(
 			state(0, perceptualRange("cir", pr), step.length)
@@ -266,7 +266,7 @@ switch(choice , {
 })
 
 
-## Make Fig.2 & S2, and the full res plots (not shown)
+## Make Fig.2 & A2, and the full res plots (not shown)
 if(choice %in% c(1, 2)) {
 	cat("Computing kernel densities...\n"); flush.console()
 	if(n.rep > 1) {
