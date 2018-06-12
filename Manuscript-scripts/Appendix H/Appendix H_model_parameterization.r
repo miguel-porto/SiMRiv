@@ -1,6 +1,6 @@
 ################################################################################
 #         EXAMPLES OF INPUT PARAMETER APPROXIMATION FROM REAL DATASETS         #
-# This script produces the plots presented in Appendix 3 & 4 of the paper      #
+# This script produces the plots presented in Appendix C of the paper          #
 #------------------------------------------------------------------------------#
 # IMPORTANT NOTE: Run it with the command source('filename'),                  #
 # NOT with copy/paste!                                                         #
@@ -180,8 +180,8 @@ switch(menu(c(
 	# NOTE: because the optimization algorithm is not yet fully optimized for speed,
 	# running this procedure takes about 22 h! The code is provided just to illustrate
 	# how to do it.
-		if(!file.exists("Appendix 9_otter-realdata.rdata")) {
-			stop("Can't find data file.\n************************************************\nPlease copy 'Appendix 9_otter-realdata.rdata' to the folder\n", getwd())
+		if(!file.exists("Appendix H_otter-realdata.rdata")) {
+			stop("Can't find data file.\n************************************************\nPlease copy 'Appendix H_otter-realdata.rdata' to the folder\n", getwd())
 		}
 	
 		cat("NOTE: this options takes >20 hours to run, see script comments.")
@@ -191,7 +191,7 @@ switch(menu(c(
 	# equally well with 50	
 		downsample <- 25
 	
-		load("Appendix 9_otter-realdata.rdata")
+		load("Appendix H_otter-realdata.rdata")
 		filename <- "otter"
 		tmp <- sampleMovement(real.data)
 		max.step.length <- (max(tmp$stat[, "steplengths"]) / downsample) * 2

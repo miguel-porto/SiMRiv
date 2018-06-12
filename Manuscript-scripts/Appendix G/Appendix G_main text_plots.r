@@ -1,16 +1,16 @@
-###################################################################################
-#  This script produces the plots of figures 1, 2 & A2 presented in the main text #
-# of the paper                                                                    #
-#---------------------------------------------------------------------------------#
-# IMPORTANT NOTE: Run it with the command source('filename'), v                   #
-# NOT with copy/paste! In Windows, just drag the file to the R window.			  #
-#                                                                                 #
-# This script must have access to the data file 'resistance-rasters.rdata'.       #
-# Either place this rdata file in the default working directory, or use setwd()   #
-# to set a working directory.                                                     #
-#                                                                                 #
-# Figs. 2 & A2 take about 10 minutes to run in 8 cores                            #
-###################################################################################
+#####################################################################################
+#  This script produces the plots of Fig. 2, Fig3 & Fig. B.1 presented in the paper #
+#                                                                                   #
+#-----------------------------------------------------------------------------------#
+# IMPORTANT NOTE: Run it with the command source('filename'), v                     #
+# NOT with copy/paste! In Windows, just drag the file to the R window.              #
+#                                                                                   #
+# This script must have access to the data file 'resistance-rasters.rdata'.         #
+# Either place this rdata file in the default working directory, or use setwd()     #
+# to set a working directory.                                                       #
+#                                                                                   #
+# Figs. 3 & B.1 take about 10 minutes to run in 8 cores                             #
+#####################################################################################
 
 library(SiMRiv)
 library(ks)			# 2D kernel density
@@ -25,8 +25,8 @@ step.length <- 10
 # number of cores to use in parallel simulations; adjust as necessary
 n.cores <- 8
 
-if(!file.exists("Appendix 8_resistance-rasters.rdata")) {
-	stop("Can't find data file.\n************************************************\nPlease copy 'Appendix 8_resistance-rasters.rdata' to the folder\n", getwd())
+if(!file.exists("Appendix G_resistance-rasters.rdata")) {
+	stop("Can't find data file.\n************************************************\nPlease copy 'Appendix G_resistance-rasters.rdata' to the folder\n", getwd())
 }
 
 ##  Load rasters corresponding to how different animals might see the landscape:
@@ -36,7 +36,7 @@ if(!file.exists("Appendix 8_resistance-rasters.rdata")) {
 #   more often in forested areas. e.g. otter
 # - aquatic animal: Moves exclusively in water. e.g. fish
 
-load("Appendix 8_resistance-rasters.rdata")
+load("Appendix G_resistance-rasters.rdata")
 # this is a list with 3 elements: terr, amph, fish, corresponding to the
 # descriptions above
 
@@ -65,7 +65,7 @@ my.simulate <- function(resist, nrep, species, init = NULL) {
 }
 
 # A custom function to plot movements and resistance raster styled like the
-# figures in the main text
+# figures in the text
 plot.relocs <- function(resist, relocs, n.rep = NA , xlim = NA, ylim = NA
 	, kde, col = "#0000ff30", lwd = 0.2, scale = FALSE
 	, contour.lines = c(5, 25, 50, 75, 95)) {
@@ -120,14 +120,14 @@ plot.relocs <- function(resist, relocs, n.rep = NA , xlim = NA, ylim = NA
 
 ## START MENU
 choice <- menu(c(
-	"Fig.2 - Influence of landscape"
-	, "Fig.A2 - Influence of perceptual range"
-	, "Fig.1 - Basic plots"
+	"Fig.3 - Influence of landscape"
+	, "Fig.B.1 - Influence of perceptual range"
+	, "Fig.2 - Simulations in homogeneous and river landscapes"
 	, "Just plot last run"
 ))
 
 switch(choice , {
-	output.filename <- "Figure-2-influence-landscape"
+	output.filename <- "Figure-3-influence-landscape"
 	simulated.rasters <- rasters
 	# create species
 	levy.walker <- species((state.RW() * 100) + (state.CRW(0.95) * 500)
@@ -174,7 +174,7 @@ switch(choice , {
 	)
 
 }, {
-	output.filename <- "Figure-A2-influence-percep-range"
+	output.filename <- "Figure-B.1-influence-percep-range"
 	species <- lapply(c(5000, 2000, 500), function(pr) {
 		species(list(
 			state(0, perceptualRange("cir", pr), step.length)
@@ -246,7 +246,7 @@ switch(choice , {
 	relocs <- mapply(my.simulate, simulated.rasters, n.rep, species
 		, list(c(691391, 4629949)), SIMPLIFY = FALSE)
 	
-	tiff("Figure-1-basic-illustration.tif", width = 10 * 2, height = 10 * 2
+	tiff("Figure-2-Simple-simulations.tif", width = 10 * 2, height = 10 * 2
 		, unit = "cm", comp = "lzw", res = 1000)
 	par(mar = c(0.1, 0.1, 2.5, 0.1))
 	layout(matrix(c(seq_along(relocs)), nrow = 2, byrow = TRUE))
@@ -267,7 +267,7 @@ switch(choice , {
 })
 
 
-## Make Fig.2 & A2, and the full res plots (not shown)
+## Make Fig.3 & Fig. B.1, and the full res plots (not shown)
 if(choice %in% c(1, 2)) {
 	cat("Computing kernel densities...\n"); flush.console()
 	if(n.rep > 1) {
