@@ -5,7 +5,8 @@
 # IMPORTANT NOTE: Run it with the command source('filename'), v                     #
 # NOT with copy/paste! In Windows, just drag the file to the R window.              #
 #                                                                                   #
-# This script must have access to the data file 'resistance-rasters.rdata'.         #
+# This script must have access to the data file                                     #
+# 'Appendix G_resistance-rasters.rdata'.                                            #
 # Either place this rdata file in the default working directory, or use setwd()     #
 # to set a working directory.                                                       #
 #                                                                                   #
