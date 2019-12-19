@@ -132,13 +132,14 @@ sim <- simulate(LevyWalker, 20000, resist = river
 
 ## plot movement; we use a high-res TIFF so that it
 ## can be viewed in detail
-
+\dontrun{
 tiff("movement.tif", wid=5000, hei=5000, comp="lzw")
 par(mar = c(0, 0, 0, 0))
 plot(river, asp = 1, col = gray(seq(1, 0.5, len = 2))
     , ylim = range(sim[,2]), xlim = range(sim[,1]), axes = FALSE)
 lines(sim, lwd = 2, col = "#0000ffcc")
 dev.off()
+}
 
 ## if we want the kernel density overlaid,
 ## uncomment these and put before dev.off()

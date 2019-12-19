@@ -6,7 +6,7 @@ Authors@R: c(person("Lorenzo", "Quaglietta", role = c("aut"), email = "lontrenzo
 		,person("Miguel", "Porto", role = c("aut", "cre"), email = "mpbertolo@gmail.com")
 		,person("Erida", "Gjini", role = c("ctb"), email = "egjini@igc.gulbenkian.pt")
 		)
-Depends: R (>= 1.8.0), raster
+Depends: R (>= 2.10), raster
 Imports: methods, stats, sp, mco, parallel, rgdal
 Suggests: adehabitatLT, moveHMM, rgeos, testthat
 Description: Provides functions to generate and analyze spatially-explicit individual-based multistate movements in rivers,
@@ -27,4 +27,4 @@ Description: Provides functions to generate and analyze spatially-explicit indiv
 License: GPL (>= 2)
 URL: https://www.r-project.org, https://github.com/miguel-porto/SiMRiv
 BugReports: https://github.com/miguel-porto/SiMRiv
-
+LazyData: true
