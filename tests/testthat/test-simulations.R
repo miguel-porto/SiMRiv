@@ -1,4 +1,5 @@
 context("Basic simulations")
+set.seed(16)
 
 test_that("Simulation result is the correct size", {
 	RW <- species(state.RW())
