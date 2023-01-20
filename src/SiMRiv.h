@@ -2,6 +2,7 @@
 #include <Rdefines.h>
 #include <Rinternals.h>
 #include <Rmath.h>
+#include <stdbool.h>
 
 #define SCALARCHAR(x)		Rf_ScalarString(mkChar(x))
 // multiplier for bounded values (probabilites)
@@ -18,7 +19,7 @@
 // say when to stop summing.
 #define TOLERANCECIRCNORM	0.00001
 
-typedef enum {false=0, true=1} bool;
+// typedef enum {false=0, true=1} bool;
 // this is to accomodate all values that are bounded between 0 and 1.
 // Let's assume that MULTIPLIER corresponds to 1, to keep integer math
 typedef unsigned int BOUNDED;
@@ -72,7 +73,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions
 	, SEXP _timespan, SEXP _angles, SEXP _resist, SEXP envir);
 SEXP stepRasterAccumulator(SEXP relocs, SEXP _resist, SEXP envir);
 void circNormal(float rho, float* out, float* scaledout);
-float drawRandomAngle(unsigned long *pdf);
+float drawRandomAngle(CDF pdf);
 SEXP getRasterExtent(SEXP raster, SEXP rho);
 SEXP getRasterDim(SEXP raster, SEXP rho);
 SEXP getRasterValues(SEXP raster, SEXP rho);
