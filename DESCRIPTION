@@ -1,14 +1,14 @@
 Package: SiMRiv
-Version: 1.0.5
-Date: 2023-01-19
+Version: 1.0.6
+Date: 2023-09-15
 Title: Simulating Multistate Movements in River/Heterogeneous Landscapes
 Authors@R: c(person("Lorenzo", "Quaglietta", role = c("aut"), email = "lontrenzo@gmail.com")
 		,person("Miguel", "Porto", role = c("aut", "cre"), email = "mpbertolo@gmail.com")
 		,person("Erida", "Gjini", role = c("ctb"), email = "egjini@igc.gulbenkian.pt")
 		)
-Depends: R (>= 2.10), raster
-Imports: methods, stats, sp, mco, parallel, rgdal
-Suggests: adehabitatLT, moveHMM, rgeos, testthat
+Depends: R (>= 3.5.0), raster
+Imports: methods, stats, mco, parallel
+Suggests: adehabitatLT, moveHMM, testthat, sf
 Description: Provides functions to generate and analyze spatially-explicit individual-based multistate movements in rivers,
   heterogeneous and homogeneous spaces. This is done by incorporating landscape bias on local behaviour, based on
   resistance rasters. Although originally conceived and designed to simulate trajectories of species constrained to

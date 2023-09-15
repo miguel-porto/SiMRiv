@@ -1,7 +1,6 @@
 useDynLib(SiMRiv, .registration = TRUE, .fixes = "SR_")
 importFrom("methods", "new", "show", "callGeneric")
 importFrom("stats", "runif", "sd", "quantile")
-importFrom("sp", "proj4string")
 importFrom("utils", "flush.console")
 importFrom("graphics", "axis", "box", "legend", "mtext", "par",
 	"plot.new", "plot.window", "polygon", "title", "lines")
@@ -10,7 +9,6 @@ importFrom("parallel", "makeCluster", "detectCores", "clusterCall"
 importFrom("raster", "shapefile", "raster", "extent", "rasterize"
 	, "cellStats", "xyFromCell", "values")
 importFrom("mco", "nsga2")
-import("rgdal")
 
 export(perceptualRange)
 export(state)

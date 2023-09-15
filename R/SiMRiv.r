@@ -73,19 +73,19 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 	if(missing(baseRaster) && missing(res))
 		stop("Either raster resolution or a base raster must be given")
 	if(inherits(shp, "character")) {
-		l <- shapefile(shp)
+		l <- sf::st_read(shp)
 	} else {
 		l <- shp
 	}
 
 	if(!all(is.na(buffer))) {
-		b <- rgeos::gBuffer(l, width = buffer, byid = TRUE)	#(!binary)
+		b <- sf::st_buffer(l, dist = buffer)
 	} else {
 		b <- l
 	}
 
 	if(missing(baseRaster)) {
-		er <- raster(ext = extent(b) + margin, crs = proj4string(l)
+		er <- raster(ext = extent(b) + margin, crs = sf::st_crs(l)
 			, resolution = res)
 	} else {
 		if(extend) {
@@ -104,11 +104,11 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 				, update = !missing(baseRaster), ...)
 		} else {
 			if(all(is.na(mapvalues))) {
-				if(!inherits(b@data[, field], "numeric"))
+				if(!inherits(b[, field, drop = TRUE], "numeric"))
 					stop("field must be a numeric field in the interval [0, 1], otherwise you have to specify mapvalues for translating field values")
-				tmp <- b@data[, field]
+				tmp <- as.numeric(b[, field, drop=TRUE])
 				tmp[is.na(tmp)] <- background
-				b@data[, field] <- tmp
+				b[, field] <- tmp
 				r <- rasterize(b, er, field = field, background = background
 					, update = !missing(baseRaster), ...)
 			} else {
@@ -119,14 +119,14 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 					emptyvalue <- mapvalues[empty]
 					mapvalues <- mapvalues[!empty]
 				}
-				tmp <- mapvalues[as.character(b@data[, field])]
+				tmp <- mapvalues[as.character(b[, field, drop=TRUE])]
 				names(tmp) <- NULL
 				if(exists("emptyvalue")) {
 					tmp[is.na(tmp)] <- emptyvalue
 				} else {
 					tmp[is.na(tmp)] <- background
 				}
-				b@data[, field] <- tmp
+				b[, field] <- tmp
 				r <- rasterize(b, er, field = field, background = background
 					, update = !missing(baseRaster), ...)
 			}
@@ -134,7 +134,7 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 	}
 	
 	if(cellStats(r, min) < 0 || cellStats(r, max) > 1)
-		warning("Resistance values must be in the interval [0, 1]. Use reclassify to fix this.")
+		warning("Resistance values must be in the interval [0, 1]. Use 'mapvalues' to fix this.")
 	return(r)
 }
 
