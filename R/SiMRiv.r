@@ -75,7 +75,7 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 	if(inherits(shp, "character")) {
 		l <- sf::st_read(shp)
 	} else {
-		l <- shp
+		l <- sf::st_as_sf(shp)
 	}
 
 	if(!all(is.na(buffer))) {
