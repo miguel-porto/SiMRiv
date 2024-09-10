@@ -98,7 +98,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions
 			ind[i].curstate = runif(0, ind[i].nstates - 1);
 // uniform random angle if angle not provided
 			ind[i].curang = angles ? (ISNAN(angles[i]) ? drawRandomAngle(NULL)
-				: ((angles[i] + PI) / ANGLESTEP)) : drawRandomAngle(NULL);
+				: ((angles[i] + M_PI) / ANGLESTEP)) : drawRandomAngle(NULL);
 // initialize states
 			for(j = 0; j < ind[i].nstates; j++) {
 // compute base circular PDFs for all states of all individuals (centered on 0),
@@ -173,7 +173,7 @@ SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions
 				}
 
 // compute the realized length of this step, taking into account resistance
-				curangtrans = ind[i].curang * ANGLESTEP - PI;
+				curangtrans = ind[i].curang * ANGLESTEP - M_PI;
 				lengthmove = computeLengthMove(tmpstate->steplength
 					, ind[i].curpos, resist, curangtrans);
 // take the move
@@ -229,7 +229,7 @@ void circNormal(float _rho, float* out, float* scaledout) {
 	float ang, max = -1;
 	int k, i;
     
-	for(i = 0, ang = -PI; i <= ANGLECENTER; i++, ang += ANGLESTEP) {
+	for(i = 0, ang = -M_PI; i <= ANGLECENTER; i++, ang += ANGLESTEP) {
 		k = 0;
 		next = circNormalTerm(ang, var, k);
     	delta = 1;
@@ -333,7 +333,7 @@ void computeEmpiricalResistancePDF(POINT curpos,
 		#pragma omp parallel for firstprivate(step,resist,curpos,percwind) private(i,j,tcos,tsin,ang,sum,tmppos,tmp) shared(allinf,pdf)
 		#endif
 		for(i = 0; i < ANGLERES; i++) {	// make a whole circle in radial lines
-			ang = -PI + i * ANGLESTEP;
+			ang = -M_PI + i * ANGLESTEP;
 			tmppos = curpos;
 // for each angle, sum the resistance values along the radial line centered on
 // curpos
@@ -373,7 +373,7 @@ void computeEmpiricalResistancePDF(POINT curpos,
 			#pragma omp for
 			#endif
 			for(i=0; i < ANGLERES; i++) {	// make a whole circle
-				ang = -PI + i * ANGLESTEP;
+				ang = -M_PI + i * ANGLESTEP;
 				tmppos = curpos;
 				tcos = cos(ang) * step;
 				tsin = sin(ang) * step;
@@ -434,8 +434,9 @@ SEXP stepRasterAccumulator(SEXP relocs, SEXP _resist, SEXP envir) {
 	float sum;
 	POINT tmppos, endpoint;
 	int i, j, nsteps;
-	
+
 	resist = openRaster(_resist, rho);
+
 // output is a vector with the accumulated resistance in each step
 	PROTECT(out = NEW_NUMERIC(nrelocs));
 	pout = NUMERIC_POINTER(out);

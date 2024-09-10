@@ -65,8 +65,8 @@ typedef struct {
 } RASTER;
 
 inline float circNormalTerm(float ang, float var, int k) {
-	return((1/sqrt(var * 2 * PI)) * exp(-( (ang + 2 * PI * (float) k)
-		* (ang + 2 * PI * (float) k) ) / (2 * var)));
+	return((1/sqrt(var * 2 * M_PI)) * exp(-( (ang + 2 * M_PI * (float) k)
+		* (ang + 2 * M_PI * (float) k) ) / (2 * var)));
 }
 
 SEXP _simulate_individuals(SEXP _individuals, SEXP _starting_positions

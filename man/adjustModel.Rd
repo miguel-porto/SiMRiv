@@ -35,9 +35,9 @@
   \item{window.size}{the size (in steps of the real sampling frequency) of the time lags within which the standard deviation of the turning angles will be computed during optimization, if \code{nbins.hist[3] > 0}. A different way of providing \code{nlags}. See details.}
   \item{aggregate.obj.hist}{if \code{FALSE}, comparison of histograms is done bin by bin (each bin absolute difference is an objective to minimize), if \code{TRUE} the absolute differences of the bins are summed in each histogram to a single number which is the objective being minimized (the overall absolute difference in each of the histograms).}
   \item{step.hist.range}{the quantiles used to define the range of the step length histogram computation. Used if the user wants to exclude outliers. The default is not to exclude outliers, thus \code{c(0, 1)}.}
-  \item{popsize}{number of solutions to optimize, to pass to \code{\link{nsga2}}}
-  \item{generations}{number of algorithm generations to run, to pass to \code{\link{nsga2}}. The default is a vector, so that convergence of results can be assessed along generations.}
-  \item{mprob}{mutation probability, to pass to \code{\link{nsga2}}}
+  \item{popsize}{number of solutions to optimize, to pass to \code{\link[mco]{nsga2}}}
+  \item{generations}{number of algorithm generations to run, to pass to \code{\link[mco]{nsga2}}. The default is a vector, so that convergence of results can be assessed along generations.}
+  \item{mprob}{mutation probability, to pass to \code{\link[mco]{nsga2}}}
   \item{parallel}{set to \code{TRUE} to use multicore processing.}
   \item{trace}{set to \code{TRUE} to print the matrix of optimization objectives (rows) for each solution (columns) in each generation along optimization. These are the values that are being internally minimized. The number of rows is \code{sum(nbins.hist)}; the first \code{nbins.hist[1]} are the turning angle variation objectives, the last are the step length objectives.}
 }
@@ -76,7 +76,7 @@
   parameters to the real data (see examples).
 }
 \value{
-  The object returned by \code{\link{nsga2}} (package \code{mco}), see details therein. If \code{generations} is a vector (which is recommended,
+  The object returned by \code{\link[mco]{nsga2}} (package \code{mco}), see details therein. If \code{generations} is a vector (which is recommended,
   for assessing convergence), this object contains the approximated input parameter values in each generation given in the vector. See examples
   for easily plotting results.
 }

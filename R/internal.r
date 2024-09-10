@@ -149,3 +149,7 @@ transitionMatrix <- function(...) {
 	return(out)
 }
 
+getRasterExtent <- function(r) {
+	return(as.vector(terra::ext(r)))
+}
+

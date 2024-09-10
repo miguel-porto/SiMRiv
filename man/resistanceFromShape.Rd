@@ -3,7 +3,7 @@
 \title{Build resistance raster by combining shapefiles}
 \description{
   Creates a resistance raster to be used in simulations, by rasterizing and combining different shapefiles.
-  It is basically a helper function that uses the functions from package \code{\link{raster-package}} to create and manipulate
+  It is basically a helper function that uses the functions from package \code{\link[terra]{terra-package}} to create and manipulate
   such raster.
 }
 \usage{
@@ -22,7 +22,7 @@
   \item{margin}{the margin to leave around the shapefile's extent when rasterizing (i.e. how much to increase shapefile's extent).}
   \item{mapvalues}{a named vector specifying the resistance value mapping from the classes of \code{field}.}
   \item{extend}{set to TRUE to extend \code{baseRaster} if the shapefile has a larger extent. If FALSE, the shapefile will be clipped to \code{baseRaster}'s extent.}
-  \item{...}{other arguments to pass to \code{\link{rasterize}}.}
+  \item{...}{other arguments to pass to \code{\link[terra]{rasterize}}.}
 }
 \details{
   This function rasterizes the given shapefile using provided options and optionally stacks it onto the provided \code{baseRaster}.
@@ -33,7 +33,7 @@
   those extra pixels will be assigned the \code{background} value defined for the shapefile (not use the original background of \code{baseRaster}).
 }
 \value{
-  The resistance raster, an object of class \code{\link{RasterLayer-class}}.
+  The resistance raster, an object of class \code{\link[terra]{SpatRaster-class}}.
 }
 \seealso{
   \code{\link{simulate}}.

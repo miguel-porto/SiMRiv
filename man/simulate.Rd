@@ -109,7 +109,7 @@ plot(sim, type="l", asp=1)
 ## load sample river raster in a fish's perspective,
 ## i.e. resistance is 0 within the river, 1 otherwise.
 
-data(river)
+river <- terra::rast(system.file("doc/river.tif", package="SiMRiv"))
 
 ## let's try a Levy-like movement in a river network
 ## note: perceptual range radii and step lengths must be

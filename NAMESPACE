@@ -6,8 +6,7 @@ importFrom("graphics", "axis", "box", "legend", "mtext", "par",
 	"plot.new", "plot.window", "polygon", "title", "lines")
 importFrom("parallel", "makeCluster", "detectCores", "clusterCall"
 	, "clusterExport", "parApply", "stopCluster")
-importFrom("raster", "shapefile", "raster", "extent", "rasterize"
-	, "cellStats", "xyFromCell", "values")
+importFrom("terra", "xyFromCell", "rast", "ext", "rasterize", "global", "values")
 importFrom("mco", "nsga2")
 
 export(perceptualRange)

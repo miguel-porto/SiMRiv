@@ -7,9 +7,10 @@ SEXP getRasterExtent(SEXP raster,SEXP rho) {
 	SEXP ans,s,t;
 	if(!isEnvironment(rho)) error("'rho' should be an environment");
 
-	t = s = PROTECT(allocList(2));
-	SET_TYPEOF(s, LANGSXP);
-	SETCAR(t, install("extent")); t = CDR(t);
+/*	t = s = PROTECT(allocList(2));
+	SET_TYPEOF(s, LANGSXP);*/
+	t = s = LCONS(R_NilValue, PROTECT(allocList(1)));
+	SETCAR(t, install("getRasterExtent")); t = CDR(t);
 	SETCAR(t, raster);
 	ans=eval(s, rho);
 	UNPROTECT(1);
@@ -20,8 +21,9 @@ SEXP getRasterDim(SEXP raster,SEXP rho) {
 	SEXP ans,s,t;
 	if(!isEnvironment(rho)) error("'rho' should be an environment");
 
-	t = s = PROTECT(allocList(2));
-	SET_TYPEOF(s, LANGSXP);
+/*	t = s = PROTECT(allocList(2));
+	SET_TYPEOF(s, LANGSXP);*/
+	t = s = LCONS(R_NilValue, PROTECT(allocList(1)));
 	SETCAR(t, install("dim")); t = CDR(t);
 	SETCAR(t, raster);
 	ans=eval(s, rho);
@@ -33,8 +35,9 @@ SEXP getRasterRes(SEXP raster,SEXP rho) {
 	SEXP ans,s,t;
 	if(!isEnvironment(rho)) error("'rho' should be an environment");
 
-	t = s = PROTECT(allocList(2));
-	SET_TYPEOF(s, LANGSXP);
+/*	t = s = PROTECT(allocList(2));
+	SET_TYPEOF(s, LANGSXP);*/
+	t = s = LCONS(R_NilValue, PROTECT(allocList(1)));
 	SETCAR(t, install("res")); t = CDR(t);
 	SETCAR(t, raster);
 	ans=eval(s, rho);
@@ -46,8 +49,9 @@ SEXP getRasterValues(SEXP raster,SEXP rho) {
 	SEXP ans,s,t;
 	if(!isEnvironment(rho)) error("'rho' should be an environment");
 
-	t = s = PROTECT(allocList(2));
-	SET_TYPEOF(s, LANGSXP);
+/*	t = s = PROTECT(allocList(2));
+	SET_TYPEOF(s, LANGSXP);*/
+	t = s = LCONS(R_NilValue, PROTECT(allocList(1)));
 	SETCAR(t, install("values")); t = CDR(t);
 	SETCAR(t, raster);
 	ans=eval(s, rho);
@@ -72,10 +76,14 @@ RASTER *openRaster(SEXP raster, SEXP rho) {
 	PROTECT(extent = getRasterExtent(raster, rho));
 	out->nrows = NUMERIC_POINTER(dim)[0];
 	out->ncols = NUMERIC_POINTER(dim)[1];
-	out->xmin = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("xmin")))[0];
+/*	out->xmin = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("xmin")))[0];
 	out->ymin = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("ymin")))[0];
 	out->xmax = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("xmax")))[0];
-	out->ymax = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("ymax")))[0];
+	out->ymax = NUMERIC_POINTER(GET_SLOT(extent, SCALARCHAR("ymax")))[0];*/
+	out->xmin = NUMERIC_POINTER(extent)[0];
+	out->ymin = NUMERIC_POINTER(extent)[2];
+	out->xmax = NUMERIC_POINTER(extent)[1];
+	out->ymax = NUMERIC_POINTER(extent)[3];
 	out->width = out->xmax - out->xmin;
 	out->height = out->ymax - out->ymin;
 	out->xscale = (float) out->ncols / out->width;

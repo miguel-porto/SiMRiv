@@ -28,14 +28,14 @@ simulate <- function(individuals, time, coords = NULL, states = NULL
 # warning("No starting coordinates and no raster given: starting positions set to (0,0)")
 		} else {
 			if(missing(start.resistance) || is.null(start.resistance)) {
-				e <- extent(resist)
+				e <- as.vector(terra::ext(resist))
 				coords <- cbind(
-					as.integer(runif(length(individuals), e@xmin, e@xmax))
-					, as.integer(runif(length(individuals), e@ymin, e@ymax))
+					as.integer(runif(length(individuals), e["xmin"], e["xmax"]))
+					, as.integer(runif(length(individuals), e["ymin"], e["ymax"]))
 				)
 			} else {
 				coords <- matrix(as.integer(
-					xyFromCell(resist, sample(which(values(resist) <= start.resistance)
+					terra::xyFromCell(resist, sample(which(terra::values(resist) <= start.resistance)
 					, length(individuals)))
 				), ncol = 2)
 			}
@@ -62,7 +62,6 @@ simulate <- function(individuals, time, coords = NULL, states = NULL
 		if(!inherits(individuals[[i]], "species"))
 			stop("individuals must be a list of species class")
 	}
-	
 	.Call(SR__simulate_individuals, individuals, coords, as.integer(time), angles, resist, new.env())
 }
 
@@ -85,11 +84,11 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 	}
 
 	if(missing(baseRaster)) {
-		er <- raster(ext = extent(b) + margin, crs = sf::st_crs(l)
+		er <- terra::rast(ext = terra::ext(b) + margin, crs = sf::st_crs(l)$proj4string
 			, resolution = res)
 	} else {
 		if(extend) {
-			er <- extend(baseRaster, extent(b) + margin, value = background)
+			er <- extend(baseRaster, terra::ext(b) + margin, fill = background)
 		} else {
 			er <- baseRaster
 		}
@@ -132,9 +131,10 @@ resistanceFromShape <- function(shp, baseRaster, res, binary = is.na(field)
 			}
 		}
 	}
-	
-	if(cellStats(r, min) < 0 || cellStats(r, max) > 1)
+
+	if(terra::global(r, min) < 0 || terra::global(r, max) > 1)
 		warning("Resistance values must be in the interval [0, 1]. Use 'mapvalues' to fix this.")
+		
 	return(r)
 }
 
